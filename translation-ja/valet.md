@@ -292,7 +292,7 @@ cd ~/Sites/laravel
 valet share
 ```
 
-To stop sharing your site, you may press `Control + C`.
+サイトの共有を停止するには、`Control + C`を押してください。
 
 > [!WARNING]
 > カスタムDNSサーバ（`1.1.1.1`など）を使用している場合、ngrok共有が正しく動作しないかもしれません。このような場合は、Macのシステム設定を開き、ネットワーク設定へ行き、詳細設定を開き、DNSタブを開き、最初のDNSサーバとして`127.0.0.1`を追加します。

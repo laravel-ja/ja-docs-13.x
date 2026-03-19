@@ -701,7 +701,7 @@ Route::put('/post/{post}', function (Post $post) {
 })->can('update', 'post');
 ```
 
-If you are using [controller middleware attributes](/docs/{{version}}/controllers#middleware-attributes), you may apply the `can` middleware via the `Authorize` attribute:
+[コントローラミドルウェア属性](/docs/{{version}}/controllers#middleware-attributes)を使用している場合は、`Authorize`属性を介して`can`ミドルウェアを適用できます。
 
 ```php
 use Illuminate\Routing\Attributes\Controllers\Authorize;

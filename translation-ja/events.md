@@ -311,7 +311,7 @@ class SendShipmentNotification implements ShouldQueue
 <a name="customizing-the-queue-connection-queue-name"></a>
 #### キュー接続と名前、遅延のカスタマイズ
 
-If you would like to customize the queue connection, queue name, or queue delay time of an event listener, you may use the `Connection`, `Queue`, and `Delay` attributes on your listener class:
+イベントリスナのキュー接続、キュー名、またはキュー遅延時間をカスタマイズしたい場合は、リスナクラスで`Connection`、`Queue`、`Delay`属性を使用します。
 
 ```php
 <?php
@@ -664,7 +664,7 @@ class SendShipmentNotification implements ShouldQueue
 
 キュー投入したリスナの１つでエラーが発生した場合、リスナが無期限に再試行し続けることを皆さんも望まないでしょう。そのため、Laravelはリスナを試行できる回数または期間を指定するさまざまな方法を提供しています。
 
-You may use the `Tries` attribute on your listener class to specify how many times the listener may be attempted before it is considered to have failed:
+リスナが失敗したとみなすまでに、何回試行するかを指定するには、リスナクラスで`Tries`属性を使用します。
 
 ```php
 <?php
@@ -704,7 +704,7 @@ public function retryUntil(): DateTime
 <a name="specifying-queued-listener-backoff"></a>
 #### キュー投入済みリスナの再試行待ち秒数指定
 
-If you would like to configure how many seconds Laravel should wait before retrying a listener that has encountered an exception, you may use the `Backoff` attribute on your listener class:
+例外が発生したリスナを再試行するまで、Laravelが何秒間待機するかを設定したい場合は、リスナクラスで`Backoff`属性を使用します。
 
 ```php
 <?php
@@ -750,7 +750,7 @@ public function backoff(OrderShipped $event): array
 <a name="specifying-queued-listener-max-exceptions"></a>
 #### キュー投入リスナの最大例外の指定
 
-Sometimes you may wish to specify that a queued listener may be attempted many times, but should fail if the retries are triggered by a given number of unhandled exceptions (as opposed to being released by the `release` method directly). To accomplish this, you may use the `Tries` and `MaxExceptions` attributes on your listener class:
+キュー投入したリスナが何度も試行される可能性がある一方で、（`release`メソッドによって直接リリースされるのではなく）特定の回数の未処理の例外によって再試行を起動した場合は、失敗するように指定したい場合があります。これを実現するには、リスナクラスで`Tries`属性と`MaxExceptions`属性を使用します。
 
 ```php
 <?php
@@ -784,7 +784,7 @@ class SendShipmentNotification implements ShouldQueue
 <a name="specifying-queued-listener-timeout"></a>
 #### キュー投入リスナのタイムアウトの指定
 
-Often, you know roughly how long you expect your queued listeners to take. For this reason, Laravel allows you to specify a "timeout" value. If a listener is processing for longer than the number of seconds specified by the timeout value, the worker processing the listener will exit with an error. You may define the maximum number of seconds a listener should be allowed to run by using the `Timeout` attribute on your listener class:
+大抵の場合、キュー投入したリスナにどのくらいの時間がかかるか、大まかに把握しているはずです。このため、Laravelでは「タイムアウト」値を指定できます。リスナがタイムアウト値で指定された秒数よりも長く処理を続けている場合、そのリスナを処理しているワーカはエラーで終了します。リスナの実行を許可する最大秒数を定義するには、リスナクラスで`Timeout`属性を使用します。
 
 ```php
 <?php
@@ -802,7 +802,7 @@ class SendShipmentNotification implements ShouldQueue
 }
 ```
 
-If you would like to indicate that a listener should be marked as failed on timeout, you may use the `FailOnTimeout` attribute on the listener class:
+リスナがタイムアウト時に失敗としてマークされるように指定したい場合は、リスナクラスで`FailOnTimeout`属性を使用します。
 
 ```php
 <?php

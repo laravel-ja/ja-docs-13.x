@@ -235,7 +235,7 @@ return User::all()->toResourceCollection();
 <a name="preserving-collection-keys"></a>
 #### コレクションキーの保存
 
-When returning a resource collection from a route, Laravel resets the collection's keys so that they are in numerical order. However, you may use the `PreserveKeys` attribute on your resource class indicating whether a collection's original keys should be preserved:
+ルートからリソースコレクションを返すとき、Laravelはコレクションのキーをリセットして数値順にします。しかし、リソースクラスで`PreserveKeys`属性を使用することで、コレクションの元のキーを保持するかどうかを指定できます。
 
 ```php
 <?php
@@ -268,7 +268,7 @@ Route::get('/users', function () {
 
 通常、リソースコレクションの`$this->collection`プロパティへは、コレクションの各アイテムをその単一のリソースクラスにマッピングした結果を自動的に代入します。単一のリソースクラスは、クラス名の末尾から`Collection`部分除いたコレクションのクラス名であると想定します。さらに、個人的な好みにもよりますが、単数形のリソースクラスには、`Resource`というサフィックスが付いていてもいなくてもかまいません。
 
-For example, `UserCollection` will attempt to map the given user instances into the `UserResource` resource. To customize this behavior, you may use the `Collects` attribute on your resource collection:
+例として、`UserCollection`は渡されたユーザーインスタンスを`UserResource`リソースへマップしようとしているとしましょう。この動作をカスタマイズするには、リソースコレクションで`Collects`属性を使用してください。
 
 ```php
 <?php
@@ -699,8 +699,7 @@ public function toArray(Request $request): array
 <a name="conditional-relationships"></a>
 ### 条件付きリレーション
 
-In addition to conditionally loading attributes, you may conditionally include relationships on your resource responses based on if the relationship has already been loaded on the model. This allows your controller to decide which relationships should be loaded on the model and your resource can easily include them only when they have actually been loaded. Ultimately, this makes it easier to avoid "N+1" query problems within your resources.
-
+属性を条件付きでロードできるだけでなく、モデルのリレーションがすでにロード済みかに応じて、リソースのレスポンスへリレーションを条件付きで含めることもできます。これにより、どのリレーションをロードすべきかをコントローラ側で決定し、リソース側では実際にロード済みの場合にのみ、そのリレーションをレスポンスへ簡単に含めることができるようになります。結果として、リソース内での「Ｎ＋１」クエリ問題を回避しやすくなります。
 `whenLoaded`メソッドを使用して、リレーションを条件付きでロードできます。リレーションを不必要にロードすることを避けるために、このメソッドはリレーション自体ではなくリレーション名を引数に取ります。
 
 ```php
@@ -897,23 +896,23 @@ return User::all()
 ```
 
 <a name="jsonapi-resources"></a>
-## JSON:API Resources
+## JSON:APIリソース
 
-Laravel ships with `JsonApiResource`, a resource class that produces responses compliant with the [JSON:API specification](https://jsonapi.org/). It extends the standard `JsonResource` class and automatically handles resource object structure, relationships, sparse fieldsets, includes, and sets the `Content-Type` header to `application/vnd.api+json`.
+Laravelは、[JSON:API仕様](https://jsonapi.org/)に準拠したレスポンスを生成するリソースクラスである`JsonApiResource`を同梱しています。これは標準の`JsonResource`クラスを拡張し、リソースオブジェクト構造、リレーションシップ、スパース・フィールドセット、インクルードを自動的に処理し、`Content-Type`ヘッダに`application/vnd.api+json`をセットします。
 
 > [!NOTE]
-> Laravel's JSON:API resources handle the serialization of your responses. If you also need to parse incoming JSON:API query parameters such as filters and sorts, [Spatie's Laravel Query Builder](https://spatie.be/docs/laravel-query-builder/v6/introduction) is a great companion package.
+> LaravelのJSON:APIリソースは、レスポンスのシリアル化を処理します。フィルタやソートなどの受信したJSON:APIクエリパラメータをパースする必要もある場合は、[SpatieのLaravel Query Builder](https://spatie.be/docs/laravel-query-builder/v6/introduction)が優れたコンパニオンパッケージになります。
 
 <a name="generating-jsonapi-resources"></a>
-### Generating JSON:API Resources
+### JSON:APIリソースの生成
 
-To generate a JSON:API resource, use the `make:resource` Artisan command with the `--json-api` flag:
+JSON:APIリソースを生成するには、`--json-api`フラグを付けて`make:resource` Artisanコマンドを使用します。
 
 ```shell
 php artisan make:resource PostResource --json-api
 ```
 
-The generated class will extend `Illuminate\Http\Resources\JsonApi\JsonApiResource` and include `$attributes` and `$relationships` properties for you to define:
+生成したクラスは、`Illuminate\Http\Resources\JsonApi\JsonApiResource`を拡張し、定義するための`$attributes`プロパティと`$relationships`プロパティを含んでいます。
 
 ```php
 <?php
@@ -926,14 +925,14 @@ use Illuminate\Http\Resources\JsonApi\JsonApiResource;
 class PostResource extends JsonApiResource
 {
     /**
-     * The resource's attributes.
+     * リソースの属性
      */
     public $attributes = [
         // ...
     ];
 
     /**
-     * The resource's relationships.
+     * リソースのリレーションシップ
      */
     public $relationships = [
         // ...
@@ -941,7 +940,7 @@ class PostResource extends JsonApiResource
 }
 ```
 
-JSON:API resources may be returned from routes and controllers just like standard resources:
+SON:APIリソースは、標準のリソースと同じようにルートやコントローラから返せます。
 
 ```php
 use App\Http\Resources\PostResource;
@@ -952,7 +951,7 @@ Route::get('/api/posts/{post}', function (Post $post) {
 });
 ```
 
-Or, for convenience, you may use the model's `toResource` method:
+または、簡略するためにモデルの`toResource`メソッドを使用することもできます。
 
 ```php
 Route::get('/api/posts/{post}', function (Post $post) {
@@ -960,7 +959,7 @@ Route::get('/api/posts/{post}', function (Post $post) {
 });
 ```
 
-This will produce a JSON:API compliant response:
+これにより、JSON:API準拠のレスポンスが生成されます。
 
 ```json
 {
@@ -975,7 +974,7 @@ This will produce a JSON:API compliant response:
 }
 ```
 
-To return a collection of JSON:API resources, use the `collection` method or the `toResourceCollection` convenience method:
+JSON:APIリソースのコレクションを返すには、`collection`メソッドか、簡略型の`toResourceCollection`メソッドを使用します。
 
 ```php
 return PostResource::collection(Post::all());
@@ -984,11 +983,11 @@ return Post::all()->toResourceCollection();
 ```
 
 <a name="defining-jsonapi-attributes"></a>
-### Defining Attributes
+### 属性の定義
 
-There are two ways to define which attributes are included in your JSON:API resource.
+JSON:APIリソースに含める属性を定義する方法は２つあります。
 
-The simplest approach is to define an `$attributes` property on your resource. You may list attribute names as values, which will be read directly from the underlying model:
+最も簡単な方法は、リソースに`$attributes`プロパティを定義することです。属性名を値としてリストすると、それらは基底のモデルから直接読み取られます。
 
 ```php
 public $attributes = [
@@ -998,11 +997,11 @@ public $attributes = [
 ];
 ```
 
-Or, for full control over the resource's attributes, you may override the `toAttributes` method on the resource:
+または、リソースの属性を完全に制御するには、リソースの`toAttributes`メソッドをオーバーライドします。
 
 ```php
 /**
- * Get the resource's attributes.
+ * リソースの属性を取得
  *
  * @return array<string, mixed>
  */
@@ -1019,13 +1018,13 @@ public function toAttributes(Request $request): array
 ```
 
 <a name="defining-jsonapi-relationships"></a>
-### Defining Relationships
+### リレーションシップの定義
 
-JSON:API resources support defining relationships that follow the JSON:API specification. Relationships are only serialized when requested by the client via the `include` query parameter.
+JSON:APIリソースは、JSON:API仕様に従ったリレーションシップの定義をサポートしています。リレーションシップは、クライアントが`include`クエリパラメータを介して要求した場合のみ、シリアル化します。
 
-#### The `$relationships` Property
+#### The `$relationships`プロパティ
 
-You may define your resource's includable relationships via the `$relationships` property on your resource:
+リソースの`$relationships`プロパティを介して、リソースのインクルード可能なリレーションシップを定義できます。
 
 ```php
 public $relationships = [
@@ -1034,7 +1033,7 @@ public $relationships = [
 ];
 ```
 
-When listing a relationship name as a value, Laravel will resolve the corresponding Eloquent relationship and automatically discover the appropriate resource class. If you need to specify the resource class explicitly, you may define the relationship as a key / class pair:
+リレーションシップ名を値としてリストすると、Laravelは対応するEloquentリレーションシップを解決し、適切なリソースクラスを自動的に検出します。リソースクラスを明示的に指定する必要がある場合は、リレーションシップをキーとクラスのペアとして定義できます。
 
 ```php
 use App\Http\Resources\UserResource;
@@ -1045,11 +1044,11 @@ public $relationships = [
 ];
 ```
 
-Alternatively, you may override the `toRelationships` method on the resource:
+あるいは、リソースの`toRelationships`メソッドをオーバーライドすることもできます。
 
 ```php
 /**
- * Get the resource's relationships.
+ * リソースのリレーションシップを取得
  */
 public function toRelationships(Request $request): array
 {
@@ -1060,15 +1059,15 @@ public function toRelationships(Request $request): array
 }
 ```
 
-#### Including Relationships
+#### リレーションシップのインクルード
 
-Clients may request related resources using the `include` query parameter:
+クライアントは、`include`クエリパラメータを使用して関連リソースをリクエストできます。
 
 ```
 GET /api/posts/1?include=author,comments
 ```
 
-This produces a response with resource identifier objects in the `relationships` key and full resource objects in the top-level `included` array:
+これにより、`relationships`キーにリソース識別子オブジェクト、トップレベルの`included`配列に完全なリソースオブジェクトが含まれるレスポンスが生成されます。
 
 ```json
 {
@@ -1114,16 +1113,16 @@ This produces a response with resource identifier objects in the `relationships`
 }
 ```
 
-Nested relationships may be included using dot notation:
+ネストしたリレーションシップは、ドット記法を使用してインクルードできます。
 
 ```
 GET /api/posts/1?include=comments.author
 ```
 
 <a name="jsonapi-relationship-depth"></a>
-#### Relationship Depth
+#### リレーションシップの深さ
 
-By default, nested relationship includes are limited to a maximum depth. You may customize this limit using the `maxRelationshipDepth` method, typically in one of you application's service provider:
+デフォルトでは、ネストしたリレーションシップのインクルード制限は最大深度です。通常アプリケーションのサービスプロバイダのいずれかで、`maxRelationshipDepth`メソッドを使用してこの制限をカスタマイズできます。
 
 ```php
 use Illuminate\Http\Resources\JsonApi\JsonApiResource;
@@ -1132,15 +1131,15 @@ JsonApiResource::maxRelationshipDepth(3);
 ```
 
 <a name="jsonapi-resource-type-and-id"></a>
-### Resource Type and ID
+### リソースタイプとID
 
-By default, the resource's `type` is derived from the resource class name. For example, `PostResource` produces the type `posts` and `BlogPostResource` produces `blog-posts`. The resource's `id` is resolved from the model's primary key.
+リソースの`type`は、デフォルトでリソースクラス名から派生します。例えば、`PostResource`は`posts`タイプを生成し、`BlogPostResource`は`blog-posts`を生成します。リソースの`id`はモデルのプライマリキーから解決されます。
 
-If you need to customize these values, you may override the `toType` and `toId` methods on your resource:
+これらの値をカスタマイズする必要がある場合は、リソースの`toType`メソッドと`toId`メソッドをオーバーライドしてください。
 
 ```php
 /**
- * Get the resource's type.
+ * リソースのタイプを取得
  */
 public function toType(Request $request): string
 {
@@ -1148,7 +1147,7 @@ public function toType(Request $request): string
 }
 
 /**
- * Get the resource's ID.
+ * リソースのIDを取得
  */
 public function toId(Request $request): string
 {
@@ -1156,23 +1155,23 @@ public function toId(Request $request): string
 }
 ```
 
-This is particularly useful when a resource's type should differ from its class name, such as when an `AuthorResource` wraps a `User` model and should output the type `authors`.
+これは、`AuthorResource`が`User`モデルをラップし、`authors`タイプを出力する必要がある場合など、リソースのタイプをクラス名と異なるものにする必要がある場合に特に便利です。
 
 <a name="jsonapi-sparse-fieldsets-and-includes"></a>
-### Sparse Fieldsets and Includes
+### スパース・フィールドセットとインクルード
 
-JSON:API resources support [sparse fieldsets](https://jsonapi.org/format/#fetching-sparse-fieldsets), allowing clients to request only specific attributes for each resource type using the `fields` query parameter:
+JSON:APIリソースは[スパース・フィールドセット](https://jsonapi.org/format/#fetching-sparse-fieldsets)をサポートしており、クライアントが`fields`クエリパラメータを使用して各リソースタイプの特定の属性のみをリクエストできるようにします。
 
 ```
 GET /api/posts?fields[posts]=title,created_at&fields[users]=name
 ```
 
-This will only include the `title` and `created_at` attributes for `posts` resources, and the `name` attribute for `users` resources.
+これにより、`posts`リソースの`title`と`created_at`属性、および`users`リソースの`name`属性のみが含まれます。
 
 <a name="jsonapi-ignoring-query-string"></a>
-#### Ignoring the Query String
+#### クエリ文字列の無視
 
-If you would like to disable sparse fieldset filtering for a given resource response, you may call the `ignoreFieldsAndIncludesInQueryString` method:
+特定のリソースレスポンスでスパース・フィールドセットのフィルタリングを無効にしたい場合は、`ignoreFieldsAndIncludesInQueryString`メソッドを呼び出せます。
 
 ```php
 return $post->toResource()
@@ -1180,9 +1179,9 @@ return $post->toResource()
 ```
 
 <a name="jsonapi-including-previously-loaded-relationships"></a>
-#### Including Previously Loaded Relationships
+#### 以前にロード済みのリレーションシップのインクルード
 
-By default, relationships are only included in the response when requested via the `include` query parameter. If you would like to include all previously eager-loaded relationships regardless of the query string, you may call the `includePreviouslyLoadedRelationships` method:
+リレーションシップは、`include`クエリパラメータを介してリクエストされた場合にのみ、デフォルトでレスポンスへ含めます。クエリ文字列に関係なく、以前にEagerロード済みの全リレーションシップを含めたい場合は、`includePreviouslyLoadedRelationships`メソッドを呼び出します。
 
 ```php
 return $post->load('author', 'comments')
@@ -1191,13 +1190,13 @@ return $post->load('author', 'comments')
 ```
 
 <a name="jsonapi-links-and-meta"></a>
-### Links and Meta
+### リンクとメタ
 
-You may add links and meta information to your JSON:API resource objects by overriding the `toLinks` and `toMeta` methods on the resource:
+リソースの`toLinks`メソッドと`toMeta`メソッドをオーバーライドすれば、JSON:APIリソースオブジェクトにリンクとメタ情報を追加できます。
 
 ```php
 /**
- * Get the resource's links.
+ * リソースのリンクを取得
  */
 public function toLinks(Request $request): array
 {
@@ -1207,7 +1206,7 @@ public function toLinks(Request $request): array
 }
 
 /**
- * Get the resource's meta information.
+ * リソースのメタ情報を取得
  */
 public function toMeta(Request $request): array
 {
@@ -1217,7 +1216,7 @@ public function toMeta(Request $request): array
 }
 ```
 
-This will add `links` and `meta` keys to the resource object in the response:
+これにより、レスポンスのリソースオブジェクトへ`links`キーと`meta`キーを追加します。
 
 ```json
 {

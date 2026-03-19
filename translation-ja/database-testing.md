@@ -155,7 +155,7 @@ class ExampleTest extends TestCase
 }
 ```
 
-Alternatively, you may instruct Laravel to automatically seed the database before each test that uses the `RefreshDatabase` trait. You may accomplish this by adding the `Seed` attribute to your base test class:
+あるいは、`RefreshDatabase`トレイトを使用する各テストの前に、データベースへ自動的にシードするようにLaravelに指示することもできます。これは、ベーステストクラスに`Seed`属性を追加することで実現できます。
 
 ```php
 <?php
@@ -171,7 +171,7 @@ abstract class TestCase extends BaseTestCase
 }
 ```
 
-When the `Seed` attribute is present, the test will run the `Database\Seeders\DatabaseSeeder` class before each test that uses the `RefreshDatabase` trait. However, you may specify a specific seeder that should be executed by using the `Seeder` attribute on your test class:
+`Seed`属性が存在する場合、`RefreshDatabase`トレイトを使用する各テストの前に、`Database\Seeders\DatabaseSeeder`クラスを実行します。しかし、テストクラスで`Seeder`属性を使用して、実行する特定のシーダーを指定することもできます。
 
 ```php
 <?php
@@ -258,7 +258,7 @@ $this->assertNotSoftDeleted($user);
 <a name="assert-model-exists"></a>
 #### assertModelExists
 
-Assert that a given model or collection of models exist in the database:
+指定したモデルまたはモデルのコレクションがデータベース内に存在することをアサートします。
 
 ```php
 use App\Models\User;
@@ -271,7 +271,7 @@ $this->assertModelExists($user);
 <a name="assert-model-missing"></a>
 #### assertModelMissing
 
-Assert that a given model or collection of models do not exist in the database:
+指定したモデルまたはモデルのコレクションがデータベース内に存在しないことをアサートします。
 
 ```php
 use App\Models\User;

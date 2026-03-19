@@ -256,15 +256,15 @@ if ($request->expectsJson()) {
 }
 ```
 
-If you need to determine whether the request specifically prefers Markdown or will accept Markdown among other content types, such as when serving AI agents or other clients that consume Markdown responses, you may use the `wantsMarkdown` and `acceptsMarkdown` methods:
+AIエージェントやMarkdownレスポンスを処理する他のクライアントへ提供する場合など、リクエストが特にMarkdownを優先しているか、あるいは他のコンテンツタイプの中でMarkdownを受け入れるかを判定する必要がある場合は、`wantsMarkdown`メソッドと`acceptsMarkdown`メソッドを使用できます。
 
 ```php
 if ($request->wantsMarkdown()) {
-    // The client's most preferred content type is text/markdown...
+    // クライアントが最も優先するコンテンツタイプはtext/markdown
 }
 
 if ($request->acceptsMarkdown()) {
-    // The client accepts Markdown responses...
+    // クライアントはMarkdownレスポンスを受け入れる
 }
 ```
 

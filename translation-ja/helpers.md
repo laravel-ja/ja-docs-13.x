@@ -1963,7 +1963,7 @@ $number = Number::spellOrdinal(21);
 <a name="method-number-trim"></a>
 #### `Number::trim()` {.collection-method}
 
-The `Number::trim` method removes any trailing zero digits after the decimal point of the given number:
+`Number::trim`メソッドは、指定した数値の小数点以下の末尾にあるゼロをすべて削除します。
 
 ```php
 use Illuminate\Support\Number;

@@ -483,7 +483,7 @@ WORKOS_REDIRECT_URL="${APP_URL}/authenticate"
 <a name="configuring-authkit-authentication-methods"></a>
 #### AuthKit認証メソッドの設定
 
-When using a WorkOS powered starter kit, we recommend that you disable "Email + Password" authentication within your application's WorkOS AuthKit configuration settings, allowing users to only authenticate via social authentication providers, passkeys, "Magic Auth", and SSO. This allows your application to totally avoid handling user passwords.
+WorkOSベースのスターターキットを使用する場合、アプリケーションのWorkOS AuthKit設定内で「Email + Password」認証を無効にすることを推奨します。これにより、ユーザーはソーシャル認証プロバイダ、パスキー、「Magic Auth」、SSOのみで認証するようになります。この設定により、アプリケーションでユーザーパスワードを処理することを完全に回避できます。
 
 <a name="configuring-authkit-session-timeouts"></a>
 #### AuthKitセッションタイムアウトの設定

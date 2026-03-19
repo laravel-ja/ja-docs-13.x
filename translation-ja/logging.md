@@ -558,7 +558,7 @@ php artisan pail -v
 php artisan pail -vv
 ```
 
-To stop tailing logs, press `Ctrl+C` at any time.
+ログの出力を停止するには、いつでも`Ctrl+C`を押してください。
 
 <a name="pail-filtering-logs"></a>
 ### ログのフィルタリング

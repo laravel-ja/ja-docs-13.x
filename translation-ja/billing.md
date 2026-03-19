@@ -99,7 +99,7 @@ composer require laravel/cashier
 php artisan vendor:publish --tag="cashier-migrations"
 ```
 
-Then, migrate your database:
+続いて、データベースをマイグレーションします。
 
 ```shell
 php artisan migrate

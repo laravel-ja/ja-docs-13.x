@@ -276,9 +276,9 @@ public function viaQueues(): array
 ```
 
 <a name="customizing-queued-notification-job-properties"></a>
-#### Customizing Queued Notification Job Attributes
+#### キュー投入済み通知ジョブ属性のカスタマイズ
 
-You may customize the behavior of the underlying queued job by defining queue attributes on your notification class. These attributes will be inherited by the queued job that sends the notification:
+通知クラスにキュー属性を定義することで、基盤となるキュー投入済みジョブの動作をカスタマイズできます。これらの属性は、通知を送信するキュー投入済みジョブに継承されます。
 
 ```php
 <?php
@@ -323,7 +323,7 @@ class InvoicePaid extends Notification implements ShouldQueue, ShouldBeEncrypted
 }
 ```
 
-In addition to defining these attributes directly on your notification class, you may also define `backoff` and `retryUntil` methods to specify the backoff strategy and retry timeout for the queued notification job:
+これらの属性を通知クラスに直接定義することに加え、キュー投入済み通知ジョブのバックオフ戦略と再試行タイムアウトを指定するために、`backoff`メソッドと`retryUntil`メソッドも定義できます。
 
 ```php
 use DateTime;
@@ -346,7 +346,7 @@ public function retryUntil(): DateTime
 ```
 
 > [!NOTE]
-> For more information on these job attributes and methods, please review the documentation on [queued jobs](/docs/{{version}}/queues#max-job-attempts-and-timeout).
+> これらのジョブ属性とメソッドの詳細は、[キュー投入済みジョブ](/docs/{{version}}/queues#max-job-attempts-and-timeout)のドキュメントを確認してください。
 
 <a name="queued-notification-middleware"></a>
 #### キュー投入する通知

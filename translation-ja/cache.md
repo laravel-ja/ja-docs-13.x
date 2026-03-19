@@ -7,7 +7,7 @@
     - [キャッシュインスタンスの取得](#obtaining-a-cache-instance)
     - [キャッシュからのアイテム取得](#retrieving-items-from-the-cache)
     - [キャッシュへのアイテム保存](#storing-items-in-the-cache)
-    - [Extending Item Lifetime](#extending-item-lifetime)
+    - [追加アイテムのライフタイム](#extending-item-lifetime)
     - [キャッシュからのアイテム削除](#removing-items-from-the-cache)
     - [キャッシュのメモ](#cache-memoization)
     - [キャッシュヘルパ](#the-cache-helper)
@@ -293,15 +293,15 @@ Cache::add('key', 'value', $seconds);
 ```
 
 <a name="extending-item-lifetime"></a>
-### Extending Item Lifetime
+### 追加アイテムのライフタイム
 
-The `touch` method allows you to extend the lifetime (TTL) of an existing cache item. The `touch` method will return `true` if the cache item exists and its expiration time was successfully extended. If the item does not exist in the cache, the method will return `false`:
+`touch`メソッドを使用すると、既存のキャッシュ項目の有効期限（TTL）を延長できます。キャッシュ項目が存在し、その有効期限の延長に成功した場合、`touch`メソッドは`true`を返します。項目がキャッシュ内に存在しない場合、メソッドは`false`を返します。
 
 ```php
 Cache::touch('key', 3600);
 ```
 
-You may provide a `DateTimeInterface`, `DateInterval`, or `Carbon` instance to specify an exact expiration time:
+特定の有効期限を指定するには、`DateTimeInterface`、`DateInterval`、または`Carbon`インスタンスで指定します。
 
 ```php
 Cache::touch('key', now()->addHours(2));
@@ -342,7 +342,7 @@ Cache::put('key', 'value', -5);
 Cache::flush();
 ```
 
-You may clear all atomic locks in the cache using the `flushLocks` method:
+`flushLocks`メソッドを使用して、キャッシュ内のすべての不変ロックを消去できます。
 
 ```php
 Cache::flushLocks();
@@ -738,7 +738,7 @@ class AppServiceProvider extends ServiceProvider
 
 <div class="overflow-auto">
 
-| Event Name                                      |
+| イベント名                                      |
 |-------------------------------------------------|
 | `Illuminate\Cache\Events\CacheFlushed`          |
 | `Illuminate\Cache\Events\CacheFlushing`         |

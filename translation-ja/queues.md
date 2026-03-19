@@ -622,7 +622,7 @@ public function middleware(): array
 }
 ```
 
-Releasing an overlapping job back onto the queue will still increment the job's total number of attempts. You may wish to tune your `Tries` and `MaxExceptions` attributes on your job class accordingly. For example, leaving `Tries` to 1 as it is by default would prevent any overlapping job from being retried later.
+オーバーラップしたジョブをキューへ戻しても、そのジョブの合計試行回数は増加します。そのため、ジョブクラスの`Tries`属性や`MaxExceptions`属性を適宜調整したい場合もあるでしょう。たとえば、デフォルトのまま`Tries`を1にしておくと、オーバーラップしたジョブを後ほど再試行するのを防げます。
 
 同じタイプの重複するジョブはすべてキューに戻されます。リリースしたジョブが再試行するまでに経過する必要のある秒数を指定することもできます。
 
@@ -1267,13 +1267,13 @@ class ProcessPodcast implements ShouldQueue
 ```
 
 <a name="queue-routing"></a>
-#### Queue Routing
+#### キューのルート指定
 
-You may use the `Queue` facade's `route` method to define a default connection and queue for specific job classes. This is useful when you want to ensure certain jobs always use specific queues without needing to specify the connection or queue on the job.
+`Queue`ファサードの`route`メソッドを使用して、特定のジョブクラスに対するデフォルトの接続とキューを定義できます。これは、ジョブ側で接続やキューを指定しなくても、特定のジョブが常に特定のキューを使用するようにしたい場合に便利です。
 
-In addition to routing specific job classes, you may also pass an interface, trait, or parent class to the `route` method. When you do this, any job that implements the interface, uses the trait, or extends the parent class will automatically use the configured connection and queue.
+特定のジョブクラスをルート指定することに加え、`route`メソッドにインターフェイス、トレイト、または親クラスを渡すこともできます。そうすると、そのインターフェイスを実装している、トレイトを使用している、あるいは親クラスを継承しているすべてのジョブが、設定した接続とキューを自動的に使用します。
 
-Typically, you should call the `route` method from the `boot` method of a service provider:
+通常は、サービスプロバイダの`boot`メソッドから`route`メソッドを呼び出してください。
 
 ```php
 use App\Concerns\RequiresVideo;
@@ -1291,13 +1291,13 @@ public function boot(): void
 }
 ```
 
-When a connection is specified without a queue, the job will be sent to the default queue:
+キューを指定せずに接続のみを指定した場合、ジョブはデフォルトのキューへ送信します。
 
 ```php
 Queue::route(ProcessPodcast::class, connection: 'redis');
 ```
 
-You may also route multiple job classes at once by passing an array to the `route` method:
+また、`route`メソッドに配列を渡すことにより、複数のジョブクラスを一度にルート指定できます。
 
 ```php
 Queue::route([
@@ -1307,7 +1307,7 @@ Queue::route([
 ```
 
 > [!NOTE]
-> Queue routing can still be overridden by the job on a per-job basis.
+> キューのルート指定は、ジョブごとにジョブ側で上書き可能です。
 
 <a name="max-job-attempts-and-timeout"></a>
 ### 最大試行回数／タイムアウト値の指定
@@ -1344,7 +1344,7 @@ php artisan queue:work --tries=3
 
 ジョブが最大試行回数を超えると、「失敗した」ジョブと見なされます。失敗したジョブの処理の詳細は、[失敗したジョブのドキュメント](#dealing-with-failed-jobs)を参照してください。`queue:work`コマンドで、`--tries=0`を指定した場合は、ジョブを無制限に再試行します。
 
-You may take a more granular approach by defining the maximum number of times a job may be attempted on the job class itself using the `Tries` attribute. If the maximum number of attempts is specified on the job, it will take precedence over the `--tries` value provided on the command line:
+`Tries`属性を使用して、ジョブクラス自体にジョブを試行する最大回数を定義することで、よりきめ細かなアプローチが取れます。ジョブに最大試行回数が指定されている場合、コマンドラインで指定した`--tries`の値よりも優先します。
 
 ```php
 <?php
@@ -1392,12 +1392,12 @@ public function retryUntil(): DateTime
 `retryUntil`と`tries`の両方を定義した場合、Laravelは`retryUntil`メソッドを優先します。
 
 > [!NOTE]
-> You may also define a `Tries` attribute or `retryUntil` method on your [queued event listeners](/docs/{{version}}/events#queued-event-listeners) and [queued notifications](/docs/{{version}}/notifications#queueing-notifications).
+> [キュー投入するイベントリスナ](/docs/{{version}}/events#queued-event-listeners)や[キュー投入する通知](/docs/{{version}}/notifications#queueing-notifications)でも、`Tries`属性や`retryUntil`メソッドを定義できます。
 
 <a name="max-exceptions"></a>
 #### 最大例外数
 
-Sometimes you may wish to specify that a job may be attempted many times, but should fail if the retries are triggered by a given number of unhandled exceptions (as opposed to being released by the `release` method directly). To accomplish this, you may use the `Tries` and `MaxExceptions` attributes on your job class:
+ジョブを何度も試行したいものの、（`release`メソッドによって直接戻すのではなく）特定の回数の未処理の例外によって再試行が発生した場合は失敗させたい場合があります。これを実現するには、ジョブクラスで`Tries`属性と`MaxExceptions`属性を使用してください。
 
 ```php
 <?php
@@ -1446,7 +1446,7 @@ php artisan queue:work --timeout=30
 
 ジョブが継続的にタイムアウトして最大試行回数を超えた場合、失敗としてマークされます。
 
-You may also define the maximum number of seconds a job should be allowed to run using the `Timeout` attribute on the job class. If the timeout is specified on the job, it will take precedence over any timeout specified on the command line:
+ジョブクラスの`Timeout`属性を使用して、ジョブの実行を許可する最大秒数を定義することもできます。ジョブにタイムアウトを指定している場合、コマンドラインで指定したタイムアウトよりも優先します。
 
 ```php
 <?php
@@ -1470,7 +1470,7 @@ class ProcessPodcast implements ShouldQueue
 <a name="failing-on-timeout"></a>
 #### タイムアウトによる失敗
 
-If you would like to indicate that a job should be marked as [failed](#dealing-with-failed-jobs) on timeout, you may use the `FailOnTimeout` attribute on the job class:
+タイムアウト時にジョブを[失敗](#dealing-with-failed-jobs)としてマークしたい場合は、ジョブクラスで`FailOnTimeout`属性を使用してください。
 
 ```php
 <?php
@@ -2486,7 +2486,7 @@ php artisan make:queue-failed-table
 php artisan migrate
 ```
 
-When running a [queue worker](#running-the-queue-worker) process, you may specify the maximum number of times a job should be attempted using the `--tries` switch on the `queue:work` command. If you do not specify a value for the `--tries` option, jobs will only be attempted once or as many times as specified by the job class' `Tries` attribute:
+[キューワーカ](#running-the-queue-worker)プロセスを実行する際、`queue:work`コマンドの`--tries`スイッチを使用して、ジョブを試行する最大回数を指定できます。`--tries`オプションに値を指定しない場合、ジョブは１回のみ、あるいはジョブクラスの`Tries`属性で指定した回数だけ試行します。
 
 ```shell
 php artisan queue:work redis --tries=3
@@ -2498,7 +2498,7 @@ php artisan queue:work redis --tries=3
 php artisan queue:work redis --tries=3 --backoff=3
 ```
 
-If you would like to configure how many seconds Laravel should wait before retrying a job that has encountered an exception on a per-job basis, you may use the `Backoff` attribute on your job class:
+ジョブが例外に遭遇した際、再試行するまでLaravelが何秒待機するかをジョブごとに設定したい場合は、ジョブクラスで`Backoff`属性を使用します。
 
 ```php
 <?php
@@ -2526,7 +2526,7 @@ public function backoff(): int
 }
 ```
 
-You may easily configure "exponential" backoffs by defining an array of backoff values. In this example, the retry delay will be 1 second for the first retry, 5 seconds for the second retry, 10 seconds for the third retry, and 10 seconds for every subsequent retry if there are more attempts remaining:
+バックオフ値の配列を定義することで、「指数関数的」なバックオフを簡単に設定できます。この例では、再試行の待機時間は、１回目の再試行で１秒、２回目で５秒、３回目で１０秒となり、それ以降に試行回数が残っている場合はすべて１０秒になります。
 
 ```php
 <?php
@@ -2661,7 +2661,7 @@ php artisan queue:flush --hours=48
 
 Eloquentモデルをジョブに挿入すると、モデルは自動的にシリアル化されてからキューに配置され、ジョブの処理時にデータベースから再取得されます。ただし、ジョブがワーカによる処理を待機している間にモデルが削除された場合、ジョブは`ModelNotFoundException`で失敗する可能性があります。
 
-For convenience, you may choose to automatically delete jobs with missing models using the `DeleteWhenMissingModels` attribute on your job class. When this attribute is present, Laravel will quietly discard the job without raising an exception:
+モデルが見つからないジョブを自動的に削除したい場合は、ジョブクラスで`DeleteWhenMissingModels`属性を使用するのが便利です。この属性が存在する場合、Laravelは例外を発生させずに、そのジョブを静かに破棄します。
 
 ```php
 <?php

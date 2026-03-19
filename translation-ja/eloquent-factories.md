@@ -122,7 +122,7 @@ protected static function newFactory()
 }
 ```
 
-Then, use the `UseModel` attribute on the corresponding factory to specify the model:
+次に、対応するファクトリで`UseModel`属性を使用して、モデルを指定してください。
 
 ```php
 use App\Administration\Flight;

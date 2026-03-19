@@ -128,7 +128,7 @@ class Flight extends Model
 
 上記の例をちょっと見て、どのデータベーステーブルが`Flight`モデルに対応するかをEloquentに知らせていないことにお気づきかもしれません。別の名前を明示的に指定しない限り、クラスの複数形の「スネークケース」をテーブル名として使用します。したがって、この場合、Eloquentは`Flight`モデルが`flights`テーブルにレコードを格納し、`AirTrafficController`モデルは`air_traffic_controllers`テーブルにレコードを格納すると想定できます。
 
-If your model's corresponding database table does not fit this convention, you may manually specify the model's table name using the `Table` attribute:
+モデルに対応するデータベーステーブルがこの規約に合致しない場合は、`Table`属性を使用してモデルのテーブル名を手作業で指定できます。
 
 ```php
 <?php
@@ -149,7 +149,7 @@ class Flight extends Model
 <a name="primary-keys"></a>
 ### 主キー
 
-Eloquent will also assume that each model's corresponding database table has a primary key column named `id`. If necessary, you may specify a different column that serves as your model's primary key using the `key` argument on the `Table` attribute:
+Eloquentはまた、各モデルの対応するデータベーステーブルに`id`という名前の主キーカラムがあると想定しています。必要であれば、`Table`属性の`key`引数を使用して、モデルの主キーとして機能する別のカラムを指定できます。
 
 ```php
 <?php
@@ -166,7 +166,7 @@ class Flight extends Model
 }
 ```
 
-In addition, Eloquent assumes that the primary key is an incrementing integer value, which means that Eloquent will automatically cast the primary key to an integer. If you wish to use a non-incrementing or a non-numeric primary key, you should specify the `keyType` and `incrementing` arguments on the `Table` attribute:
+さらに、Eloquentは主キーが増分整数値であると想定します。これは、Eloquentが自動的に主キーを整数へキャストすることを意味します。非増分または非数値の主キーを使用したい場合は、`Table`属性に`keyType`と`incrementing`引数を指定してください。
 
 ```php
 <?php
@@ -258,7 +258,7 @@ $article->id; // "01gd4d3tgrrfqeda94gdbtdk5c"
 <a name="timestamps"></a>
 ### 主キータイムスタンプ
 
-By default, Eloquent expects `created_at` and `updated_at` columns to exist on your model's corresponding database table. Eloquent will automatically set these column's values when models are created or updated. If you do not want these columns to be automatically managed by Eloquent, you may set `timestamps` to `false` on your model's `Table` attribute:
+Eloquentはデフォルトで、モデルの対応するデータベーステーブルに`created_at`と`updated_at`カラムが存在することを期待しています。モデルが作成または更新されると、Eloquentは自動的にこれらのカラムの値を設定します。これらのカラムをEloquentに自動管理させたくない場合は、モデルの`Table`属性で`timestamps`を`false`に設定してください。
 
 ```php
 <?php
@@ -275,7 +275,7 @@ class Flight extends Model
 }
 ```
 
-If you need to customize the format of your model's timestamps, you may use the `dateFormat` argument on the `Table` attribute. This determines how date attributes are stored in the database as well as their format when the model is serialized to an array or JSON:
+モデルのタイムスタンプの形式をカスタマイズする必要がある場合は、`Table`属性の`dateFormat`引数を使用します。これは、日付属性をデータベースに保存する方法と、モデルを配列やJSONへシリアル化する際の形式を決定します。
 
 ```php
 <?php
@@ -324,7 +324,7 @@ Model::withoutTimestamps(fn () => $post->increment('reads'));
 <a name="database-connections"></a>
 ### データベース接続
 
-By default, all Eloquent models will use the default database connection that is configured for your application. If you would like to specify a different connection that should be used when interacting with a particular model, you may use the `Connection` attribute:
+すべてのEloquentモデルはデフォルトで、アプリケーションで設定しているデフォルトのデータベース接続を使用します。特定のモデルを操作する際に使用する別の接続を指定したい場合は、`Connection`属性を使用できます。
 
 ```php
 <?php
@@ -748,7 +748,7 @@ $flight = Flight::create([
 ]);
 ```
 
-However, before using the `create` method, you will need to specify either a `Fillable` or `Guarded` attribute on your model class. These attributes are required because all Eloquent models are protected against mass assignment vulnerabilities by default. To learn more about mass assignment, please consult the [mass assignment documentation](#mass-assignment).
+しかし、`create`メソッドを使用する前に、モデルクラスに`Fillable`または`Guarded`属性のいずれかを指定する必要があります。すべてのEloquentモデルをデフォルトで複数代入の脆弱性から保護しているため、これらの属性が必要です。複数代入の詳細については、[複数代入のドキュメント](#mass-assignment)を参照してください。
 
 <a name="updates"></a>
 ### 更新
@@ -918,11 +918,11 @@ $flight = Flight::create([
 ]);
 ```
 
-However, before using the `create` method, you will need to specify either a `Fillable` or `Guarded` attribute on your model class. These attributes are required because all Eloquent models are protected against mass assignment vulnerabilities by default.
+しかし、`create`メソッドを使用する前に、モデルクラスに`Fillable`または`Guarded`属性のいずれかを指定する必要があります。すべてのEloquentモデルをデフォルトで複数代入の脆弱性から保護しているため、これらの属性が必要です。
 
 複数代入の脆弱性は、ユーザーから予期していないHTTPリクエストフィールドを渡され、そのフィールドがデータベース内の予想外のカラムを変更する場合に発生します。たとえば、悪意のあるユーザーがHTTPリクエストを介して`is_admin`パラメータを送信し、それがモデルの`create`メソッドに渡されて、ユーザーが自分自身を管理者に格上げする場合が考えられます。
 
-So, to get started, you should define which model attributes you want to make mass assignable. You may do this using the `Fillable` attribute on the model. For example, let's make the `name` attribute of our `Flight` model mass assignable:
+まず始めに、どのモデル属性を複数代入可能にするかを定義する必要があります。これはモデルの`Fillable`属性を使用して行います。例えば、`Flight`モデルの`name`属性を複数代入可能にしてみましょう。
 
 ```php
 <?php
@@ -952,9 +952,9 @@ $flight->fill(['name' => 'Amsterdam to Frankfurt']);
 ```
 
 <a name="mass-assignment-json-columns"></a>
-#### 一括割り当てとJSONカラム
+#### 複数代入とJSONカラム
 
-When assigning JSON columns, each column's mass assignable key must be specified in your model's `Fillable` attribute. For security, Laravel does not support updating nested JSON attributes when using the `Guarded` attribute:
+JSONカラムを代入する場合、各カラムの複数代入可能なキーをモデルの`Fillable`属性で指定する必要があります。セキュリティのため、Laravelは`Guarded`属性を使用している場合のネストしたJSON属性の更新をサポートしていません。
 
 ```php
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -969,7 +969,7 @@ class Flight extends Model
 <a name="allowing-mass-assignment"></a>
 #### 複数代入の許可
 
-If you would like to make all of your attributes mass assignable, you may use the `Unguarded` attribute on your model. If you choose to unguard your model, you should take special care to always hand-craft the arrays passed to Eloquent's `fill`, `create`, and `update` methods:
+すべての属性を複数代入可能にしたい場合は、モデルで`Unguarded`属性を使用できます。モデルを保護しないことを選択した場合は、Eloquentの`fill`、`create`、`update`メソッドへ渡す配列を常に手作業で作成するように細心の注意を払ってください。
 
 ```php
 <?php
@@ -989,7 +989,7 @@ class Flight extends Model
 <a name="mass-assignment-exceptions"></a>
 #### 複数代入例外
 
-By default, attributes that are not included in the `Fillable` attribute are silently discarded when performing mass-assignment operations. In production, this is expected behavior; however, during local development it can lead to confusion as to why model changes are not taking effect.
+複数代入操作を実行する際に`Fillable`属性に含めていない属性は、デフォルトでは密かに破棄します。本番環境ではこれが期待される動作ですが、ローカル開発中にはモデルの変更が反映されない原因として混乱を招く可能性があります。
 
 必要であれば、`preventSilentlyDiscardingAttributes`メソッドを呼び出し、複数代入不可の属性へ代入しようとした時に例外を投げるようにLaravelへ指示できます。通常、このメソッドはアプリケーションの`AppServiceProvider`クラスの`boot`メソッドで呼び出します。
 

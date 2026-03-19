@@ -108,7 +108,7 @@ Eloquentは、親モデル名に基づきリレーションの外部キーを決
 return $this->hasOne(Phone::class, 'foreign_key');
 ```
 
-Additionally, Eloquent assumes that the foreign key should have a value matching the primary key column of the parent. In other words, Eloquent will look for the value of the user's `id` column in the `user_id` column of the `Phone` record. If you would like the relationship to use a primary key value other than `id` or your model's primary key, you may pass a third argument to the `hasOne` method:
+加えて、Eloquentは親の主キーカラムと一致する値が外部キーに含まれていると想定しています。言い換えれば、Eloquentは`Phone`レコードの`user_id`カラムで、ユーザーの`id`カラムの値を探します。リレーションで`id`やモデルの主キー以外の主キー値を使用したい場合は、`hasOne`メソッドの第３引数に渡してください。
 
 ```php
 return $this->hasOne(Phone::class, 'foreign_key', 'local_key');
@@ -223,7 +223,7 @@ return $this->hasMany(Comment::class, 'foreign_key', 'local_key');
 <a name="automatically-hydrating-parent-models-on-children"></a>
 #### 子モデル上の親モデルの自動ハイドレート
 
-Even when utilizing Eloquent eager loading, "N + 1" query problems can arise if you try to access the parent model from a child model while looping through the child models:
+EloquentのEagerロードを利用している場合でも、子モデルをループしつつ、その子モデルから親モデルへアクセスしようとすると、「Ｎ＋１」クエリ問題が発生し得ます。
 
 ```php
 $posts = Post::with('comments')->get();
@@ -235,7 +235,7 @@ foreach ($posts as $post) {
 }
 ```
 
-In the example above, an "N + 1" query problem has been introduced because, even though comments were eager loaded for every `Post` model, Eloquent does not automatically hydrate the parent `Post` on each child `Comment` model.
+上記の例では、すべての`Post`モデルに対してコメントがEagerロードされているにもかかわらず、Eloquentが各子`Comment`モデルで親の`Post`を自動的にハイドレートしないため、「Ｎ＋１」クエリ問題が発生しています。
 
 Eloquentへ親モデルを自動的に子モデルにハイドレートさせたい場合は、`hasMany`リレーションを定義するときに`chaperone`メソッドを呼び出します。
 
@@ -1001,7 +1001,7 @@ class RoleUser extends Pivot
 <a name="custom-pivot-models-and-incrementing-ids"></a>
 #### カスタムピボットモデルと増分ID
 
-If you have defined a many-to-many relationship that uses a custom pivot model, and that pivot model has an auto-incrementing primary key, you should ensure your custom pivot model class uses the `Table` attribute with `incrementing` set to `true`:
+カスタムピボットモデルを使用した多対多リレーションを定義しており、そのピボットモデルが自動インクリメントの主キーを持っている場合は、カスタムピボットモデルクラスで`Table`属性を使用し、`incrementing`を`true`に設定してください。
 
 ```php
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -1247,7 +1247,7 @@ $commentable = $comment->commentable;
 <a name="polymorphic-automatically-hydrating-parent-models-on-children"></a>
 #### 子モデル上の親モデルの自動ハイドレート
 
-Even when utilizing Eloquent eager loading, "N + 1" query problems can arise if you try to access the parent model from a child model while looping through the child models:
+EloquentのEagerロードを利用している場合でも、子モデルをループしつつ子モデルから親モデルへアクセスしようとすると、「Ｎ＋１クエリ問題が発生し得ます。
 
 ```php
 $posts = Post::with('comments')->get();
@@ -1259,7 +1259,7 @@ foreach ($posts as $post) {
 }
 ```
 
-In the example above, an "N + 1" query problem has been introduced because, even though comments were eager loaded for every `Post` model, Eloquent does not automatically hydrate the parent `Post` on each child `Comment` model.
+上記の例では、すべての`Post`モデルに対してコメントがEagerロードされているにもかかわらず、Eloquentが各子`Comment`モデルで親の`Post`を自動的にハイドレートしないため、「Ｎ＋１」クエリ問題が発生しています。
 
 Eloquentへ親モデルを自動的に子モデルにハイドレートさせたい場合は、`morphMany`リレーションを定義するときに`chaperone`メソッドを呼び出します。
 
@@ -1646,15 +1646,15 @@ $posts = Post::whereHas('comments', function (Builder $query) {
 > Eloquentは現在、データベース間をまたぐリレーションの存在のクエリをサポートしていません。リレーションは同じデータベース内に存在する必要があります。
 
 <a name="many-to-many-relationship-existence-queries"></a>
-#### Many to Many Relationship Existence Queries
+#### 多対多リレーションの存在クエリ
 
-The `whereAttachedTo` method may be used to query for models that have a many to many attachment to a model or collection of models:
+`whereAttachedTo`メソッドを使用して、特定のモデルまたはモデルのコレクションに対して多対多の関連付けを持つモデルをクエリできます。
 
 ```php
 $users = User::whereAttachedTo($role)->get();
 ```
 
-You may also provide a [collection](/docs/{{version}}/eloquent-collections) instance to the `whereAttachedTo` method. When doing so, Laravel will retrieve models that are attached to any of the models within the collection:
+また、`whereAttachedTo`メソッドに[コレクション](/docs/{{version}}/eloquent-collections)インスタンスを渡すこともできます。その場合、Laravelはコレクション内のいずれかのモデルに関連付けられているモデルを取得します。
 
 ```php
 $tags = Tag::whereLike('name', '%laravel%')->get();
@@ -1935,7 +1935,7 @@ $activities->loadMorphCount('parentable', [
 <a name="eager-loading"></a>
 ## Eagerロード
 
-When accessing Eloquent relationships as properties, the related models are "lazy loaded". This means the relationship data is not actually loaded until you first access the property. However, Eloquent can "eager load" relationships at the time you query the parent model. Eager loading alleviates the "N + 1" query problem. To illustrate the N + 1 query problem, consider a `Book` model that "belongs to" to an `Author` model:
+Eloquentリレーションをプロパティとしてアクセスする場合、関連モデルを「遅延ロード」します。つまり、最初にプロパティにアクセスするまで、リレーションデータは実際にはロードされません。しかし、Eloquentでは親モデルをクエリするのと同時に、リレーションを「Eagerロード」することもできます。Eagerロードは「Ｎ＋１」クエリ問題を軽減します。Ｎ＋１クエリ問題を説明するために、`Author`（著者）モデルに「属している（belongs to）」`Book`（本）モデルを考えてみましょう。
 
 ```php
 <?php
@@ -2563,7 +2563,7 @@ $user->roles()->updateExistingPivot($roleId, [
 
 `Post`に属する`Comment` など、モデルが別のモデルとの`belongsTo`または`belongsToMany`の関係を定義している場合、子モデルのが更新時に親のタイムスタンプも更新できると役立つ場合があります。
 
-For example, when a `Comment` model is updated, you may want to automatically "touch" the `updated_at` timestamp of the owning `Post` so that it is set to the current date and time. To accomplish this, you may use the `Touches` attribute on your child model containing the names of the relationships that should have their `updated_at` timestamps updated when the child model is updated:
+たとえば、`Comment`モデルが更新されたときに、所有者である`Post`の`updated_at`タイムスタンプを自動的に「タッチ」して、現在の日時に設定したい場合があります。これを実現するには、子モデルで`Touches`属性を使用し、子モデルが更新されたときに`updated_at`タイムスタンプを更新すべきリレーション名を指定します。
 
 ```php
 <?php

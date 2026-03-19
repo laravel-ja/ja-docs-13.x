@@ -422,21 +422,21 @@ Schedule::command('emails:send')->evenInMaintenanceMode();
 ```
 
 <a name="pausing-scheduled-tasks"></a>
-### Pausing Scheduled Tasks
+### スケジュール済みタスクの一時停止
 
-You may temporarily pause scheduled task processing without changing your deployed code by using the `schedule:pause` Artisan command:
+`schedule:pause` Artisanコマンドを使用すると、デプロイ済みのコードを変更せずに、スケジュール済みタスクの処理を一時的に停止できます。
 
 ```shell
 php artisan schedule:pause
 ```
 
-While the scheduler is paused, no scheduled tasks will run. You may resume scheduled task processing using the `schedule:continue` command:
+スケジューラが一時停止している間、スケジュール済みタスクは実行しません。`schedule:continue`コマンドを使用すれば、スケジュール済みタスクの処理を再開できます。
 
 ```shell
 php artisan schedule:continue
 ```
 
-If a task should still run while the scheduler is paused, you may mark it with the `evenWhenPaused` method:
+スケジューラが一時停止していても実行する必要のあるタスクには、`evenWhenPaused`メソッドを指定してください。
 
 ```php
 Schedule::command('emails:send')->evenWhenPaused();
@@ -466,7 +466,7 @@ Schedule::daily()
 
 スケジュールするタスクを定義する方法を学習したので、サーバで実際にタスクを実行する方法について説明しましょう。`schedule:run` Artisanコマンドは、スケジュールしたすべてのタスクを評価し、サーバの現在の時刻に基づいてタスクを実行する必要があるかどうかを判断します。
 
-So, when using Laravel's scheduler, we only need to add a single cron configuration entry to our server that runs the `schedule:run` command every minute. If you do not know how to add cron entries to your server, consider using a managed platform such as [Laravel Cloud](https://cloud.laravel.com) which can manage the scheduled task execution for you:
+したがって、Laravelのスケジューラを使用する場合、１分ごとに`schedule:run`コマンドを実行するcron設定エントリを１つサーバに追加するだけです。サーバにcronエントリを追加する方法がわからない場合は、スケジュール済みタスクの実行を管理してくれる[Laravel Cloud](https://cloud.laravel.com)などのマネージドプラットフォームの利用を検討してください。
 
 ```shell
 * * * * * cd /path-to-your-project && php artisan schedule:run >> /dev/null 2>&1

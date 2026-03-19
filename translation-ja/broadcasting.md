@@ -266,7 +266,7 @@ npm run build
 ```
 
 > [!WARNING]
-> The Laravel Echo `reverb` broadcaster requires laravel-echo v1.16.0+.
+> Laravel Echoの`reverb`ブロードキャスタには、laravel-echo v1.16.0以上が必要です。
 
 <a name="client-pusher-channels"></a>
 ### Pusherチャンネル
@@ -687,7 +687,7 @@ public function broadcastWith(): array
 <a name="broadcast-queue"></a>
 ### ブロードキャストキュー
 
-By default, each broadcast event is placed on the default queue for the default queue connection specified in your `queue.php` configuration file. You may customize the queue connection and name used by the broadcaster by using the `Connection` and `Queue` attributes on your event class:
+各ブロードキャストイベントはデフォルトで、`queue.php`設定ファイルで指定したデフォルトキュー接続のデフォルトキューへ配置します。イベントクラスで`Connection`と`Queue`属性を使用して、ブロードキャスタで使用するキュー接続と名前をカスタマイズできます。
 
 ```php
 use Illuminate\Queue\Attributes\Connection;

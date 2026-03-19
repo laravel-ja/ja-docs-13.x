@@ -5,8 +5,8 @@
     - [基本のコントローラ](#basic-controllers)
     - [シングルアクションコントローラ](#single-action-controllers)
 - [コントローラミドルウェア](#controller-middleware)
-    - [Middleware Attributes](#middleware-attributes)
-    - [Authorization Attributes](#authorization-attributes)
+    - [ミドルウェア属性](#middleware-attributes)
+    - [認可属性](#authorization-attributes)
 - [リソースコントローラ](#resource-controllers)
     - [部分的なリソースルート](#restful-partial-resource-routes)
     - [ネストしたリソース](#restful-nested-resources)
@@ -169,9 +169,9 @@ public static function middleware(): array
 ```
 
 <a name="middleware-attributes"></a>
-### Middleware Attributes
+### ミドルウェア属性
 
-You may also assign middleware to controllers using PHP attributes:
+PHP属性を使用して、コントローラへミドルウェアを割り当てることもできます。
 
 ```php
 <?php
@@ -189,7 +189,7 @@ class UserController
 }
 ```
 
-You may place middleware attributes on individual controller methods as well. Middleware assigned to methods will be merged with middleware assigned at the class level:
+ミドルウェア属性を個々のコントローラメソッドへ配置することもできます。メソッドに割り当てたミドルウェアは、クラスレベルで割り当てられたミドルウェアとマージします。
 
 ```php
 <?php
@@ -223,9 +223,9 @@ class UserController
 ```
 
 <a name="authorization-attributes"></a>
-### Authorization Attributes
+### 認可属性
 
-If you are authorizing controller actions via policies, you may use the `Authorize` attribute as a convenient shortcut for the `can` middleware:
+ポリシーを介してコントローラアクションを認可している場合は、`can`ミドルウェアの便利なショートカットとして`Authorize`属性を使用できます。
 
 ```php
 <?php
@@ -252,7 +252,7 @@ class CommentController
 }
 ```
 
-The first argument is the ability you wish to authorize. The second argument is the model class, route parameter, or parameters that should be passed to the policy.
+最初の引数は、認可したいアクションです。第２引数は、ポリシーに渡すモデルクラス、ルートパラメータ、またはパラメータです。
 
 <a name="resource-controllers"></a>
 ## リソースコントローラ

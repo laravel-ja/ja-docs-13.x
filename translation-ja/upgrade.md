@@ -1,7 +1,7 @@
 # アップグレードガイド
 
-- [Upgrading To 13.0 From 12.x](#upgrade-13.0)
-    - [Upgrading Using AI](#upgrading-using-ai)
+- [12.xから13.0へのアップグレード](#upgrade-13.0)
+    - [AIを使用したアップグレード](#upgrading-using-ai)
 
 <a name="high-impact-changes"></a>
 ## 影響度の高い変更
@@ -10,7 +10,7 @@
 
 - [依存パッケージの更新](#updating-dependencies)
 - [Laravelインストーラのアップデート](#updating-the-laravel-installer)
-- [Request Forgery Protection](#request-forgery-protection)
+- [リクエストフォージェリ保護](#request-forgery-protection)
 
 </div>
 
@@ -19,7 +19,7 @@
 
 <div class="content-list" markdown="1">
 
-- [Cache `serializable_classes` Configuration](#cache-serializable_classes-configuration)
+- [キャッシュの`serializable_classes`設定](#cache-serializable_classes-configuration)
 
 </div>
 
@@ -28,32 +28,31 @@
 
 <div class="content-list" markdown="1">
 
-- [Cache Prefixes and Session Cookie Names](#cache-prefixes-and-session-cookie-names)
-- [Collection Model Serialization Restores Eager-Loaded Relations](#collection-model-serialization-restores-eager-loaded-relations)
-- [`Container::call` and Nullable Class Defaults](#containercall-and-nullable-class-defaults)
-- [Domain Route Registration Precedence](#domain-route-registration-precedence)
-- [`JobAttempted` Event Exception Payload](#jobattempted-event-exception-payload)
-- [Manager `extend` Callback Binding](#manager-extend-callback-binding)
-- [MySQL `DELETE` Queries With `JOIN`, `ORDER BY`, and `LIMIT`](#mysql-delete-queries-with-join-order-by-and-limit)
-- [Pagination Bootstrap View Names](#pagination-bootstrap-view-names)
-- [Polymorphic Pivot Table Name Generation](#polymorphic-pivot-table-name-generation)
-- [`QueueBusy` Event Property Rename](#queuebusy-event-property-rename)
-- [`Str` Factories Reset Between Tests](#str-factories-reset-between-tests)
-
+- [キャッシュプレフィックスとセッションクッキー名](#cache-prefixes-and-session-cookie-names)
+- [コレクションモデルのシリアライゼーションによるEagerロード済みリレーションの復元](#collection-model-serialization-restores-eager-loaded-relations)
+- [`Container::call`とNullableクラスのデフォルト値](#containercall-and-nullable-class-defaults)
+- [ドメインルート登録の優先順位](#domain-route-registration-precedence)
+- [`JobAttempted`イベントのエクセプションペイロード](#jobattempted-event-exception-payload)
+- [マネージャの`extend`コールバックのバインディング](#manager-extend-callback-binding)
+- [`JOIN`、`ORDER BY`、`LIMIT`を伴うMySQLの`DELETE`クエリ](#mysql-delete-queries-with-join-order-by-and-limit)
+- [ペジネーションのBootstrapビュー名](#pagination-bootstrap-view-names)
+- [ポリモーフィックなピボットテーブル名の生成](#polymorphic-pivot-table-name-generation)
+- [`QueueBusy`イベントのプロパティ名の変更](#queuebusy-event-property-rename)
+- [テスト間での`Str`ファクトリのリセット](#str-factories-reset-between-tests)
 </div>
 
 <a name="upgrade-13.0"></a>
-## Upgrading To 13.0 From 12.x
+## 12.xから13.0へのアップグレード
 
-#### Estimated Upgrade Time: 10 Minutes
+#### 推定アップグレード時間：10分
 
 > [!NOTE]
-> We attempt to document every possible breaking change. Since some of these breaking changes are in obscure parts of the framework only a portion of these changes may actually affect your application. To save time, you may use [Shift](https://laravelshift.com). Shift is a community-maintained service that automates Laravel upgrades.
+> 私たちは、考えられるすべての破壊的変更をドキュメント化するよう努めています。これらの破壊的変更の中には、フレームワークの目立たない部分にあるものもあるため、実際にアプリケーションに影響を与えるのはこれらの変更の一部のみである可能性があります。時間を節約するために、[Shift](https://laravelshift.com)を利用することもできます。ShiftはLaravelのアップグレードを自動化する、コミュニティによってメンテナンスされているサービスです。
 
 <a name="upgrading-using-ai"></a>
-### Upgrading Using AI
+### AIを使用したアップグレード
 
-You can automate your upgrade using [Laravel Boost](https://github.com/laravel/boost). Boost is a first-party MCP server that provides your AI assistant with guided upgrade prompts — once installed in any Laravel 12 application, use the `/upgrade-laravel-13` slash command in Claude Code, Cursor, OpenCode, Gemini. or VS Code to begin the upgrade to Laravel 13.
+[Laravel Boost](https://github.com/laravel/boost)を使用して、アップグレードを自動化できます。BoostはファーストパーティのMCPサーバであり、AIアシスタントにガイド付きのアップグレードプロンプトを提供します。Laravel 12アプリケーションにインストールしたら、Claude Code、Cursor、OpenCode、Gemini、またはVS Codeで`/upgrade-laravel-13`スラッシュコマンドを使用して、Laravel 13へのアップグレードを開始してください。
 
 <a name="updating-dependencies"></a>
 ### 依存パッケージのアップデート
@@ -64,19 +63,19 @@ You can automate your upgrade using [Laravel Boost](https://github.com/laravel/b
 
 <div class="content-list" markdown="1">
 
-- `laravel/framework` to `^13.0`
-- `laravel/tinker` to `^3.0`
-- `phpunit/phpunit` to `^12.0`
-- `pestphp/pest` to `^4.0`
+- `laravel/framework`を`^13.0`へ
+- `laravel/tinker`を`^3.0`へ
+- `phpunit/phpunit`を`^12.0`へ
+- `pestphp/pest`を`^4.0`へ
 
 </div>
 
 <a name="updating-the-laravel-installer"></a>
 ### Laravelインストーラのアップデート
 
-If you are using the Laravel installer CLI tool to create new Laravel applications, you should update your installer installation for Laravel 13.x compatibility.
+新しいLaravelアプリケーションを作成するためにLaravelインストーラCLIツールを使用している場合は、Laravel 13.xとの互換性のためにインストーラのインストールをアップデートしてください。
 
-If you installed the Laravel installer via `composer global require`, you may update the installer using `composer global update`:
+`composer global require`経由でLaravelインストーラをインストールした場合は、`composer global update`を使用してインストーラをアップデートできます。
 
 ```shell
 composer global update laravel/installer
@@ -85,18 +84,18 @@ composer global update laravel/installer
 または、[Laravel Herd](https://herd.laravel.com)バンドルのLaravelインストーラを使用している場合は、Herdインストールを最新リリースへ更新してください。
 
 <a name="cache"></a>
-### Cache
+### キャッシュ
 
 <a name="cache-prefixes-and-session-cookie-names"></a>
-#### Cache Prefixes and Session Cookie Names
+#### キャッシュプレフィックスとセッションクッキー名
 
 **影響の可能性： 低い**
 
-Laravel's default cache and Redis key prefixes now use hyphenated suffixes. In addition, the default session cookie name now uses `Str::snake(...)` for the application name.
+LaravelのデフォルトのキャッシュとRedisキーのプレフィックスは、ハイフンでつながれたサフィックスを使用するようになりました。さらに、デフォルトのセッションクッキー名は、アプリケーション名に`Str::snake(...)`を使用するようになりました。
 
-In most applications, this change will not apply because application-level configuration files already define these values. This primarily affects applications that rely on framework-level fallback configuration when corresponding application config values are not present.
+ほとんどのアプリケーションでは、アプリケーションレベルの設定ファイルで既にこれらの値を定義しているため、この変更は適用されません。これは主に、対応するアプリケーション設定値が存在しない場合にフレームワークレベルのフォールバック設定に依存しているアプリケーションに影響します。
 
-If your application relies on these generated defaults, cache keys and session cookie names may change after upgrading:
+アプリケーションがこれらの生成されたデフォルト値に依存している場合、アップグレード後にキャッシュキーとセッションクッキー名が変わる可能性があります。
 
 ```php
 // Laravel <= 12.x
@@ -110,14 +109,14 @@ Str::slug((string) env('APP_NAME', 'laravel')).'-database-';
 Str::snake((string) env('APP_NAME', 'laravel')).'_session';
 ```
 
-To retain previous behavior, explicitly configure `CACHE_PREFIX`, `REDIS_PREFIX`, and `SESSION_COOKIE` in your environment.
+以前の挙動を維持するには、環境変数で`CACHE_PREFIX`、`REDIS_PREFIX`、`SESSION_COOKIE`を明示的に設定してください。
 
 <a name="store-and-repository-contracts-touch"></a>
-#### `Store` and `Repository` Contracts: `touch`
+#### `Store`および`Repository`契約：`touch`
 
 **影響の可能性： とても低い**
 
-The cache contracts now include a `touch` method for extending item TTLs. If you maintain custom cache store implementations, you should add this method:
+キャッシュ契約に、アイテムのTTLを延長するための`touch`メソッドを含めました。カスタムキャッシュストアの実装をメンテナンスしている場合は、このメソッドを追加してください。
 
 ```php
 // Illuminate\Contracts\Cache\Store
@@ -125,11 +124,11 @@ public function touch($key, $seconds);
 ```
 
 <a name="cache-serializable_classes-configuration"></a>
-#### Cache `serializable_classes` Configuration
+#### キャッシュの`serializable_classes`設定
 
 **影響の可能性：　中程度**
 
-The default application `cache` configuration now includes a `serializable_classes` option set to `false`. This hardens cache unserialization behavior to help prevent PHP deserialization gadget chain attacks if your application's `APP_KEY` is leaked. If your application intentionally stores PHP objects in cache, you should explicitly list the classes that may be unserialized:
+デフォルトのアプリケーション`cache`設定へ、`false`に設定した`serializable_classes`オプションを含めました。これにより、アプリケーションの`APP_KEY`が漏洩した場合のPHPデシリアライゼーションガジェットチェーン攻撃を防ぐために、キャッシュのアンシリアライズ挙動が強化しました。アプリケーションが意図的にPHPオブジェクトをキャッシュに保存している場合は、アンシリアライズを許可するクラスを明示的にリストする必要があります。
 
 ```php
 'serializable_classes' => [
@@ -138,139 +137,140 @@ The default application `cache` configuration now includes a `serializable_class
 ],
 ```
 
-If your application previously relied on unserializing arbitrary cached objects, you will need to migrate that usage to explicit class allow-lists or to non-object cache payloads (such as arrays).
+アプリケーションが以前、任意のキャッシュ済みオブジェクトのアンシリアライズに依存していた場合は、その使用方法を明示的なクラスの許可リストまたは非オブジェクトのキャッシュペイロード（配列など）に移行する必要があります。
 
 <a name="container"></a>
 ### コンテナ
 
 <a name="containercall-and-nullable-class-defaults"></a>
-#### `Container::call` and Nullable Class Defaults
+#### `Container::call`とNullableクラスのデフォルト値
 
 **影響の可能性： 低い**
 
-`Container::call` now respects nullable class parameter defaults when no binding exists, matching constructor injection behavior introduced in Laravel 12:
+`Container::call`は、バインディングが存在しない場合にNullableなクラスパラメータのデフォルト値を尊重するようになりました。これはLaravel12で導入されたコンストラクタ注入の挙動と一致します。
 
 ```php
 $container->call(function (?Carbon $date = null) {
     return $date;
 });
 
-// Laravel <= 12.x: Carbon instance
+// Laravel <= 12.x: Carbonインスタンス
 // Laravel >= 13.x: null
 ```
 
-If your method-call injection logic depended on the previous behavior, you may need to update it.
+メソッド呼び出し依存注入のロジックが、以前の挙動に依存していた場合は、アップデートが必要になる可能性があります。
 
 <a name="contracts"></a>
-### Contracts
+### 契約
 
 <a name="dispatcher-contract-dispatchafterresponse"></a>
-#### `Dispatcher` Contract: `dispatchAfterResponse`
+#### `Dispatcher`契約：`dispatchAfterResponse`
 
 **影響の可能性： とても低い**
 
-The `Illuminate\Contracts\Bus\Dispatcher` contract now includes the `dispatchAfterResponse($command, $handler = null)` method.
+`Illuminate\Contracts\Bus\Dispatcher`契約へ、`dispatchAfterResponse($command, $handler = null)`メソッドを含めました。
 
-If you maintain a custom dispatcher implementation, add this method to your class.
+カスタムディスパッチャの実装をメンテナンスしている場合は、このメソッドをクラスへ追加してください。
 
 <a name="responsefactory-contract-eventstream"></a>
-#### `ResponseFactory` Contract: `eventStream`
+#### `ResponseFactory`契約：`eventStream`
 
 **影響の可能性： とても低い**
 
-The `Illuminate\Contracts\Routing\ResponseFactory` contract now includes an `eventStream` signature.
+`Illuminate\Contracts\Routing\ResponseFactory`契約へ、`eventStream`シグネチャを含めました。。
 
-If you maintain a custom implementation of this contract, you should add this method.
+この契約のカスタム実装をメンテナンスしている場合は、このメソッドを追加してください。
 
 <a name="mustverifyemail-contract-markemailasunverified"></a>
-#### `MustVerifyEmail` Contract: `markEmailAsUnverified`
+#### `MustVerifyEmail`契約：`markEmailAsUnverified`
 
 **影響の可能性： とても低い**
 
-The `Illuminate\Contracts\Auth\MustVerifyEmail` contract now includes `markEmailAsUnverified()`.
+`Illuminate\Contracts\Auth\MustVerifyEmail`契約へ、`markEmailAsUnverified()`を含めました。
 
-If you provide a custom implementation of this contract, add this method to remain compatible.
+この契約のカスタム実装を提供している場合は、互換性を維持するためにこのメソッドを追加してください。
 
 <a name="database"></a>
 ### データベース
 
 <a name="mysql-delete-queries-with-join-order-by-and-limit"></a>
-#### MySQL `DELETE` Queries With `JOIN`, `ORDER BY`, and `LIMIT`
+#### `JOIN`、`ORDER BY`、`LIMIT`を伴うMySQLの`DELETE`クエリ
 
 **影響の可能性： 低い**
 
 Laravel now compiles full `DELETE ... JOIN` queries including `ORDER BY` and `LIMIT` for MySQL grammar.
+Laravelは、MySQL文法において`ORDER BY`と`LIMIT`を含む完全な`DELETE ... JOIN`クエリをコンパイルするようにしました。
 
-In previous versions, `ORDER BY` / `LIMIT` clauses could be silently ignored on joined deletes. In Laravel 13, these clauses are included in the generated SQL. As a result, database engines that do not support this syntax (such as standard MySQL / MariaDB variants) may now throw a `QueryException` instead of executing an unbounded delete.
+以前のバージョンでは、結合した削除において`ORDER BY`／`LIMIT`句が黙って無視されることがありました。Laravel13では、これらの句を生成するSQLへ含めます。その結果、この構文をサポートしていないデータベースエンジン（標準的なMySQL／MariaDBバリアントなど）は、制限のない削除を実行する代わりに`QueryException`を投げる可能性があります。
 
 <a name="eloquent"></a>
 ### Eloquent
 
 <a name="model-booting-and-nested-instantiation"></a>
-#### Model Booting and Nested Instantiation
+#### モデルの初期起動とネストしたインスタンス化
 
 **影響の可能性： とても低い**
 
-Creating a new model instance while that model is still booting is now disallowed and throws a `LogicException`.
+モデルがまだブートしている間にそのモデルの新しいインスタンスを作成することを許可しなくなり、`LogicException`を投げるようになりました。
 
-This affects code that instantiates models from inside model `boot` methods or trait `boot*` methods:
+これは、モデルの`boot`メソッドまたはトレイトの`boot*`メソッド内からモデルをインスタンス化するコードに影響します。
 
 ```php
 protected static function boot()
 {
     parent::boot();
 
-    // No longer allowed during booting...
+    // ブート中のインスタンス化は許可されなくなりました
     (new static())->getTable();
 }
 ```
 
-Move this logic outside the boot cycle to avoid nested booting.
+ネストしたブートを避けるために、このロジックをブートサイクルの外に移動してください。
 
 <a name="polymorphic-pivot-table-name-generation"></a>
-#### Polymorphic Pivot Table Name Generation
+#### ポリモーフィックなピボットテーブル名の生成
 
 **影響の可能性： 低い**
 
-When table names are inferred for polymorphic pivot models using custom pivot model classes, Laravel now generates pluralized names.
+カスタムピボットモデルクラスを使用してポリモーフィックなピボットモデルのテーブル名が推測される場合、Laravelは複数形の名前を生成するようにしました。
 
-If your application depended on the previous singular inferred names for morph pivot tables and used custom pivot classes, you should explicitly define the table name on your pivot model.
+アプリケーションが、モーフピボットテーブルに対して以前の単数形の推測名に依存しており、かつカスタムピボットクラスを使用していた場合は、ピボットモデルでテーブル名を明示的に定義する必要があります。
 
 <a name="collection-model-serialization-restores-eager-loaded-relations"></a>
-#### Collection Model Serialization Restores Eager-Loaded Relations
+#### コレクションモデルのシリアライゼーションによるEagerロード済みリレーションの復元
 
 **影響の可能性： 低い**
 
-When Eloquent model collections are serialized and restored (such as in queued jobs), eager-loaded relations are now restored for the collection's models.
+Eloquentモデルコレクションがシリアライズおよび復元する際（ジョブのキュー投入時など）、コレクションのモデルに対してEagerロード済みリレーションも復元するようになりました。
 
-If your code depended on relations not being present after deserialization, you may need to adjust that logic.
+デシリアライズ後にリレーションが存在しないことに依存しているコードがある場合は、そのロジックを調整する必要があるかもしれません。
 
 <a name="http-client"></a>
-### HTTP Client
+### HTTPクライアント
 
 <a name="http-client-response-throw-and-throwif-signatures"></a>
-#### HTTP Client `Response::throw` and `throwIf` Signatures
+#### HTTPクライアントの`Response::throw`と`throwif`シグネチャ
 
 **影響の可能性： とても低い**
 
-The HTTP client response methods now declare their callback parameters in the method signatures:
+HTTPクライアントのレスポンスメソッドは、メソッドシグネチャでコールバックパラメータを宣言するようにしました。
 
 ```php
 public function throw($callback = null);
 public function throwIf($condition, $callback = null);
 ```
 
-If you override these methods in custom response classes, ensure your method signatures are compatible.
+カスタムレスポンスクラスでこれらのメソッドをオーバーライドしている場合は、メソッドシグネチャに互換性があることを確認してください。
 
 <a name="notifications"></a>
-### Notifications
+### 通知
 
 <a name="default-password-reset-subject"></a>
-#### Default Password Reset Subject
+#### デフォルトのパスワードリセットの件名
 
 **影響の可能性： とても低い**
 
-Laravel's default password reset mail subject has changed:
+Laravelのデフォルトのパスワードリセットメールの件名を変更しました。
 
 ```text
 // Laravel <= 12.x
@@ -280,26 +280,26 @@ Reset Password Notification
 Reset your password
 ```
 
-If your tests, assertions, or translation overrides depend on the previous default string, update them accordingly.
+テスト、アサーション、または翻訳のオーバーライドが以前のデフォルト文字列に依存している場合は、それに応じてアップデートしてください。
 
 <a name="queued-notifications-and-missing-models"></a>
-#### Queued Notifications and Missing Models
+#### キュー投入した通知と見つからないモデル
 
 **影響の可能性： とても低い**
 
-Queued notifications now respect the `#[DeleteWhenMissingModels]` attribute and `$deleteWhenMissingModels` property defined on the notification class.
+キュー投入済み通知は、通知クラスで定義された`#[DeleteWhenMissingModels]`属性および`$deleteWhenMissingModels`プロパティを尊重するようになりました。
 
-In previous versions, missing models could still cause queued notification jobs to fail in cases where you expected them to be deleted.
+以前のバージョンでは、削除されることを期待していたケースでも、モデルが見つからないことによってキュー投入された通知ジョブが失敗することがありました。
 
 <a name="queue"></a>
-### Queue
+### キュー
 
 <a name="jobattempted-event-exception-payload"></a>
-#### `JobAttempted` Event Exception Payload
+#### ``JobAttempted`イベントのエクセプションペイロード
 
 **影響の可能性： 低い**
 
-The `Illuminate\Queue\Events\JobAttempted` event now exposes the exception object (or `null`) via `$exception`, replacing the previous boolean `$exceptionOccurred` property:
+`Illuminate\Queue\Events\JobAttempted`イベントは、以前のブール値の`$exceptionOccurred`プロパティに代わり、`$exception`を介してエクセプションオブジェクト（または`null`）を提供するようになりました。
 
 ```php
 // Laravel <= 12.x
@@ -309,25 +309,25 @@ $event->exceptionOccurred;
 $event->exception;
 ```
 
-If you listen for this event, update your listener code accordingly.
+このイベントをリッスンしている場合は、それに応じてリスナのコードをアップデートしてください。
 
 <a name="queuebusy-event-property-rename"></a>
-#### `QueueBusy` Event Property Rename
+#### `QueueBusy`イベントのプロパティ名の変更
 
 **影響の可能性： 低い**
 
-The `Illuminate\Queue\Events\QueueBusy` event property `$connection` has been renamed to `$connectionName` for consistency with other queue events.
+他のキューイベントとの一貫性を保つため、`Illuminate\Queue\Events\QueueBusy`イベントのプロパティ`$connection`を`$connectionName`に名称変更しました。
 
-If your listeners reference `$connection`, update them to `$connectionName`.
+リスナが`$connection`を参照している場合は、`$connectionName`にアップデートしてください。
 
 <a name="queue-contract-method-additions"></a>
-#### `Queue` Contract Method Additions
+#### `Queue`契約へのメソッド追加
 
 **影響の可能性： とても低い**
 
-The `Illuminate\Contracts\Queue\Queue` contract now includes queue size inspection methods that were previously only declared in docblocks.
+`Illuminate\Contracts\Queue\Queue`契約に、以前はdocblockでのみ宣言されていたキューサイズ検査メソッドを含めるようになりました。
 
-If you maintain custom queue driver implementations of this contract, add implementations for:
+この契約のカスタムキュードライバ実装をメンテナンスしている場合は、以下の実装を追加してください。
 
 <div class="content-list" markdown="1">
 
@@ -342,37 +342,37 @@ If you maintain custom queue driver implementations of this contract, add implem
 ### ルーティング
 
 <a name="domain-route-registration-precedence"></a>
-#### Domain Route Registration Precedence
+#### ドメインルート登録の優先順位
 
 **影響の可能性： 低い**
 
-Routes with an explicit domain are now prioritized before non-domain routes in route matching.
+ルートマッチングにおいて、明示的なドメインを持つルートが非ドメインルートよりも優先されるようになりました。
 
-This allows catch-all subdomain routes to behave consistently even when non-domain routes are registered earlier. If your application relied on previous registration precedence between domain and non-domain routes, review route matching behavior.
+これにより、非ドメインルートが先に登録されている場合でも、キャッチオールなサブドメインルートが安定して動作するようになります。アプリケーションがドメインルートと非ドメインルートの間の以前の登録優先順位に依存していた場合は、ルートマッチングの挙動を確認してください。
 
 <a name="scheduling"></a>
-### Scheduling
+### タスクスケジュール
 
 <a name="withscheduling-registration-timing"></a>
-#### `withScheduling` Registration Timing
+#### `withScheduling`の登録タイミング
 
 **影響の可能性： とても低い**
 
-Schedules registered via `ApplicationBuilder::withScheduling()` are now deferred until `Schedule` is resolved.
+`ApplicationBuilder::withScheduling()`を介して登録されたスケジュールは、`Schedule`が依存解決されるまで延期するようにしました。
 
-If your application relied on immediate schedule registration timing during bootstrap, you may need to adjust that logic.
+アプリケーションが初期起動中の即時スケジュール登録タイミングに依存していた場合は、そのロジックを調整する必要があるかもしれません。
 
 <a name="security"></a>
-### Security
+### セキュリティ
 
 <a name="request-forgery-protection"></a>
-#### Request Forgery Protection
+#### リクエストフォージェリ保護
 
 **影響の可能性： 高い**
 
-Laravel's CSRF middleware has been renamed from `VerifyCsrfToken` to `PreventRequestForgery`, and now includes request-origin verification using the `Sec-Fetch-Site` header.
+LaravelのCSRFミドルウェアは`VerifyCsrfToken`から`PreventRequestForgery`へ名称変更し、`Sec-Fetch-Site`ヘッダを使用したリクエストオリジンの検証を含むようになりました。
 
-`VerifyCsrfToken` and `ValidateCsrfToken` remain as deprecated aliases, but direct references should be updated to `PreventRequestForgery`, especially when excluding middleware in tests or route definitions:
+`VerifyCsrfToken`と`ValidateCsrfToken`は非推奨のエイリアスとして残りますが、特にテストやルート定義でミドルウェアを除外する場合は、直接の参照を`PreventRequestForgery`にアップデートする必要があります。
 
 ```php
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -385,47 +385,47 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 ->withoutMiddleware([PreventRequestForgery::class]);
 ```
 
-The middleware configuration API now also provides `preventRequestForgery(...)`.
+ミドルウェア設定APIでも、`preventRequestForgery(...)`を提供するようにしました。
 
 <a name="support"></a>
-### Support
+### サポート
 
 <a name="manager-extend-callback-binding"></a>
-#### Manager `extend` Callback Binding
+#### マネージャの`extend`コールバックの結合
 
 **影響の可能性： 低い**
 
-Custom driver closures registered via manager `extend` methods are now bound to the manager instance.
+マネージャの`extend`メソッドを介して登録したカスタムドライバのクロージャは、マネージャインスタンスへ結合するようになりました。
 
-If you previously relied on another bound object (such as a service provider instance) as `$this` inside these callbacks, you should move those values into closure captures using `use (...)`.
+以前、これらのコールバック内で別のバインド済みオブジェクト（サービスプロバイダインスタンスなど）を`$this`として依存していた場合は、`use (...)`を使用してそれらの値をクロージャに取り込むように移動する必要があります。
 
 <a name="str-factories-reset-between-tests"></a>
-#### `Str` Factories Reset Between Tests
+#### テスト間での`Str`ファクトリのリセット
 
 **影響の可能性： 低い**
 
-Laravel now resets custom `Str` factories during test teardown.
+Laravelは、テストのティアダウン中にカスタム`Str`ファクトリをリセットするようにしました。
 
-If your tests depended on custom UUID / ULID / random string factories persisting between test methods, you should set them in each relevant test or setup hook.
+テストが、テストメソッド間で持続するカスタムUUID／ULID／ランダム文字列ファクトリに依存していた場合は、各関連テストまたはセットアップフックでそれらを設定する必要があります。
 
 <a name="jsfrom-uses-unescaped-unicode-by-default"></a>
-#### `Js::from` Uses Unescaped Unicode By Default
+#### `Js::from`はデフォルトでエスケープされていないUnicodeを使用する
 
 **影響の可能性： とても低い**
 
-`Illuminate\Support\Js::from` now uses `JSON_UNESCAPED_UNICODE` by default.
+`Illuminate\Support\Js::from`は、デフォルトで`JSON_UNESCAPED_UNICODE`を使用するようになりました。
 
-If your tests or frontend output comparisons depended on escaped Unicode sequences (for example `\u00e8`), update your expectations.
+テストやフロントエンドの出力比較がエスケープ済みのUnicodeシーケンス（例：`\u00e8`）に依存している場合は、期待値をアップデートしてください。
 
 <a name="views"></a>
-### Views
+### ビュー
 
 <a name="pagination-bootstrap-view-names"></a>
-#### Pagination Bootstrap View Names
+#### ペジネーションのBootstrapビュー名
 
 **影響の可能性： 低い**
 
-The internal pagination view names for Bootstrap 3 defaults are now explicit:
+Bootstrap3のデフォルトの内部ペジネーションビュー名を明示的にしました。
 
 ```nothing
 // Laravel <= 12.x
@@ -437,9 +437,9 @@ pagination::bootstrap-3
 pagination::simple-bootstrap-3
 ```
 
-If your application references the old pagination view names directly, update those references.
+アプリケーションが古いペジネーションビュー名を直接参照している場合は、それらの参照をアップデートしてください。
 
 <a name="miscellaneous"></a>
 ### その他
 
-We also encourage you to view the changes in the `laravel/laravel` [GitHub repository](https://github.com/laravel/laravel). While many of these changes are not required, you may wish to keep these files in sync with your application. Some of these changes will be covered in this upgrade guide, but others, such as changes to configuration files or comments, will not be. You can easily view the changes with the [GitHub comparison tool](https://github.com/laravel/laravel/compare/12.x...13.x) and choose which updates are important to you.
+`laravel/laravel`の[GitHubリポジトリ](https://github.com/laravel/laravel)で変更点を確認することもお勧めします。これらの変更の多くは必須ではありませんが、これらのファイルをアプリケーションと同期させておきたいと思うかもしれません。これらの変更の一部はこのアップグレードガイドでカバーされていますが、設定ファイルやコメントの変更など、その他の変更はカバーされていません。[GitHubの比較ツール](https://github.com/laravel/laravel/compare/12.x...13.x)を使用して簡単に変更を確認し、自分にとって重要なアップデートを選択できます。

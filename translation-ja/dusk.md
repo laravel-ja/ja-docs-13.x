@@ -988,7 +988,7 @@ $browser->clickAndHold()
     ->releaseMouse();
 ```
 
-The `controlClick` method may be used to simulate the `ctrl+click` event within the browser:
+`controlClick`メソッドを使用すると、ブラウザ内の`ctrl+クリック`イベントをシミュレートできます。
 
 ```php
 $browser->controlClick();

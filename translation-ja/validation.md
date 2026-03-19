@@ -429,7 +429,7 @@ public function after(): array
 <a name="request-stopping-on-first-validation-rule-failure"></a>
 #### バリデーションの最初の失敗で停止
 
-By adding the `StopOnFirstFailure` attribute to your request class, you may inform the validator that it should stop validating all attributes once a single validation failure has occurred:
+リクエストクラスに`StopOnFirstFailure`属性を追加することで、バリデーション失敗が１つでも発生した時点で、すべての属性のバリデーションを停止するようにバリデータへ指示できます。
 
 ```php
 <?php
@@ -449,7 +449,7 @@ class StorePostRequest extends FormRequest
 <a name="customizing-the-redirect-location"></a>
 #### リダイレクト先のカスタマイズ
 
-When form request validation fails, a redirect response will be generated to send the user back to their previous location. However, you are free to customize this behavior. To do so, you may use the `RedirectTo` attribute on your form request:
+フォームリクエストのバリデーションに失敗すると、ユーザーを前の場所に戻すためのリダイレクトレスポンスを生成します。ただし、この挙動は自由に変更できます。そのためには、フォームリクエストで`RedirectTo`属性を使用してください。
 
 ```php
 <?php
@@ -466,7 +466,7 @@ class StorePostRequest extends FormRequest
 }
 ```
 
-Or, if you would like to redirect users to a named route, you may use the `RedirectToRoute` attribute instead:
+あるいは、ユーザーを名前付きルートへリダイレクトしたい場合は、代わりに`RedirectToRoute`属性を使用してください。
 
 ```php
 <?php
@@ -484,9 +484,9 @@ class StorePostRequest extends FormRequest
 ```
 
 <a name="customizing-the-error-bag"></a>
-#### Customizing the Error Bag
+#### エラーバッグのカスタマイズ
 
-When form request validation fails, the errors are flashed to the `default` error bag. If you need to store the errors in a different [named error bag](#named-error-bags), you may use the `ErrorBag` attribute on your form request:
+フォームリクエストのバリデーションに失敗すると、エラーは`default`エラーバッグへ一時保存します。エラーを別の[名前付きエラーバッグ](#named-error-bags)へ保存する必要がある場合は、フォームリクエストで`ErrorBag`属性を使用してください。
 
 ```php
 <?php
@@ -2037,7 +2037,7 @@ Validator::make($data, [
 
 フィールドが指定した正規表現と一致しないことをバリデートします。
 
-Internally, this rule uses the PHP `preg_match` function. The pattern specified should obey the same formatting required by `preg_match` and thus also include valid delimiters. For example: `'email' => 'not_regex:/^.+$/i'`.
+内部的に、このルールはPHPの`preg_match`関数を使用しています。指定するパターンは`preg_match`で要求されるものと同じ形式に従う必要があり、有効なデリミタも含める必要があります。例：`'email' => 'not_regex:/^.+$/i'`
 
 > [!WARNING]
 > `regex`／`not_regex`パターンを使用するとき、特に正規表現に`|`文字が含まれている場合は、`|`区切り文字を使用する代わりに配列を使用してバリデーションルールを指定する必要があります。
@@ -2168,7 +2168,7 @@ Validator::make($request->all(), [
 
 フィールドが指定された正規表現にマッチすることをバリデートします。
 
-Internally, this rule uses the PHP `preg_match` function. The pattern specified should obey the same formatting required by `preg_match` and thus also include valid delimiters. For example: `'email' => 'regex:/^.+@.+$/i'`.
+内部的に、このルールはPHPの`preg_match`関数を使用します。指定するパターンは`preg_match`で要求されるものと同じ形式に従う必要があり、有効なデリミタも含める必要があります。例：`'email' => 'regex:/^.+@.+$/i'`
 
 > [!WARNING]
 > `regex`／`not_regex`パターンを使用するとき、特に正規表現に`|`文字が含まれている場合は、`|`区切り文字を使用する代わりに、配列でルールを指定する必要があります。
@@ -2281,7 +2281,7 @@ Validator::make($request->all(), [
 
 フィルードは文字列タイプであることをバリデートします。フィールドが`null`であることも許す場合は、そのフィールドに`nullable`ルールも指定してください。
 
-For convenience, string validation rules may also be constructed using the fluent `Rule::string()` rule builder:
+便利な読み書きしやすい`Rule::string()`ルールビルダを使用して、文字列バリデーションルールを構築することもできます。
 
 ```php
 use Illuminate\Validation\Rule;
@@ -2295,7 +2295,7 @@ use Illuminate\Validation\Rule;
 ],
 ```
 
-The string rule builder provides methods for common string constraints, including `alpha`, `alphaDash`, `alphaNumeric`, `ascii`, `between`, `doesntEndWith`, `doesntStartWith`, `endsWith`, `exactly`, `lowercase`, `max`, `min`, `startsWith`, and `uppercase`. Since the rule builder is conditionable, you may also use the `when` and `unless` methods to conditionally apply constraints.
+文字列ルールビルダは、`alpha`、`alphaDash`、`alphaNumeric`、`ascii`、`between`、`doesntEndWith`、`doesntStartWith`、`endsWith`、`exactly`、`lowercase`、`max`、`min`、`startsWith`、`uppercase`を含む、一般的な文字列制約のためのメソッドを提供します。ルールビルダは条件付けが可能（conditionable）なため、`when`メソッドや`unless`メソッドを使用して、条件に応じて制約を適用することもできます。
 
 <a name="rule-timezone"></a>
 #### timezone

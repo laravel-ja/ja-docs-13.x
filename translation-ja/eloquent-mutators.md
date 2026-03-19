@@ -593,7 +593,7 @@ protected function serializeDate(DateTimeInterface $date): string
 }
 ```
 
-To specify the format that should be used when actually storing a model's dates within your database, you should use the `dateFormat` argument on your model's `Table` attribute:
+実際にモデルの日付をデータベース内へ保存する際に使用する形式を指定するには、モデルの`Table`属性で`dateFormat`引数を使用してください。
 
 ```php
 use Illuminate\Database\Eloquent\Attributes\Table;

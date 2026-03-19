@@ -122,7 +122,7 @@ php artisan make:command SendEmails
 <a name="command-structure"></a>
 ### コマンド構造
 
-After generating your command, you should define the command's signature and description using the `Signature` and `Description` attributes. The `Signature` attribute also allows you to define [your command's input expectations](#defining-input-expectations). The `handle` method will be called when your command is executed. You may place your command logic in this method.
+コマンドを生成した後は、`Signature`属性と`Description`属性を使用して、コマンドの使い方と説明を定義する必要があります。`Signature`属性では、[コマンドの入力期待値](#defining-input-expectations)も定義できます。コマンドを実行すると、`handle`メソッドを呼び出します。このメソッドにコマンドのロジックを記述してください。
 
 コマンドの例を見てみましょう。コマンドの`handle`メソッドを介して必要な依存関係の注入を要求できることに注意してください。Laravel[サービスコンテナ](/docs/{{version}}/container)は、このメソッドの引数でタイプヒントされているすべての依存関係を自動的に注入します。
 
