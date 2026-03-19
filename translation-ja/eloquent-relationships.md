@@ -1001,7 +1001,7 @@ class RoleUser extends Pivot
 <a name="custom-pivot-models-and-incrementing-ids"></a>
 #### カスタムピボットモデルと増分ID
 
-カスタムピボットモデルを使用した多対多リレーションを定義しており、そのピボットモデルが自動インクリメントの主キーを持っている場合は、カスタムピボットモデルクラスで`Table`属性を使用し、`incrementing`を`true`に設定してください。
+カスタムピボットモデルを使用した多対多リレーションを定義しており、そのピボットモデルが自動増分の主キーを持っている場合は、カスタムピボットモデルクラスで`Table`属性を使用し、`incrementing`を`true`に設定してください。
 
 ```php
 use Illuminate\Database\Eloquent\Attributes\Table;

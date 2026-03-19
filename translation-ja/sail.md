@@ -501,7 +501,7 @@ sail build --no-cache
 
 #### LinuxホストIP設定
 
-内部的には、MacとWindows (WSL2)でXdebugを適切に設定するため、`XDEBUG_CONFIG`環境変数を`client_host=host.docker.internal`として定義しています。ローカルマシンでLinuxを実行しており、Docker20.10以降を使用している場合は、`host.docker.internal`が利用できるため、手動での設定は不要です。
+内部的には、MacとWindows (WSL2)でXdebugを適切に設定するため、`XDEBUG_CONFIG`環境変数を`client_host=host.docker.internal`として定義しています。ローカルマシンでLinuxを実行しており、Docker20.10以降を使用している場合は、`host.docker.internal`が利用できるため、手作業での設定は不要です。
 
 20.10より古いバージョンのDockerでは、Linux上の`host.docker.internal`はサポートされていないため、手作業でホストIPを定義する必要があります。これを行うには、`compose.yaml`ファイルでカスタムネットワークを定義して、コンテナに静的IPを設定します。
 

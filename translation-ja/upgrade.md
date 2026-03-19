@@ -39,6 +39,7 @@
 - [ポリモーフィックなピボットテーブル名の生成](#polymorphic-pivot-table-name-generation)
 - [`QueueBusy`イベントのプロパティ名の変更](#queuebusy-event-property-rename)
 - [テスト間での`Str`ファクトリのリセット](#str-factories-reset-between-tests)
+
 </div>
 
 <a name="upgrade-13.0"></a>
@@ -198,7 +199,6 @@ $container->call(function (?Carbon $date = null) {
 
 **影響の可能性： 低い**
 
-Laravel now compiles full `DELETE ... JOIN` queries including `ORDER BY` and `LIMIT` for MySQL grammar.
 Laravelは、MySQL文法において`ORDER BY`と`LIMIT`を含む完全な`DELETE ... JOIN`クエリをコンパイルするようにしました。
 
 以前のバージョンでは、結合した削除において`ORDER BY`／`LIMIT`句が黙って無視されることがありました。Laravel13では、これらの句を生成するSQLへ含めます。その結果、この構文をサポートしていないデータベースエンジン（標準的なMySQL／MariaDBバリアントなど）は、制限のない削除を実行する代わりに`QueryException`を投げる可能性があります。
