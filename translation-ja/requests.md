@@ -432,6 +432,27 @@ $elapsed = $request->date('elapsed', '!H:i', 'Europe/Madrid');
 
 入力値が存在するがフォーマットが無効な場合は、`InvalidArgumentException`を投げます。したがって、`date`メソッドを呼び出す前に入力値をバリデーションすることを推奨します。
 
+<a name="retrieving-interval-input-values"></a>
+#### インターバル入力値の取得
+
+期間を含む入力値は、`interval`メソッドを使用して`CarbonInterval`インスタンスとして取得します。リクエストに指定した名前の入力値が含まれていない場合、`null`を返します。
+
+```php
+$duration = $request->interval('duration');
+```
+
+入力値が数値の場合、第２引数として単位を指定します。単位には`second`、`minute`、`day`のような文字列、または`Carbon\Unit`列挙型インスタンスを指定します。
+
+```php
+use Carbon\Unit;
+
+$timeout = $request->interval('timeout', 'second');
+
+$delay = $request->interval('delay', Unit::Minute);
+```
+
+入力値が存在するものの形式が無効な場合は、`InvalidArgumentException`を投げます。したがって、`interval`メソッドを呼び出す前に入力をバリデーションすることをお勧めします。
+
 <a name="retrieving-enum-input-values"></a>
 #### Enum入力値の取得
 

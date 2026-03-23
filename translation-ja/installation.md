@@ -235,7 +235,7 @@ Boostには、Laravelが管理するAIガイドラインも含まれており、
 <a name="installing-laravel-boost"></a>
 ### Laravel Boostのインストール
 
-Boostは、PHP8.1以降で実行しているLaravel10、11、12アプリケーションにインストール可能です。開始するには、Boostを開発依存関係としてインストールしてください。
+Boostは、PHP8.1以降で実行しているLaravel10、11、12、13アプリケーションにインストール可能です。開始するには、Boostを開発依存関係としてインストールしてください。
 
 ```shell
 composer require laravel/boost --dev

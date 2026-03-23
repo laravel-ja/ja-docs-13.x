@@ -261,6 +261,12 @@ public function __construct(
 }
 ```
 
+他のリレーションは保持したまま、特定のリレーションのみを削除したい場合は、`withoutRelation`メソッドを使います。
+
+```php
+$this->podcast = $podcast->withoutRelation('comments');
+```
+
 [PHPのコンストラクタ・プロパティ・プロモーション](https://www.php.net/manual/ja/language.oop5.decon.php#language.oop5.decon.constructor.promotion)を使用していて、あるEloquentモデルでリレーションをシリアライズしないことを指定したい場合は、`WithoutRelations`属性を使用します：
 
 ```php

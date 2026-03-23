@@ -902,7 +902,7 @@ return User::all()
 Laravelは、[JSON:API仕様](https://jsonapi.org/)に準拠したレスポンスを生成するリソースクラスである`JsonApiResource`を同梱しています。これは標準の`JsonResource`クラスを拡張し、リソースオブジェクト構造、リレーションシップ、スパース・フィールドセット、インクルードを自動的に処理し、`Content-Type`ヘッダに`application/vnd.api+json`をセットします。
 
 > [!NOTE]
-> LaravelのJSON:APIリソースは、レスポンスのシリアル化を処理します。フィルタやソートなどの受信したJSON:APIクエリパラメータをパースする必要もある場合は、[SpatieのLaravel Query Builder](https://spatie.be/docs/laravel-query-builder/v6/introduction)が優れたコンパニオンパッケージになります。
+> LaravelのJSON:APIリソースは、レスポンスのシリアル化を処理します。フィルタやソートなどの受信したJSON:APIクエリパラメータをパースする必要もある場合は、[SpatieのLaravel Query Builder](https://spatie.be/docs/laravel-query-builder)が優れたコンパニオンパッケージになります。
 
 <a name="generating-jsonapi-resources"></a>
 ### JSON:APIリソースの生成

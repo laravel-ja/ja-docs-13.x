@@ -738,6 +738,12 @@ class FlightController extends Controller
 
 この例では、受信HTTPリクエストの`name`フィールドを`App\Models\Flight`モデルインスタンスの`name`属性に割り当てます。`save`メソッドを呼び出すと、レコードがデータベースに挿入されます。モデルの`created_at`および`updated_at`タイムスタンプは、`save`メソッドが呼び出されたときに自動的に設定されるため、手作業で設定する必要はありません。
 
+モデルをデータベーストランザクション内に保存したい場合は、`saveOrFail`メソッドを使います。保存中に例外が投げられた場合、トランザクションは自動的にロールバックします。
+
+```php
+$flight->saveOrFail();
+```
+
 もしくは、`create`メソッドを使用して、単一のPHPステートメントにより、新しいモデルを「保存」することもできます。`create`メソッドは、その挿入したモデルインスタンスを返します。
 
 ```php
@@ -763,6 +769,12 @@ $flight = Flight::find(1);
 $flight->name = 'Paris to London';
 
 $flight->save();
+```
+
+データベーストランザクション内でモデルを更新したい場合は、`updateOrFail`メソッドを使います。更新中に例外が投げられた場合、トランザクションは自動的にロールバックします。
+
+```php
+$flight->updateOrFail(['name' => 'Paris to London']);
 ```
 
 既存のモデルを更新する時に、一致するモデルが存在しない場合は、新しいモデルを作成したい場合もあるでしょう。`firstOrCreate`メソッドと同様に、`updateOrCreate`メソッドはモデルを永続化するため、手作業で`save`メソッドを呼び出す必要はありません。
@@ -1031,6 +1043,12 @@ use App\Models\Flight;
 $flight = Flight::find(1);
 
 $flight->delete();
+```
+
+データベーストランザクション内でモデルを削除したい場合は、`deleteOrFail`メソッドを使います。削除中に例外が投げられた場合、トランザクションは自動的にロールバックします。
+
+```php
+$flight->deleteOrFail();
 ```
 
 <a name="deleting-an-existing-model-by-its-primary-key"></a>
@@ -1719,7 +1737,7 @@ class User extends Model
 }
 ```
 
-必要に応じて、モデルイベントを登録するときに、[キュー投入可能な匿名イベントリスナ](/docs/{{version}}/events#queuable-anonymous-event-listeners)を利用できます。これにより、アプリケーションの[キュー](/docs/{{version}}/queues)を使用し、バックグラウンドでモデルイベントリスナを実行するようにLaravelに指示できます。
+必要に応じて、モデルイベントを登録するときに、[キュー投入可能な匿名イベントリスナ](/docs/{{version}}/events#queueable-anonymous-event-listeners)を利用できます。これにより、アプリケーションの[キュー](/docs/{{version}}/queues)を使用し、バックグラウンドでモデルイベントリスナを実行するようにLaravelに指示できます。
 
 ```php
 use function Illuminate\Events\queueable;

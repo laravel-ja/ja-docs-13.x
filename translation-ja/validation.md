@@ -1705,6 +1705,21 @@ Validator::make($request->all(), [
 
 *他のフィールド*が*値*と等しくない場合、`validate`と`validated`メソッドが返すリクエストデータから、バリデーション指定下のフィールドが除外されます。もし*値*が`null`（`exclude_unless:name,null`）の場合は、比較フィールドが`null`であるか、比較フィールドがリクエストデータに含まれていない限り、バリデーション指定下のフィールドは除外されます。
 
+複雑な条件付き除外ロジックが必要な場合は、`Rule::excludeUnless`メソッドを利用します。このメソッドは、論理値またはクロージャを受け取ります。クロージャを指定する場合、バリデーション中のフィールドを除外すべきでないかどうかを示すために、クロージャは`true`または`false`を返す必要があります。
+
+```php
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+
+Validator::make($request->all(), [
+    'role_id' => Rule::excludeUnless($request->user()->is_admin),
+]);
+
+Validator::make($request->all(), [
+    'role_id' => Rule::excludeUnless(fn () => $request->user()->is_admin),
+]);
+```
+
 <a name="rule-exclude-with"></a>
 #### exclude_with:_他のフィールド_
 
@@ -2149,6 +2164,21 @@ Validator::make($request->all(), [
 
 </div>
 
+複雑な条件付き禁止ロジックが必要な場合は、`Rule::prohibitedUnless`メソッドを利用しましう。このメソッドは、論理値またはクロージャを受け取ります。クロージャを指定する場合、バリデーション中のフィールドを禁止すべきでないかどうかを示すために、クロージャは`true`または`false`を返す必要があります。
+
+```php
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+
+Validator::make($request->all(), [
+    'role_id' => Rule::prohibitedUnless($request->user()->is_admin),
+]);
+
+Validator::make($request->all(), [
+    'role_id' => Rule::prohibitedUnless(fn () => $request->user()->is_admin),
+]);
+```
+
 <a name="rule-prohibits"></a>
 #### prohibits:_他のフィールド_,…
 
@@ -2221,6 +2251,21 @@ Validator::make($request->all(), [
 #### required\_unless:_他のフィールド_,_値_,...
 
 *他のフィールド*が*値*のどれとも一致していない場合、このフィールドが存在し、かつ空でないことをバリデートします。これは*値*が`null`でない限り、*他のフィールド*はリクエストデータに存在しなければならないという意味でもあります。もし*値*が`null`（`required_unless:name,null`）の場合は、比較フィールドが`null`であるか、リクエストデータに比較フィールドが存在しない限り、バリデーション対象下のフィールドは必須です。
+
+`required_unless`ルールに対してより複雑な条件を構築したい場合は、`Rule::requiredUnless`メソッドを使用します。このメソッドは、論理値またはクロージャを受け取ります。クロージャを渡す場合、バリデーション中のフィールドが必須ではないかどうかを示すために、クロージャは`true`または`false`を返す必要があります。
+
+```php
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+
+Validator::make($request->all(), [
+    'role_id' => Rule::requiredUnless($request->user()->is_admin),
+]);
+
+Validator::make($request->all(), [
+    'role_id' => Rule::requiredUnless(fn () => $request->user()->is_admin),
+]);
+```
 
 <a name="rule-required-with"></a>
 #### required\_with:_foo_,_bar_,...

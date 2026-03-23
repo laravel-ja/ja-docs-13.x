@@ -481,13 +481,13 @@ composer run dev
 
 JavaScriptやCSSのアセットを参照する場合、Viteは自動的に処理し、バージョン付けを行います。また、Bladeベースのアプリケーションを構築する場合、Bladeのテンプレート内だけで参照する静的なアセットもViteで処理し、バージョン付け可能です。
 
-これを実現するには、アプリケーションのエントリポイントで静的アセットをインポートすることにより、Viteにあなたの資産を認識させる必要があります。例えば、`resources/images`に格納しているすべての画像と、`resources/fonts`に保存しているすべてのフォントを処理してバージョン付けする場合、アプリケーションの`resources/js/app.js`エントリーポイントへ以下を追加してください。
+しかし、これを実現するには、プラグインの`assets`オプションでアセットを指定し、Viteに認識させる必要があります。例えば、`resources/images`に保存されているすべての画像と、`resources/fonts`に保存されているすべてのフォントを処理してバージョン管理したい場合は、Viteの設定に以下を追加してください。
 
 ```js
-import.meta.glob([
-  '../images/**',
-  '../fonts/**',
-]);
+laravel({
+    input: 'resources/js/app.js',
+    assets: ['resources/images/**', 'resources/fonts/**'],
+})
 ```
 
 これで`npm run build`の実行時、Viteはこれらのアセットを処理するようになります。そして、Bladeテンプレートでは`Vite::asset`メソッドを使用してこれらのアセットを参照でき、指定したアセットのバージョン付けを含むURLを返します。
@@ -495,6 +495,9 @@ import.meta.glob([
 ```blade
 <img src="{{ Vite::asset('resources/images/logo.png') }}">
 ```
+
+> [!NOTE]
+> Laravel Viteプラグインの3より前のバージョンは、アプリケーションのエントリポイントで`import.meta.glob`を使用して静的アセットをインポートする必要がありました。`assets`オプションは、Vite 8の変更に伴い導入されました。
 
 <a name="blade-refreshing-on-save"></a>
 ### 保存時の再描写

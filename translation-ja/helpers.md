@@ -2969,6 +2969,16 @@ return retry(5, function () {
 }, 100);
 ```
 
+スリープ時間には、`CarbonInterval`インスタンスも指定できます。
+
+```php
+use function Illuminate\Support\seconds;
+
+return retry(5, function () {
+    // Attempt 5 times while resting 5 seconds between attempts...
+}, seconds(5));
+```
+
 もし、試行間隔を何ミリ秒にするかを手作業で計算したい場合は、`retry`関数の第３引数へクロージャを渡します。
 
 ```php

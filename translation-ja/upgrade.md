@@ -53,7 +53,7 @@
 <a name="upgrading-using-ai"></a>
 ### AIを使用したアップグレード
 
-[Laravel Boost](https://github.com/laravel/boost)を使用して、アップグレードを自動化できます。BoostはファーストパーティのMCPサーバであり、AIアシスタントにガイド付きのアップグレードプロンプトを提供します。Laravel 12アプリケーションにインストールしたら、Claude Code、Cursor、OpenCode、Gemini、またはVS Codeで`/upgrade-laravel-13`スラッシュコマンドを使用して、Laravel 13へのアップグレードを開始してください。
+[Laravel Boost](https://github.com/laravel/boost)を使用して、アップグレードを自動化できます。BoostはファーストパーティのMCPサーバであり、AIアシスタントにガイド付きのアップグレードプロンプトを提供します。Laravel 12アプリケーションにインストールしたら、Claude Code、Cursor、OpenCode、Gemini、VS Codeで`/upgrade-laravel-v13`スラッシュコマンドを使用して、Laravel 13へのアップグレードを開始してください。このコマンドにはLaravel Boostの`^2.0`が必要です。
 
 <a name="updating-dependencies"></a>
 ### 依存パッケージのアップデート
@@ -65,6 +65,7 @@
 <div class="content-list" markdown="1">
 
 - `laravel/framework`を`^13.0`へ
+- `laravel/boost` を `^2.0`へ
 - `laravel/tinker`を`^3.0`へ
 - `phpunit/phpunit`を`^12.0`へ
 - `pestphp/pest`を`^4.0`へ

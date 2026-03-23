@@ -2545,6 +2545,17 @@ $user->roles()->toggle([
 ]);
 ```
 
+<a name="transactional-pivot-operations"></a>
+#### トランザクションピボット操作
+
+上記で説明した各ピボット操作には、操作をデータベーストランザクション内でラップする`OrFail`類似関数（`attachOrFail`、`detachOrFail`、`syncOrFail`、`syncWithoutDetachingOrFail`、`toggleOrFail`）も用意しています。これにより、例外が投げられた場合にすべての変更を自動的にロールバックします。
+
+```php
+$user->roles()->attachOrFail([1, 2, 3]);
+
+$user->roles()->syncOrFail([1, 2, 3]);
+```
+
 <a name="updating-a-record-on-the-intermediate-table"></a>
 #### 中間テーブルのレコード更新
 

@@ -94,6 +94,14 @@ $result = Process::input('Hello World')->run('cat');
 $result = Process::timeout(120)->run('bash import.sh');
 ```
 
+`timeout`と`idleTimeout`メソッドには、`CarbonInterval`インスタンスも指定できます。
+
+```php
+use function Illuminate\Support\minutes;
+
+$result = Process::timeout(minutes(2))->run('bash import.sh');
+```
+
 もしくは、プロセスのタイムアウトを完全に無効にしたい場合は、`forever`メソッドを呼びだしてください。
 
 ```php

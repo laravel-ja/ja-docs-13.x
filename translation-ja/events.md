@@ -163,7 +163,7 @@ public function boot(): void
 }
 ```
 
-<a name="queuable-anonymous-event-listeners"></a>
+<a name="queueable-anonymous-event-listeners"></a>
 #### Queueable匿名イベントリスナ
 
 クロージャベースのイベントリスナを登録するとき、リスナのクロージャを`Illuminate\Events\queueable`関数でラップして、[キュー](/docs/{{version}}/queues)を使用してリスナを実行するように、Laravelへ指示できます。

@@ -573,7 +573,7 @@ Schema::table('users', function (Blueprint $table) {
 
 </div>
 
-<a name="spacifics-method-list"></a>
+<a name="specifics-method-list"></a>
 #### 特殊型
 
 <div class="collection-method-list" markdown="1">
