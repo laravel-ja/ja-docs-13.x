@@ -183,7 +183,7 @@ class Flight extends Model
 }
 ```
 
-自動インクリメントIDのみを無効にする必要がある場合は、`WithoutIncrementing`属性を使用します。
+自動増分IDのみを無効にする必要がある場合は、`WithoutIncrementing`属性を使用します。
 
 ```php
 <?php
