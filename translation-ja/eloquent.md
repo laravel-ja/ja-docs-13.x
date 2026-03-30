@@ -183,6 +183,23 @@ class Flight extends Model
 }
 ```
 
+自動インクリメントIDのみを無効にする必要がある場合は、`WithoutIncrementing`属性を使用します。
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
+use Illuminate\Database\Eloquent\Model;
+
+#[WithoutIncrementing]
+class Flight extends Model
+{
+    // ...
+}
+```
+
 <a name="composite-primary-keys"></a>
 #### 「コンポジット」主キー
 
@@ -275,6 +292,23 @@ class Flight extends Model
 }
 ```
 
+タイムスタンプのみを無効にする必要がある場合は、`WithoutTimestamps`属性を使用します。
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Attributes\WithoutTimestamps;
+use Illuminate\Database\Eloquent\Model;
+
+#[WithoutTimestamps]
+class Flight extends Model
+{
+    // ...
+}
+```
+
 モデルのタイムスタンプの形式をカスタマイズする必要がある場合は、`Table`属性の`dateFormat`引数を使用します。これは、日付属性をデータベースに保存する方法と、モデルを配列やJSONへシリアル化する際の形式を決定します。
 
 ```php
@@ -286,6 +320,23 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 
 #[Table(dateFormat: 'U')]
+class Flight extends Model
+{
+    // ...
+}
+```
+
+日付形式のみを定義する必要がある場合は、`DateFormat`属性を使用します。
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Attributes\DateFormat;
+use Illuminate\Database\Eloquent\Model;
+
+#[DateFormat('U')]
 class Flight extends Model
 {
     // ...

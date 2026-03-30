@@ -1211,6 +1211,37 @@ Route::get('/orders', function () {
 })->middleware(['auth:api', CheckTokenForAnyScope::using('orders:read', 'orders:create')]);
 ```
 
+<a name="scope-attributes"></a>
+#### スコープ属性
+
+アプリケーションで[コントローラミドルウェア属性](/docs/{{version}}/controllers#middleware-attributes)を使用している場合、Passportのスコープミドルウェアの便利なショートカットとして、`Laravel\Passport\Attributes\AuthorizeToken`属性を使用できます。
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use Laravel\Passport\Attributes\AuthorizeToken;
+
+#[AuthorizeToken('orders:read')]
+#[AuthorizeToken('orders:create', only: ['store'])]
+class OrderController
+{
+    #[AuthorizeToken(['orders:read', 'orders:create'], anyScope: true)]
+    public function index()
+    {
+        // アクセストークンが"orders:read"または"orders:create"スコープのいずれかを持っている場合
+    }
+
+    public function store()
+    {
+        // アクセストークンが"orders:read"と"orders:create"スコープの両方を持っている場合
+    }
+}
+```
+
+`AuthorizeToken`属性はデフォルトで、指定したすべてのスコープを要求します。`anyScope: true`を渡すと、トークンが指定したスコープのうち少なくとも１つを持っている場合にリクエストが認可されます。
+
 <a name="checking-scopes-on-a-token-instance"></a>
 #### トークンインスタンスでのスコープチェック
 

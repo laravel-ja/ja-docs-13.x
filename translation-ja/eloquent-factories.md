@@ -412,6 +412,18 @@ $user = User::factory()
     ->create();
 ```
 
+また、複数属性の配列を渡すことで、モデルごとの状態を持つ関連モデルを作成することもできます。Laravelは各配列を順番に適用します。
+
+```php
+$user = User::factory()
+    ->hasPosts(
+        ['title' => 'First Post'],
+        ['title' => 'Second Post'],
+        ['title' => 'Third Post'],
+    )
+    ->create();
+```
+
 状態の変更で親モデルへのアクセスが必要な場合は、クロージャベースの状態変換を提供できます。
 
 ```php
