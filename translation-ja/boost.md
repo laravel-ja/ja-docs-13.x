@@ -2,8 +2,8 @@
 
 - [イントロダクション](#introduction)
 - [インストール](#installation)
-    - [Boostリソースの最新保持](#keeping-boost-resources-updated)
     - [エージェントのセットアップ](#set-up-your-agents)
+    - [Boostリソースの最新保持](#keeping-boost-resources-updated)
 - [MCPサーバ](#mcp-server)
     - [利用可能なMCPツール](#available-mcp-tools)
     - [MCPサーバの手作業での登録](#manually-registering-the-mcp-server)

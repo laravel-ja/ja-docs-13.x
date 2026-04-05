@@ -899,7 +899,7 @@ return User::all()
 <a name="jsonapi-resources"></a>
 ## JSON:APIリソース
 
-Laravelは、[JSON:API仕様](https://jsonapi.org/)に準拠したレスポンスを生成するリソースクラスである`JsonApiResource`を同梱しています。これは標準の`JsonResource`クラスを拡張し、リソースオブジェクト構造、リレーションシップ、スパース・フィールドセット、インクルードを自動的に処理し、`Content-Type`ヘッダに`application/vnd.api+json`をセットします。
+Laravelは、[JSON:API仕様](https://jsonapi.org/)に準拠したレスポンスを生成するリソースクラスである`JsonApiResource`を同梱しています。これは標準の`JsonResource`クラスを拡張し、リソースオブジェクト構造、リレーションシップ、スパース・フィールドセット、インクルード、遅延属性の評価を自動的に処理し、`Content-Type`ヘッダに`application/vnd.api+json`をセットします。
 
 > [!NOTE]
 > LaravelのJSON:APIリソースは、レスポンスのシリアル化を処理します。フィルタやソートなどの受信したJSON:APIクエリパラメータをパースする必要もある場合は、[SpatieのLaravel Query Builder](https://spatie.be/docs/laravel-query-builder)が優れたコンパニオンパッケージになります。
@@ -998,6 +998,8 @@ public $attributes = [
 ];
 ```
 
+属性の算出コストが高い場合は、その属性が実際にレスポンスで必要になったときのみ評価されるよう、`toAttributes`からクロージャとして返せます。
+
 または、リソースの属性を完全に制御するには、リソースの`toAttributes`メソッドをオーバーライドします。
 
 ```php
@@ -1011,7 +1013,7 @@ public function toAttributes(Request $request): array
     return [
         'title' => $this->title,
         'body' => $this->body,
-        'is_published' => $this->published_at !== null,
+        'is_published' => fn () => $this->published_at !== null,
         'created_at' => $this->created_at,
         'updated_at' => $this->updated_at,
     ];
@@ -1055,10 +1057,16 @@ public function toRelationships(Request $request): array
 {
     return [
         'author' => UserResource::class,
-        'comments',
+        'comments' => fn () => CommentResource::collection(
+            $request->user()->is($this->resource)
+                ? $this->comments
+                : $this->comments->where('is_public', true),
+        ),
     ];
 }
 ```
+
+クロージャを使用すると、リレーションのペイロードをより詳細に制御でき、同時にクライアントが要求したときのみリレーションを解決できます。
 
 #### リレーションシップのインクルード
 

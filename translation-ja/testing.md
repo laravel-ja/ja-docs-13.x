@@ -47,6 +47,31 @@ php artisan make:test UserTest
 php artisan make:test UserTest --unit
 ```
 
+大部分がLaravelのテスト機能に依存しているテストクラスであっても、特定のテストメソッドでフレームワークの起動が必要ない場合は、そのメソッドに`#[UnitTest]`属性を付加することで、そのテストのためだけにアプリケーションの起動をスキップできます。
+
+```php tab=PHPUnit
+<?php
+
+namespace Tests\Feature;
+
+use Illuminate\Foundation\Testing\Attributes\UnitTest;
+use Tests\TestCase;
+
+class LocationServiceTest extends TestCase
+{
+    public function test_get_coordinates_resolves_address(): void
+    {
+        // このテストはLaravelのテスト機能を使用
+    }
+
+    #[UnitTest]
+    public function test_get_state_returns_state_from_abbreviation(): void
+    {
+        // このテストはアプリケーションを起動せずに実行
+    }
+}
+```
+
 > [!NOTE]
 > [stubのリソース公開](/docs/{{version}}/artisan#stub-customization) を使って、Testスタブをカスタマイズできます。
 

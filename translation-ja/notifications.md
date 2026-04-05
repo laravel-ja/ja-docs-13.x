@@ -1192,9 +1192,9 @@ Echo.private('App.Models.User.' + userId)
 ```
 
 <a name="using-react-or-vue"></a>
-#### ReactやVueの使用
+#### React、Vue、Svelteの使用
 
-Laravel EchoはReactとVueのフックを含んでおり、通知を簡単にリッスンできます。使用開始するには、`useEchoNotification`フックを呼び出します。`useEchoNotification`フックは、利用しているコンポーネントがアンマウントすると、自動的にチャンネルから抜けます。
+Laravel EchoはReact、Vue、Svelteのフックを含んでおり、通知を簡単にリッスンできます。使用開始するには、`useEchoNotification`フックを呼び出します。`useEchoNotification`フックは、利用しているコンポーネントがアンマウントすると、自動的にチャンネルから抜けます。
 
 ```js tab=React
 import { useEchoNotification } from "@laravel/echo-react";
@@ -1210,6 +1210,19 @@ useEchoNotification(
 ```vue tab=Vue
 <script setup lang="ts">
 import { useEchoNotification } from "@laravel/echo-vue";
+
+useEchoNotification(
+    `App.Models.User.${userId}`,
+    (notification) => {
+        console.log(notification.type);
+    },
+);
+</script>
+```
+
+```svelte tab=Svelte
+<script>
+import { useEchoNotification } from "@laravel/echo-svelte";
 
 useEchoNotification(
     `App.Models.User.${userId}`,
@@ -1237,6 +1250,20 @@ useEchoNotification(
 ```vue tab=Vue
 <script setup lang="ts">
 import { useEchoNotification } from "@laravel/echo-vue";
+
+useEchoNotification(
+    `App.Models.User.${userId}`,
+    (notification) => {
+        console.log(notification.type);
+    },
+    'App.Notifications.InvoicePaid',
+);
+</script>
+```
+
+```svelte tab=Svelte
+<script>
+import { useEchoNotification } from "@laravel/echo-svelte";
 
 useEchoNotification(
     `App.Models.User.${userId}`,

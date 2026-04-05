@@ -973,6 +973,9 @@ Route::get('/orders', function (Request $request) {
 })->middleware(EnsureClientIsResourceOwner::using('servers:read', 'servers:create'));
 ```
 
+> [!WARNING]
+> [基盤となるOAuth2サーバ](https://oauth2.thephpleague.com/database-setup/#:~:text=Please%20note%20that,the%20bearer%20token.)は、クライアント認証トークンの場合、トークンの`sub`クレームにクライアントの識別子を設定します。デフォルトで、PassportはクライアントにUUIDを使用するため、これがユーザーの整数プライマリキーと衝突することはありません。しかし、`Passport::$clientUuids`を`false`に設定している場合、クライアント認証トークンが、クライアントのIDと一致するIDを持つユーザーを意図せず解決してしまう可能性があります。そのような場合、このミドルウェアを使用しても、入ってくるトークンがクライアント認証トークンであることを保証できません。
+
 <a name="retrieving-tokens"></a>
 ### トークンの取得
 

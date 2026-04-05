@@ -810,12 +810,25 @@ $orders = Order::search('Star Trek')
 <a name="where-clauses"></a>
 ### Where節
 
-Scoutを使用すると、検索クエリに単純な「where」節を追加できます。現在、これらの節は基本的な同等性チェックのみをサポートしており、主に所有者IDによる検索クエリのスコープに役立ちます。
+Scoutでは、検索クエリに「where」節を追加できます。例えば、基本的な一致チェックは、オーナーIDで検索クエリのスコープを絞り込むのに便利です。
 
 ```php
 use App\Models\Order;
 
 $orders = Order::search('Star Trek')->where('user_id', 1)->get();
+```
+
+さらに、より高度なクエリを構築するために、`=`、`!=`、`<`、`>`、`>=`、`<=`の比較オペレータも使用できます。
+
+```php
+Order::search('Star Trek')
+  ->where('status', '=', 'completed')
+  ->where('is_refunded', '!=', true)
+  ->where('total_price', '>', 100)
+  ->where('shipping_cost', '<', 20)
+  ->where('discount_percent', '>=', 10)
+  ->where('item_count', '<=', 5)
+  ->get();
 ```
 
 さらに、`whereIn`メソッドを使うと、指定カラムの値が指定した配列内に含まれていることを確認できます。

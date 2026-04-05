@@ -20,7 +20,7 @@
 <div class="content-list" markdown="1">
 
 - [キャッシュの`serializable_classes`設定](#cache-serializable_classes-configuration)
-
+- [MySQLまたはMariaDBを使用したデータベースの`upsert`](#database-upsert-mariadb-mysql)
 </div>
 
 <a name="low-impact-changes"></a>
@@ -194,6 +194,15 @@ $container->call(function (?Carbon $date = null) {
 
 <a name="database"></a>
 ### データベース
+
+<a name="database-upsert-mariadb-mysql"></a>
+#### MySQLまたはMariaDBを使用したデータベースの`upsert`
+
+**影響の可能性：　中**
+
+Laravelは、呼び出し元が`uniqueBy`に空でない値を指定しているかをバリデートするようにしました。空の場合、無効なSQLを生成する代わりに`InvalidArgumentException`を投げます。
+
+MariaDBとMySQLのデータベースドライバは`uniqueBy`の値を無視し、常にテーブルのプライマリキーとユニークインデックスを使用して既存のレコードを検出しますが、このバリデーションは依然として適用されます。`uniqueBy`が空の場合、`InvalidArgumentException`を投げます。
 
 <a name="mysql-delete-queries-with-join-order-by-and-limit"></a>
 #### `JOIN`、`ORDER BY`、`LIMIT`を伴うMySQLの`DELETE`クエリ
