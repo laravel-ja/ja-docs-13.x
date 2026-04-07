@@ -21,6 +21,7 @@
 
 - [キャッシュの`serializable_classes`設定](#cache-serializable_classes-configuration)
 - [MySQLまたはMariaDBを使用したデータベースの`upsert`](#database-upsert-mariadb-mysql)
+
 </div>
 
 <a name="low-impact-changes"></a>
