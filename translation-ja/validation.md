@@ -446,6 +446,58 @@ class StorePostRequest extends FormRequest
 }
 ```
 
+<a name="request-failing-on-unknown-fields"></a>
+#### 未知のフィールドでの失敗
+
+リクエストクラスへ`FailOnUnknownFields`属性を追加すれば、リクエストのバリデーションルールで定義していない入力フィールドを拒否するようにLaravelへ指示できます。
+
+```php
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\Attributes\FailOnUnknownFields;
+use Illuminate\Foundation\Http\FormRequest;
+
+#[FailOnUnknownFields]
+class StorePostRequest extends FormRequest
+{
+    public function rules(): array
+    {
+        return [
+            'title' => ['required', 'string'],
+            'body' => ['required', 'string'],
+        ];
+    }
+}
+```
+
+また、`AppServiceProvider`により、すべてのフォームリクエストに対しこの動作をグローバルに有効にすることもできます。
+
+```php
+use Illuminate\Foundation\Http\FormRequest;
+
+/**
+ * 全アプリケーションサービスの初期起動処理
+ */
+public function boot(): void
+{
+    FormRequest::failOnUnknownFields();
+}
+```
+
+属性に`false`を渡すことで、必要であれば特定のリクエストに対してこの動作を無効にできます。
+
+```php
+#[FailOnUnknownFields(false)]
+class PublicWebhookRequest extends FormRequest
+{
+    // ...
+}
+```
+
+未知のフィールドを拒否することで、予期しない入力キーがアプリケーションの深部へ入り込むのを防ぎ、複数代入スタイルの問題に対する追加の保護を提供できます。ただし、モデルの`$fillable`／`$guarded`プロパティを設定し、信頼できるバリデーション済み入力のみを保存することも維持してください。
+
 <a name="customizing-the-redirect-location"></a>
 #### リダイレクト先のカスタマイズ
 

@@ -372,6 +372,64 @@ $response = (new SalesCoach)->prompt('このセールスの文字起こしを分
 return $response['score'];
 ```
 
+<a name="structured-output-nested-objects"></a>
+#### ネストしたオブジェクト
+
+ネストした構造化出力を定義するには、クロージャと一緒に`object`メソッドを使用します。
+
+```php
+<?php
+
+namespace App\Ai\Agents;
+
+use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Laravel\Ai\Contracts\Agent;
+use Laravel\Ai\Contracts\HasStructuredOutput;
+use Laravel\Ai\Promptable;
+
+class SalesCoach implements Agent, HasStructuredOutput
+{
+    use Promptable;
+
+    // ...
+
+    /**
+     * エージェントの構造化出力スキーマ定義を取得
+     */
+    public function schema(JsonSchema $schema): array
+    {
+        return [
+            'score' => $schema->integer()->required(),
+            'metadata' => $schema->object(fn ($schema) => [
+                'confidence' => $schema->string()->enum(['low', 'medium', 'high'])->required(),
+                'language' => $schema->string()->required(),
+            ])->required(),
+        ];
+    }
+}
+```
+
+<a name="structured-output-arrays-of-objects"></a>
+#### オブジェクトの配列
+
+エージェントが構造化したアイテムのリストを返す必要がある場合は、`array`メソッドと`object`メソッドを組み合わせます。
+
+```php
+public function schema(JsonSchema $schema): array
+{
+    return [
+        'feedback' => $schema->array()
+            ->items(
+                $schema->object(fn ($schema) => [
+                    'comment' => $schema->string()->required(),
+                    'score' => $schema->integer()->required(),
+                ])
+            )
+            ->required(),
+    ];
+}
+```
+
 <a name="attachments"></a>
 ### 添付ファイル
 

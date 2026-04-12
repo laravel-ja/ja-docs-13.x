@@ -20,7 +20,7 @@ Laravel Precognition（プリコグニション：予知）により、将来の
 Laravelが「事前認識型リクエスト」を受け取ると、ルートのミドルウェアをすべて実行し、[フォームリクエスト](/docs/{{version}}/validation#form-request-validation)のバリデーションを含む、ルートのコントローラの依存解決を行いますが、実際にはルートのコントローラメソッドを実行しません。
 
 > [!NOTE]
-> Inertia2.3以降には、Precognitionのサポートが組み込まれています。詳細は[Inertia Formsドキュメント](https://inertiajs.com/docs/v2/the-basics/forms)を参照してください。それ以前のInertiaバージョンは、Precognition0.xが必要です。
+> Inertia2.3以降には、Precognitionのサポートが組み込まれています。詳細は[Inertia Formsドキュメント](https://inertiajs.com/forms)を参照してください。それ以前のInertiaバージョンは、Precognition0.xが必要です。
 
 <a name="live-validation"></a>
 ## ライブバリデーション

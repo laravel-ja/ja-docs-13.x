@@ -2,7 +2,6 @@
 
 - [イントロダクション](#introduction)
 - [インストールと準備](#installation)
-    - [既存アプリケーションへのSailインストール](#installing-sail-into-existing-applications)
     - [Sailイメージの再構築](#rebuilding-sail-images)
     - [シェルエイリアスの設定](#configuring-a-shell-alias)
 - [Sailの開始と停止](#starting-and-stopping-sail)
@@ -43,12 +42,7 @@ Laravel Sailは、macOS、Linux、Windows（[WSL2](https://docs.microsoft.com/en
 <a name="installation"></a>
 ## インストールと準備
 
-Laravel Sailは、すべての新しいLaravelアプリケーションに自動的にインストールされるため、すぐに使い始められます。
-
-<a name="installing-sail-into-existing-applications"></a>
-### 既存アプリケーションへのSailインストール
-
-既存のLaravelアプリケーションでSailを使うことに興味を持っている場合は、Composerパッケージマネージャを使用してSailをインストールできます。もちろん、以降の手順は、既存のローカル開発環境で、Composerの依存関係をインストールできると仮定しています。
+Composerパッケージマネージャを使用して、Sailをインストールしてください。
 
 ```shell
 composer require laravel/sail --dev

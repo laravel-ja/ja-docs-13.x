@@ -141,7 +141,9 @@ public function bind($abstract, $concrete = null, $shared = false)
 
 ```php
 /**
- * 仕事を実行
+ * ジョブを実行
+ * [tl! remove]
+ * @return void [tl! remove]
  */
 public function handle(AudioProcessor $processor): void
 {
@@ -154,8 +156,8 @@ public function handle(AudioProcessor $processor): void
 ```php
 /**
  * メッセージの添付を取得
- *
- * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+ * [tl! add]
+ * @return array<int, \Illuminate\Mail\Mailables\Attachment> [tl! add]
  */
 public function attachments(): array
 {
