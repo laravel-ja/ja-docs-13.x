@@ -522,6 +522,20 @@ $user = User::factory()
     ->create();
 ```
 
+各関連モデルに対して一意の中間データを提供するために、ピボット配列の配列を渡すこともできます。
+
+```php
+$user = User::factory()
+    ->hasAttached(
+        Role::factory(),
+        [
+            ['active' => true],
+            ['active' => false],
+        ]
+    )
+    ->create();
+```
+
 作成しているモデルへアタッチしたいモデルインスタンスがすでにある場合は、モデルインスタンスを`hasAttached`メソッドへ渡せます。この例では、同じ３つの役割が３人のユーザーすべてに関連付けられます。
 
 ```php

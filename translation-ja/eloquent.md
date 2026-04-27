@@ -409,7 +409,7 @@ class Flight extends Model
     /**
      * モデルの属性のデフォルト値
      *
-     * @var array
+     * @var array<string, mixed>
      */
     protected $attributes = [
         'options' => '[]',

@@ -36,7 +36,7 @@
 <a name="introduction"></a>
 ## イントロダクション
 
-メール送信は複雑であってはいけません。Laravelは、人気のある[Symfony Mailer](https://symfony.com/doc/current/mailer.html)コンポーネントを利用した、クリーンでシンプルなメールAPIを提供します。LaravelとSymfony Mailerは、SMTP、Mailgun、Postmark、Resend、Amazon SES、および`sendmail`経由でメールを送信するためのドライバを提供し、ローカルまたはクラウドベースのお好みのサービスを通して、メールの送信をすぐに始められます。
+メール送信は複雑であってはいけません。Laravelは、人気のある[Symfony Mailer](https://symfony.com/doc/current/mailer.html)コンポーネントを利用した、クリーンでシンプルなメールAPIを提供します。LaravelとSymfony Mailerは、SMTP、Cloudflare、Mailgun、Postmark、Resend、Amazon SES、および`sendmail`経由でメールを送信するためのドライバを提供し、ローカルまたはクラウドベースのお好みのサービスを通して、メールの送信をすぐに始められます。
 
 <a name="configuration"></a>
 ### 設定
@@ -49,6 +49,38 @@ Laravelのメールサービスは、アプリケーションの`config/mail.php
 ### ドライバ／トランスポートの前提条件
 
 Mailgun、Postmark、ResendなどのAPIベースドライバは、SMTPサーバを経由してメールを送信するよりもシンプルで高速です。可能であれば、こうしたドライバのいずれかを使用することをお勧めします。
+
+<a name="cloudflare-driver"></a>
+#### Cloudflareドライバ
+
+Cloudflareドライバを使用するには、ComposerでSymfonyのHTTPクライアントをインストールします。
+
+```shell
+composer require symfony/http-client
+```
+
+次に、アプリケーションの`config/mail.php`設定ファイルで２つの変更を行います。まず、デフォルトのメーラーを`cloudflare`に設定します。
+
+```php
+'default' => env('MAIL_MAILER', 'cloudflare'),
+```
+
+次に、以下の設定配列を`mailers`配列に追加します。
+
+```php
+'cloudflare' => [
+    'transport' => 'cloudflare',
+],
+```
+
+アプリケーションのデフォルトメーラーを設定したら、以下のオプションを`config/services.php`設定ファイルに追加します。
+
+```php
+'cloudflare' => [
+    'account_id' => env('CLOUDFLARE_ACCOUNT_ID'),
+    'key' => env('CLOUDFLARE_KEY'),
+],
+```
 
 <a name="mailgun-driver"></a>
 #### Mailgunドライバ

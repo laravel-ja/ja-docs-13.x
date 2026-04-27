@@ -1261,6 +1261,36 @@ task(
 );
 ```
 
+<a name="task-sub-label"></a>
+#### サブラベルの表示
+
+`subLabel`メソッドは、タスクのメインラベルの下に薄く行を表示します。これは、現在進行中のステップなど、一時的なステータスを伝えるのに便利です。サブラベルを消去するには、空の文字列を渡してください。
+
+```php
+task(
+    label: 'Deploying',
+    callback: function ($logger) {
+        $logger->subLabel('Building assets...');
+        // ...
+        $logger->subLabel('Running migrations...');
+        // ...
+        $logger->subLabel('');
+    }
+);
+```
+
+`subLabel`引数を使用して、初期サブラベルを指定することもできます。
+
+```php
+task(
+    label: 'Deploying',
+    callback: function ($logger) {
+        // ...
+    },
+    subLabel: 'Preparing...'
+);
+```
+
 <a name="task-streaming"></a>
 #### テキストのストリーミング
 
@@ -1291,6 +1321,23 @@ task(
         // ...
     },
     limit: 20
+);
+```
+
+<a name="task-keep-summary"></a>
+#### サマリーの保持
+
+デフォルトでは、コールバックが終了するとタスクの出力を消去します。タスクの完了後もステータスメッセージを画面に残したい場合は、`keepSummary`引数を渡してください。
+
+```php
+task(
+    label: 'Deploying',
+    callback: function ($logger) {
+        $logger->success('Assets built');
+        // ...
+        $logger->success('Migrations complete');
+    },
+    keepSummary: true,
 );
 ```
 

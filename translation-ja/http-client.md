@@ -89,7 +89,7 @@ HTTPクライアントは、[URIテンプレート仕様](https://www.rfc-editor
 Http::withUrlParameters([
     'endpoint' => 'https://laravel.com',
     'page' => 'docs',
-    'version' => '12.x',
+    'version' => '13.x',
     'topic' => 'validation',
 ])->get('{+endpoint}/{page}/{version}/{topic}');
 ```
@@ -374,6 +374,12 @@ $response->throwIfStatus(403);
 
 // レスポンスが特定のステータスコードでない場合は、例外を投げる
 $response->throwUnlessStatus(200);
+
+// サーバエラーが発生した場合（ステータス500以上）に、例外を投げる
+$response->throwIfServerError();
+
+// クライアントエラーが発生した場合（ステータス400以上500未満）に、例外を投げる
+$response->throwIfClientError();
 
 return $response['user']['id'];
 ```

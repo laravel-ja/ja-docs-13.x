@@ -2011,7 +2011,7 @@ $browser->assertAriaAttribute('button', 'label', 'Add')
 $browser->assertDataAttribute($selector, $attribute, $value);
 ```
 
-たとえば、指定するマークアップが`<tr id="row-1" data-content="attendees"></tr>`であり、`data-label`属性に対して宣言をする場合、次のようになります。
+たとえば、指定するマークアップが`<tr id="row-1" data-content="attendees"></tr>`であり、`data-content`属性に対して宣言をする場合、次のようになります。
 
 ```php
 $browser->assertDataAttribute('#row-1', 'content', 'attendees')

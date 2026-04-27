@@ -428,7 +428,7 @@ sail up
 <a name="sail-node-versions"></a>
 ## Nodeバージョン
 
-SailはデフォルトでNode22をインストールします。イメージをビルドする際にインストールするNodeバージョンを変更するには、アプリケーションの`compose.yaml`ファイル中の、`laravel.test`サービスの`build.args`定義を変更してください。
+SailはデフォルトでNode24をインストールします。イメージをビルドする際にインストールするNodeバージョンを変更するには、アプリケーションの`compose.yaml`ファイル中の、`laravel.test`サービスの`build.args`定義を変更してください。
 
 ```yaml
 build:

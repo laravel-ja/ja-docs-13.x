@@ -7,6 +7,7 @@
     - [ジョブクラスの生成](#generating-job-classes)
     - [クラスの構造](#class-structure)
     - [一意なジョブ](#unique-jobs)
+    - [Debounced Jobs](#debounced-jobs)
     - [ジョブの暗号化](#encrypted-jobs)
 - [ジョブミドルウェア](#job-middleware)
     - [レート制限](#rate-limiting)
@@ -413,6 +414,76 @@ class UpdateSearchIndex implements ShouldQueue, ShouldBeUnique
 
 > [!NOTE]
 > ジョブの同時処理を制限するだけでよい場合は、代わりに[WithoutOverlapping](/docs/{{version}}/queues#preventing-job-overlaps)ジョブミドルウェアを使用してください。
+
+<a name="debounced-jobs"></a>
+### デバウンス処理済みジョブ
+
+短い期間に同じジョブが何度もディスパッチされた際、最新のディスパッチのみを実際に実行したい場合があります。ジョブに`DebounceFor`属性を追加することで、これを実現できます。
+
+```php
+<?php
+
+namespace App\Jobs;
+
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Attributes\DebounceFor;
+
+#[DebounceFor(30)]
+class UpdateSearchIndex implements ShouldQueue
+{
+    use Queueable;
+
+    /**
+     * 新しいジョブインスタンスの生成
+     */
+    public function __construct(public int $productId)
+    {
+    }
+
+    /**
+     * ジョブのデバウンスIDを取得
+     */
+    public function debounceId(): string
+    {
+        return (string) $this->productId;
+    }
+}
+```
+
+上記の例では、同じ製品に対して`UpdateSearchIndex`を`30`秒以内に繰り返しディスパッチすると、ジョブがデバウンスされ、最新のディスパッチのみが実行されます。
+
+頻繁に再ディスパッチされるジョブの延期時間に上限を設けたい場合は、`DebounceFor`属性に`maxWait`引数を指定してください。
+
+```php
+#[DebounceFor(30, maxWait: 120)]
+class UpdateSearchIndex implements ShouldQueue
+{
+    use Queueable;
+
+    // ...
+}
+```
+
+ジョブに`debounceVia`メソッドを定義することで、デバウンスの追跡に使用するキャッシュストアをカスタマイズできます。
+
+```php
+use Illuminate\Contracts\Cache\Repository;
+use Illuminate\Support\Facades\Cache;
+
+public function debounceVia(): Repository
+{
+    return Cache::driver('redis');
+}
+```
+
+デバウンスジョブが新しいディスパッチによって取って代わられた場合、Laravelは`Illuminate\Queue\Events\JobDebounced`イベントを発行し、取って代わられたジョブをキューから削除します。
+
+> [!WARNING]
+> デバウンスジョブとユニークジョブは相互排他的です。`DebounceFor`属性を使用するジョブで、`ShouldBeUnique`を実装してはいけません。
+
+> [!WARNING]
+> アプリケーションが複数のWebサーバやコンテナからデバウンスジョブをディスパッチする場合、確実にすべてのサーバが同じ中央キャッシュサーバへ通信してください。
 
 <a name="encrypted-jobs"></a>
 ### ジョブの暗号化
@@ -1498,7 +1569,7 @@ class ProcessPodcast implements ShouldQueue
 <a name="sqs-fifo-and-fair-queues"></a>
 ### SQS FIFOと公平キュー
 
-Laravelは[Amazon SQS FIFO（先入れ先出し）](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-fifo-queues.html)キューをサポートしており、メッセージの重複排除による正確な1回処理を保証しながら、送信された正確な順序でジョブを処理できます。
+Laravelは、[Amazon SQS FIFO（First-In-First-Out）](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-fifo-queues.html)と[公平](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-fair-queues.html)キューをサポートしています。FIFOキューを使用すると、メッセージの重複排除を通じて正確に一度だけの処理を保証しながら、ジョブを送信した通りに正確な順序で処理できます。
 
 FIFOキューは、並列処理可能なジョブを決定するためにメッセージグループIDを必要とします。同一グループIDを持つジョブは順次処理され、異なるグループIDを持つメッセージは並行して処理できます。
 
@@ -1531,6 +1602,37 @@ class ProcessSubscriptionRenewal implements ShouldQueue
     public function deduplicationId(): string
     {
         return "renewal-{$this->subscription->id}";
+    }
+}
+```
+
+<a name="fair-queues"></a>
+#### 公平キュー
+
+SQS標準キューを使用している場合、メッセージグループを設定すると公平キューイングが有効になります。言い換えれば、グループを割り当てると、SQSはそれらを使用してテナントやワークロード間で公平な配信を維持します。追加のLaravel設定は必要ありません。
+
+ディスパッチ時に`onGroup`を呼び出す代わりに、ジョブに直接`messageGroup`メソッドを定義することもできます。
+
+```php
+<?php
+
+namespace App\Jobs;
+
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Queue\Queueable;
+
+class ProcessOrder implements ShouldQueue
+{
+    use Queueable;
+
+    // ...
+
+    /**
+     * ジョブのメッセージグループの取得
+     */
+    public function messageGroup(): string
+    {
+        return "customer-{$this->order->customer_id}";
     }
 }
 ```

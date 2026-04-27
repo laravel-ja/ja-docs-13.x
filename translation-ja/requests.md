@@ -165,9 +165,10 @@ $request->fullUrlWithoutQuery(['type']);
 `host`、`httpHost`、`schemeAndHttpHost`メソッドを使い、受信リクエストの「ホスト」を取得できます。
 
 ```php
-$request->host();
-$request->httpHost();
-$request->schemeAndHttpHost();
+// http://localhost:8000
+$request->host(); // localhost
+$request->httpHost(); // localhost:8000
+$request->schemeAndHttpHost(); // http://localhost:8000
 ```
 
 <a name="retrieving-the-request-method"></a>
