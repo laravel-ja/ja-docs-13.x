@@ -39,6 +39,7 @@
     - [`queue:work`コマンド](#the-queue-work-command)
     - [キューの優先度](#queue-priorities)
     - [キューワーカと開発](#queue-workers-and-deployment)
+    - [ワーカシグナルへの対応](#reacting-to-worker-signals)
     - [ジョブの有効期限とタイムアウト](#job-expirations-and-timeouts)
     - [キューワーカの停止と再開](#pausing-and-resuming-queue-workers)
 - [Supervisor設定](#supervisor-configuration)
@@ -2438,6 +2439,64 @@ php artisan queue:restart
 
 > [!NOTE]
 > キューは[キャッシュ](/docs/{{version}}/cache)を使用して再起動シグナルを保存するため、この機能を使用する前に、アプリケーションに対してキャッシュドライバが適切に設定されていることを確認する必要があります。
+
+<a name="reacting-to-worker-signals"></a>
+### ワーカシグナルへの対応
+
+ジョブの処理中に、キューワーカが`SIGQUIT`、`SIGTERM`、`SIGINT`などの終了シグナルを受信した場合、ワーカは現在のジョブを完了してから終了します。しかし、サーバやコンテナオーケストレータによってプロセスが停止される前に、ジョブがシグナルに反応する必要があるかもしれません。たとえば、長時間実行されるインポートジョブでは、新しいレコードの取得を停止し、現在の進捗を保存する必要があるでしょう。
+
+ジョブ内からワーカシグナルに対応するには、`Illuminate\Contracts\Queue\Interruptible`インターフェイスを実装し、ジョブで`interrupted`メソッドを定義してください。ワーカが受信したシグナル番号を`interrupted`メソッドへ渡します。
+
+```php
+<?php
+
+namespace App\Jobs;
+
+use App\Models\Import;
+use Illuminate\Contracts\Queue\Interruptible;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Queue\Queueable;
+
+class ImportProducts implements ShouldQueue, Interruptible
+{
+    use Queueable;
+
+    protected bool $shouldStop = false;
+
+    /**
+     * 新しいジョブインスタンスの生成
+     */
+    public function __construct(
+        public Import $import,
+    ) {}
+
+    /**
+     * ジョブの実行
+     */
+    public function handle(): void
+    {
+        foreach ($this->import->pendingRows() as $row) {
+            if ($this->shouldStop) {
+                break;
+            }
+
+            // 商品行のインポート処理...
+        }
+
+        $this->import->saveProgress();
+    }
+
+    /**
+     * キューワーカが受信したシグナルの処理
+     */
+    public function interrupted(int $signal): void
+    {
+        $this->shouldStop = true;
+    }
+}
+```
+
+`interrupted`メソッドは、ジョブの実行中にワーカがプロセスシグナルを受信した場合にのみ呼び出されます。これは[タイムアウト](#worker-timeouts)やジョブの[`failed`メソッド](#cleaning-up-after-failed-jobs)に代わるものではありません。
 
 <a name="job-expirations-and-timeouts"></a>
 ### ジョブの有効期限とタイムアウト

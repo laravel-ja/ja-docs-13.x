@@ -1107,6 +1107,14 @@ $audio = Audio::of('Laravelでコーディングするのが大好きです。')
 $rawContent = (string) $audio;
 ```
 
+Laravelの`Stringable`クラスで利用できる`toAudio`メソッドを使用して、文字列から音声を生成することもできます。
+
+```php
+use Illuminate\Support\Str;
+
+$audio = Str::of('I love coding with Laravel.')->toAudio();
+```
+
 `male`、`female`、`voice`メソッドを使用して、生成される音声の声を決定できます。
 
 ```php

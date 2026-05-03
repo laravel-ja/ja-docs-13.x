@@ -597,6 +597,25 @@ class ExampleTest extends TestCase
 $response->assertJsonPath('team.owner.name', fn (string $name) => strlen($name) >= 3);
 ```
 
+複数のJSONパスを一度にアサートする必要がある場合は、`assertJsonPaths`メソッドを使用します。各パスの期待値にはクロージャも指定できます。
+
+```php
+$response->assertJsonPaths([
+    'team.owner.name' => 'Darian',
+    'team.owner.email' => fn (string $email) => str($email)->is('*@laravel.com'),
+    'team.members.0.name' => 'Sally',
+]);
+```
+
+`assertJsonMissingPaths`メソッドを使用して、レスポンスに複数のJSONパスが含まれていないことをアサートできます。
+
+```php
+$response->assertJsonMissingPaths([
+    'team.owner.password',
+    'team.members.0.api_token',
+]);
+```
+
 <a name="fluent-json-testing"></a>
 ### FluentなJSONテスト
 
@@ -1037,6 +1056,7 @@ Laravelの`Illuminate\Testing\TestResponse`クラスは、アプリケーショ�
 [assertDownload](#assert-download)
 [assertExactJson](#assert-exact-json)
 [assertExactJsonStructure](#assert-exact-json-structure)
+[assertFailedDependency](#assert-failed-dependency)
 [assertForbidden](#assert-forbidden)
 [assertFound](#assert-found)
 [assertGone](#assert-gone)
@@ -1053,7 +1073,9 @@ Laravelの`Illuminate\Testing\TestResponse`クラスは、アプリケーショ�
 [assertJsonMissingExact](#assert-json-missing-exact)
 [assertJsonMissingValidationErrors](#assert-json-missing-validation-errors)
 [assertJsonPath](#assert-json-path)
+[assertJsonPaths](#assert-json-paths)
 [assertJsonMissingPath](#assert-json-missing-path)
+[assertJsonMissingPaths](#assert-json-missing-paths)
 [assertJsonStructure](#assert-json-structure)
 [assertJsonValidationErrors](#assert-json-validation-errors)
 [assertJsonValidationErrorFor](#assert-json-validation-error-for)
@@ -1239,6 +1261,15 @@ $response->assertExactJsonStructure(array $data);
 
 このメソッドは、[assertJsonStructure](#assert-json-structure)をより厳密にしたものです。`assertJsonStructure`とは対照的に、このメソッドは、レスポンスが明示的に期待されていないJSON構造のキーを含む場合、失敗します。
 
+<a name="assert-failed-dependency"></a>
+#### assertFailedDependency
+
+レスポンスがFailed Dependency(424) HTTPステータスコードであることをアサートします。
+
+```php
+$response->assertFailedDependency();
+```
+
 <a name="assert-forbidden"></a>
 #### assertForbidden
 
@@ -1414,6 +1445,24 @@ $response->assertJsonPath($path, $expectedValue);
 $response->assertJsonPath('user.name', 'Steve Schoger');
 ```
 
+<a name="assert-json-paths"></a>
+#### assertJsonPaths
+
+レスポンスの指定したパスに、指定したデータが含まれていることを宣言します。
+
+```php
+$response->assertJsonPaths(array $paths);
+```
+
+たとえば、レスポンス内の複数の値を一度に宣言できます。
+
+```php
+$response->assertJsonPaths([
+    'user.name' => 'Steve Schoger',
+    'user.email' => fn (string $email) => str($email)->endsWith('@laravel.com'),
+]);
+```
+
 <a name="assert-json-missing-path"></a>
 #### assertJsonMissingPath
 
@@ -1437,6 +1486,24 @@ $response->assertJsonMissingPath($path);
 
 ```php
 $response->assertJsonMissingPath('user.email');
+```
+
+<a name="assert-json-missing-paths"></a>
+#### assertJsonMissingPaths
+
+レスポンスに指定したパスが含まれていないことを宣言します。
+
+```php
+$response->assertJsonMissingPaths($paths);
+```
+
+たとえば、レスポンスから複数のパスが見つからないことを宣言できます。
+
+```php
+$response->assertJsonMissingPaths([
+    'user.email',
+    'user.password',
+]);
 ```
 
 <a name="assert-json-structure"></a>

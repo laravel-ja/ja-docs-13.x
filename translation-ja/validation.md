@@ -116,8 +116,8 @@ class PostController extends Controller
 public function store(Request $request): RedirectResponse
 {
     $validated = $request->validate([
-        'title' => 'required|unique:posts|max:255',
-        'body' => 'required',
+        'title' => ['required', 'unique:posts', 'max:255'],
+        'body' => ['required'],
     ]);
 
     // ブログポストは有効
@@ -128,19 +128,10 @@ public function store(Request $request): RedirectResponse
 
 ご覧のとおり、バリデーションルールを`validate`メソッドへ渡します。心配いりません。利用可能なすべてのバリデーションルールは[文書化](#available-validation-rules)されています。この場合でもバリデーションが失敗したとき、適切な応答を自動的に生成します。バリデーションにパスすると、コントローラは正常に実行を継続します。
 
-もしくは、バリデーションルールを`|`で区切る文字列の代わりに、ルールの配列で指定することもできます。
-
-```php
-$validatedData = $request->validate([
-    'title' => ['required', 'unique:posts', 'max:255'],
-    'body' => ['required'],
-]);
-```
-
 さらに、`validateWithBag`メソッドを使用して、リクエストをバリデーションした結果のエラーメッセージを[名前付きエラーバッグ](#named-error-bags)内へ保存できます。
 
 ```php
-$validatedData = $request->validateWithBag('post', [
+$validated = $request->validateWithBag('post', [
     'title' => ['required', 'unique:posts', 'max:255'],
     'body' => ['required'],
 ]);
@@ -153,8 +144,8 @@ $validatedData = $request->validateWithBag('post', [
 
 ```php
 $request->validate([
-    'title' => 'bail|required|unique:posts|max:255',
-    'body' => 'required',
+    'title' => ['bail', 'required', 'unique:posts', 'max:255'],
+    'body' => ['required'],
 ]);
 ```
 
@@ -167,9 +158,9 @@ $request->validate([
 
 ```php
 $request->validate([
-    'title' => 'required|unique:posts|max:255',
-    'author.name' => 'required',
-    'author.description' => 'required',
+    'title' => ['required', 'unique:posts', 'max:255'],
+    'author.name' => ['required'],
+    'author.description' => ['required'],
 ]);
 ```
 
@@ -177,8 +168,8 @@ $request->validate([
 
 ```php
 $request->validate([
-    'title' => 'required|unique:posts|max:255',
-    'v1\.0' => 'required',
+    'title' => ['required', 'unique:posts', 'max:255'],
+    'v1\.0' => ['required'],
 ]);
 ```
 
@@ -278,9 +269,9 @@ Laravelはデフォルトで、`TrimStrings`と`ConvertEmptyStringsToNull`ミド
 
 ```php
 $request->validate([
-    'title' => 'required|unique:posts|max:255',
-    'body' => 'required',
-    'publish_at' => 'nullable|date',
+    'title' => ['required', 'unique:posts', 'max:255'],
+    'body' => ['required'],
+    'publish_at' => ['nullable', 'date'],
 ]);
 ```
 
@@ -339,8 +330,8 @@ php artisan make:request StorePostRequest
 public function rules(): array
 {
     return [
-        'title' => 'required|unique:posts|max:255',
-        'body' => 'required',
+        'title' => ['required', 'unique:posts', 'max:255'],
+        'body' => ['required'],
     ];
 }
 ```
@@ -695,8 +686,8 @@ class PostController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validator = Validator::make($request->all(), [
-            'title' => 'required|unique:posts|max:255',
-            'body' => 'required',
+            'title' => ['required', 'unique:posts', 'max:255'],
+            'body' => ['required'],
         ]);
 
         if ($validator->fails()) {
@@ -740,8 +731,8 @@ if ($validator->stopOnFirstFailure()->fails()) {
 
 ```php
 Validator::make($request->all(), [
-    'title' => 'required|unique:posts|max:255',
-    'body' => 'required',
+    'title' => ['required', 'unique:posts', 'max:255'],
+    'body' => ['required'],
 ])->validate();
 ```
 
@@ -749,8 +740,8 @@ Validator::make($request->all(), [
 
 ```php
 Validator::make($request->all(), [
-    'title' => 'required|unique:posts|max:255',
-    'body' => 'required',
+    'title' => ['required', 'unique:posts', 'max:255'],
+    'body' => ['required'],
 ])->validateWithBag('post');
 ```
 
@@ -1002,7 +993,7 @@ Laravelの組み込みバリデーションルールエラーメッセージの�
 
 ```php
 Validator::make($request->all(), [
-    'credit_card_number' => 'required_if:payment_type,cc'
+    'credit_card_number' => ['required_if:payment_type,cc]'
 ]);
 ```
 
@@ -1249,13 +1240,13 @@ The credit card number field is required when payment type is credit card.
 フィールドは、指定された日付以降の値であることをバリデートします。日付を有効な`DateTime`インスタンスに変換するため、`strtotime`PHP関数に渡します。
 
 ```php
-'start_date' => 'required|date|after:tomorrow'
+'start_date' => ['required', 'date', 'after:tomorrow']
 ```
 
 `strtotime`により評価される日付文字列を渡す代わりに、その日付と比較する他のフィールドを指定することもできます。
 
 ```php
-'finish_date' => 'required|date|after:start_date'
+'finish_date' => ['required', 'date', 'after:start_date']
 ```
 
 使いやすいように、日付に基づくルールは、書きやすい`date`ルールビルダを使って構築できます。
@@ -1319,7 +1310,7 @@ use Illuminate\Validation\Rule;
 このバリデーションルールをASCII文字（`a-z`と`A-Z`）の範囲に限定したい場合は、`ascii`オプションを指定してください。
 
 ```php
-'username' => 'alpha:ascii',
+'username' => ['alpha:ascii'],
 ```
 
 <a name="rule-alpha-dash"></a>
@@ -1330,7 +1321,7 @@ use Illuminate\Validation\Rule;
 このバリデーションルールをASCII文字（`a-z`、`A-Z`、`0-9`）の範囲に限定したい場合は、`ascii`オプションを指定してください。
 
 ```php
-'username' => 'alpha_dash:ascii',
+'username' => ['alpha_dash:ascii'],
 ```
 
 <a name="rule-alpha-num"></a>
@@ -1341,7 +1332,7 @@ use Illuminate\Validation\Rule;
 このバリデーションルールをASCII文字（`a-z`、`A-Z`、`0-9`）の範囲に限定したい場合は、`ascii`オプションを指定してください。
 
 ```php
-'username' => 'alpha_num:ascii',
+'username' => ['alpha_num:ascii'],
 ```
 
 <a name="rule-array"></a>
@@ -1363,7 +1354,7 @@ $input = [
 ];
 
 Validator::make($input, [
-    'user' => 'array:name,username',
+    'user' => ['array:name,username'],
 ]);
 ```
 
@@ -1441,7 +1432,7 @@ use Illuminate\Validation\Rule;
 `strict` パラメータを使用すると、そのフィールドの値が`true`または`false`の場合のみ有効と判定できます。
 
 ```php
-'foo' => 'boolean:strict'
+'foo' => ['boolean:strict']
 ```
 
 <a name="rule-confirmed"></a>
@@ -1493,7 +1484,7 @@ Validator::make($data, [
 フィールドが、認証されているユーザーのパスワードと一致することをバリデートします。ルールの最初のパラメータで、[認証ガード](/docs/{{version}}/authentication)を指定できます。
 
 ```php
-'password' => 'current_password:api'
+'password' => ['current_password:api']
 ```
 
 <a name="rule-date"></a>
@@ -1529,10 +1520,10 @@ use Illuminate\Validation\Rule;
 
 ```php
 // 小数点以下が2桁ピッタリの必要がある(9.99)
-'price' => 'decimal:2'
+'price' => ['decimal:2']
 
 // 小数点以下が２から４桁である必要がある
-'price' => 'decimal:2,4'
+'price' => ['decimal:2,4']
 ```
 
 <a name="rule-declined"></a>
@@ -1566,15 +1557,21 @@ use Illuminate\Validation\Rule;
 バリデーション対象のファイルが、パラメータにより指定されたサイズに合致することをバリデートします。
 
 ```php
-'avatar' => 'dimensions:min_width=100,min_height=200'
+'avatar' => ['dimensions:min_width=100,min_height=200']
 ```
 
-使用可能なパラメータは、*min\_width*、*max\_width*、*min\_height*、*max\_height*、*width*、*height*、*ratio*です。
+使用可能なパラメータは、*min\_width*、*max\_width*、*min\_height*、*max\_height*、*width*、*height*、*ratio*、*min\_ratio*、*max\_ratio*です。
 
 *_ratio_*制約は、幅を高さで割ったものとして表す必要があります。これは、`3/2`のような分数または`1.5`のようなfloatのいずれかで指定します。
 
 ```php
-'avatar' => 'dimensions:ratio=3/2'
+'avatar' => ['dimensions:ratio=3/2']
+```
+
+The _min\_ratio_ and _max\_ratio_ constraints may be used to define a range of acceptable aspect ratios:
+
+```php
+'avatar' => ['dimensions:min_ratio=1/2,max_ratio=3/2']
 ```
 
 このルールは多くの引数が必要なため、`Rule::dimensions`メソッドを使用して、ルールをわかりやすく構築するほうが便利なケースが多いでしょう。
@@ -1594,25 +1591,31 @@ Validator::make($data, [
 ]);
 ```
 
+`minRatio`、`maxRatio`、`ratioBetween`メソッドを使用して、比率の制約を流暢に定義することもできます。
+
+```php
+Rule::dimensions()->ratioBetween(min: 1 / 2, max: 3 / 2)
+```
+
 <a name="rule-distinct"></a>
 #### distinct
 
 配列のバリデーション時、フィールドに重複した値がないことをバリデートします。
 
 ```php
-'foo.*.id' => 'distinct'
+'foo.*.id' => ['distinct']
 ```
 
 distinctはデフォルトで緩い比較を使用します。厳密な比較を使用するには、検証ルール定義に`strict`パラメータを追加することができます。
 
 ```php
-'foo.*.id' => 'distinct:strict'
+'foo.*.id' => ['distinct:strict']
 ```
 
 バリデーションルールの引数に`ignore_case`を追加して、大文字と小文字の違いを無視するルールを加えられます。
 
 ```php
-'foo.*.id' => 'distinct:ignore_case'
+'foo.*.id' => ['distinct:ignore_case']
 ```
 
 <a name="rule-doesnt-start-with"></a>
@@ -1631,7 +1634,7 @@ distinctはデフォルトで緩い比較を使用します。厳密な比較を
 バリデーション中のフィールドは、電子メールアドレスのフォーマットである必要があります。このバリデーションルールは、[egulias/email-validator](https://github.com/egulias/EmailValidator)パッケージを使用して電子メールアドレスをバリデーションします。デフォルトでは`RFCValidation`バリデータが適用されますが、他のバリデーションスタイルを適用することもできます。
 
 ```php
-'email' => 'email:rfc,dns'
+'email' => ['email:rfc,dns']
 ```
 
 上記の例では、`RFCValidation`と`DNSCheckValidation`バリデーションを適用しています。適用可能なバリデーションスタイルは、次の通りです。
@@ -1744,11 +1747,11 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 Validator::make($request->all(), [
-    'role_id' => Rule::excludeIf($request->user()->is_admin),
+    'role_id' => [Rule::excludeIf($request->user()->is_admin)],
 ]);
 
 Validator::make($request->all(), [
-    'role_id' => Rule::excludeIf(fn () => $request->user()->is_admin),
+    'role_id' => [Rule::excludeIf(fn () => $request->user()->is_admin)],
 ]);
 ```
 
@@ -1764,11 +1767,11 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 Validator::make($request->all(), [
-    'role_id' => Rule::excludeUnless($request->user()->is_admin),
+    'role_id' => [Rule::excludeUnless($request->user()->is_admin)],
 ]);
 
 Validator::make($request->all(), [
-    'role_id' => Rule::excludeUnless(fn () => $request->user()->is_admin),
+    'role_id' => [Rule::excludeUnless(fn () => $request->user()->is_admin)],
 ]);
 ```
 
@@ -1791,7 +1794,7 @@ Validator::make($request->all(), [
 #### 基本的なExistsルールの使用法
 
 ```php
-'state' => 'exists:states'
+'state' => ['exists:states']
 ```
 
 `column`オプションが指定されていない場合、フィールド名を使用します。したがって、この場合、ルールは、`states`データベーステーブルに、リクエストの`state`属性値と一致する`state`カラム値を持つレコードが含まれていることをバリデーションします。
@@ -1802,22 +1805,22 @@ Validator::make($request->all(), [
 データベーステーブル名の後に配置することで、バリデーションルールで使用するデータベースカラム名を明示的に指定できます。
 
 ```php
-'state' => 'exists:states,abbreviation'
+'state' => ['exists:states,abbreviation']
 ```
 
 場合によっては、`exists`クエリに使用する特定のデータベース接続を指定する必要があります。これは、接続名をテーブル名の前に付けることで実現できます。
 
 ```php
-'email' => 'exists:connection.staff,email'
+'email' => ['exists:connection.staff,email']
 ```
 
 テーブル名を直接指定する代わりに、Eloquentモデルを指定することもできます。
 
 ```php
-'user_id' => 'exists:App\Models\User,id'
+'user_id' => ['exists:App\Models\User,id']
 ```
 
-バリデーションルールで実行されるクエリをカスタマイズしたい場合は、ルールをスムーズに定義できる`Rule`クラスを使ってください。下の例では、`|`文字を区切りとして使用する代わりに、バリデーションルールを配列として指定しています。
+バリデーションルールで実行されるクエリをカスタマイズしたい場合は、ルールをスムーズに定義できる`Rule`クラスを使ってください。
 
 ```php
 use Illuminate\Database\Query\Builder;
@@ -1837,7 +1840,7 @@ Validator::make($data, [
 `Rule::exists`メソッドが生成する、`exists`ルールで使用するデータベースカラム名は、`exists`メソッドの第２引数として明示的に指定できます。
 
 ```php
-'state' => Rule::exists('states', 'abbreviation'),
+'state' => [Rule::exists('states', 'abbreviation')],
 ```
 
 場合により、値の配列がデータベースに存在するかを検証したい場合も起こるでしょう。その場合は、`exists`ルールと[array](#rule-array)ルールをバリデーション対象のフィールドへ追加できます。
@@ -1940,7 +1943,7 @@ Validator::make($input, [
 フィールドが、配列内にキーとして指定した*value*を少なくとも１つ持つ配列であることをバリデートします。
 
 ```php
-'config' => 'array|in_array_keys:timezone'
+'config' => ['array', 'in_array_keys:timezone']
 ```
 
 <a name="rule-integer"></a>
@@ -1951,7 +1954,7 @@ Validator::make($input, [
 `strict`パラメーターを使用すると、フィールドの型が`integer`である場合のみ有効とみなします。整数値を含む文字列は有効とみなしません。
 
 ```php
-'age' => 'integer:strict'
+'age' => ['integer:strict']
 ```
 
 > [!WARNING]
@@ -2018,9 +2021,9 @@ Validator::make($input, [
 フィールドが指定するMIMEタイプのどれかであることをバリデートします。
 
 ```php
-'video' => 'mimetypes:video/avi,video/mpeg,video/quicktime',
+'video' => ['mimetypes:video/avi,video/mpeg,video/quicktime'],
 
-'media' => 'mimetypes:image/*,video/*',
+'media' => ['mimetypes:image/*,video/*'],
 ```
 
 アップロードしたファイルのMIMEタイプを判別するために、ファイルの内容が読み取られ、フレームワークはMIMEタイプを推測します。これは、クライアントが提供するMIMEタイプとは異なる場合があります。
@@ -2031,7 +2034,7 @@ Validator::make($input, [
 ファイルは、リストする拡張子のいずれかに対応するMIMEタイプを持っていることをバリデートします。
 
 ```php
-'photo' => 'mimes:jpg,bmp,png'
+'photo' => ['mimes:jpg,bmp,png']
 ```
 
 拡張子を指定するだけでもよいのですが、このルールは実際には、ファイルの内容を読み取ってそのMIMEタイプを推測することにより、ファイルのMIMEタイプをバリデーションします。MIMEタイプとそれに対応する拡張子の完全なリストは、次の場所にあります。
@@ -2104,10 +2107,7 @@ Validator::make($data, [
 
 フィールドが指定した正規表現と一致しないことをバリデートします。
 
-内部的に、このルールはPHPの`preg_match`関数を使用しています。指定するパターンは`preg_match`で要求されるものと同じ形式に従う必要があり、有効なデリミタも含める必要があります。例：`'email' => 'not_regex:/^.+$/i'`
-
-> [!WARNING]
-> `regex`／`not_regex`パターンを使用するとき、特に正規表現に`|`文字が含まれている場合は、`|`区切り文字を使用する代わりに配列を使用してバリデーションルールを指定する必要があります。
+内部的に、このルールはPHPの`preg_match`関数を使用しています。指定するパターンは`preg_match`が要求するのと同じ形式に従う必要があり、有効なデリミタも含める必要があります。例：`'email' => ['not_regex:/^.+$/i']`
 
 <a name="rule-nullable"></a>
 #### nullable
@@ -2122,7 +2122,7 @@ Validator::make($data, [
 `strict`パラメータを使用すると、フィールドの値が整数型または浮動小数点数型の場合のみ有効と判定できます。数値文字列は無効と判定します。
 
 ```php
-'amount' => 'numeric:strict'
+'amount' => ['numeric:strict']
 ```
 
 <a name="rule-present"></a>
@@ -2185,11 +2185,11 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 Validator::make($request->all(), [
-    'role_id' => Rule::prohibitedIf($request->user()->is_admin),
+    'role_id' => [Rule::prohibitedIf($request->user()->is_admin)],
 ]);
 
 Validator::make($request->all(), [
-    'role_id' => Rule::prohibitedIf(fn () => $request->user()->is_admin),
+    'role_id' => [Rule::prohibitedIf(fn () => $request->user()->is_admin)],
 ]);
 ```
 <a name="rule-prohibited-if-accepted"></a>
@@ -2223,11 +2223,11 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 Validator::make($request->all(), [
-    'role_id' => Rule::prohibitedUnless($request->user()->is_admin),
+    'role_id' => [Rule::prohibitedUnless($request->user()->is_admin)],
 ]);
 
 Validator::make($request->all(), [
-    'role_id' => Rule::prohibitedUnless(fn () => $request->user()->is_admin),
+    'role_id' => [Rule::prohibitedUnless(fn () => $request->user()->is_admin)],
 ]);
 ```
 
@@ -2250,10 +2250,7 @@ Validator::make($request->all(), [
 
 フィールドが指定された正規表現にマッチすることをバリデートします。
 
-内部的に、このルールはPHPの`preg_match`関数を使用します。指定するパターンは`preg_match`で要求されるものと同じ形式に従う必要があり、有効なデリミタも含める必要があります。例：`'email' => 'regex:/^.+@.+$/i'`
-
-> [!WARNING]
-> `regex`／`not_regex`パターンを使用するとき、特に正規表現に`|`文字が含まれている場合は、`|`区切り文字を使用する代わりに、配列でルールを指定する必要があります。
+内部的に、このルールはPHPの`preg_match`関数を使用しています。指定するパターンは、`preg_match`が要求するのと同じ形式に従う必要があり、有効なデリミタも含める必要があります。例：`'email' => ['regex:/^.+@.+$/i']`
 
 <a name="rule-required"></a>
 #### required
@@ -2281,11 +2278,11 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 Validator::make($request->all(), [
-    'role_id' => Rule::requiredIf($request->user()->is_admin),
+    'role_id' => [Rule::requiredIf($request->user()->is_admin)],
 ]);
 
 Validator::make($request->all(), [
-    'role_id' => Rule::requiredIf(fn () => $request->user()->is_admin),
+    'role_id' => [Rule::requiredIf(fn () => $request->user()->is_admin)],
 ]);
 ```
 
@@ -2311,11 +2308,11 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 Validator::make($request->all(), [
-    'role_id' => Rule::requiredUnless($request->user()->is_admin),
+    'role_id' => [Rule::requiredUnless($request->user()->is_admin)],
 ]);
 
 Validator::make($request->all(), [
-    'role_id' => Rule::requiredUnless(fn () => $request->user()->is_admin),
+    'role_id' => [Rule::requiredUnless(fn () => $request->user()->is_admin)],
 ]);
 ```
 
@@ -2356,16 +2353,16 @@ Validator::make($request->all(), [
 
 ```php
 // 文字列長が１２文字ちょうどであることをバリデート
-'title' => 'size:12';
+'title' => ['size:12'];
 
 // 指定された整数が１０であることをバリデート
-'seats' => 'integer|size:10';
+'seats' => ['integer', 'size:10'];
 
 // 配列にちょうど５要素あることをバリデート
-'tags' => 'array|size:5';
+'tags' => ['array', 'size:5'];
 
 // アップロードしたファイルが５１２キロバイトぴったりであることをバリデート
-'image' => 'file|size:512';
+'image' => ['file', 'size:512'];
 ```
 
 <a name="rule-starts-with"></a>
@@ -2402,11 +2399,11 @@ use Illuminate\Validation\Rule;
 [`DateTimeZone::listIdentifiers`メソッドが受け付ける](https://www.php.net/manual/en/datetimezone.listidentifiers.php)引数も、この検証ルールへ指定できます。
 
 ```php
-'timezone' => 'required|timezone:all';
+'timezone' => ['required', 'timezone:all'];
 
-'timezone' => 'required|timezone:Africa';
+'timezone' => ['required', 'timezone:Africa'];
 
-'timezone' => 'required|timezone:per_country,US';
+'timezone' => ['required', 'timezone:per_country,US'];
 ```
 
 <a name="rule-unique"></a>
@@ -2419,13 +2416,13 @@ use Illuminate\Validation\Rule;
 テーブル名を直接指定する代わりに、Eloquentモデルを指定することもできます。
 
 ```php
-'email' => 'unique:App\Models\User,email_address'
+'email' => ['unique:App\Models\User,email_address']
 ```
 
 `column`オプションは、フィールドの対応するデータベースカラムを指定するために使用します。`column`オプションが指定されていない場合、バリデーション中のフィールドの名前が使用されます。
 
 ```php
-'email' => 'unique:users,email_address'
+'email' => ['unique:users,email_address']
 ```
 
 **カスタムデータベース接続の指定**
@@ -2433,14 +2430,14 @@ use Illuminate\Validation\Rule;
 場合により、バリデータが行うデータベースクエリのカスタム接続を指定する必要があります。これには、接続名をテーブル名の前に追加します。
 
 ```php
-'email' => 'unique:connection.users,email_address'
+'email' => ['unique:connection.users,email_address']
 ```
 
 **指定されたIDのuniqueルールを無視する**
 
 場合により、uniqueのバリデーション中に特定のIDを無視したいことがあります。たとえば、ユーザーの名前、メールアドレス、および場所を含む「プロファイルの更新」画面について考えてみます。メールアドレスが一意であることを確認したいでしょう。しかし、ユーザーが名前フィールドのみを変更し、メールフィールドは変更しない場合、ユーザーは当該電子メールアドレスの所有者であるため、バリデーションエラーが投げられるのは望ましくありません。
 
-バリデータにユーザーIDを無視するように指示するには、ルールをスムーズに定義できる`Rule`クラスを使います。以下の例の場合、さらにルールを`|`文字を区切りとして使用する代わりに、バリデーションルールを配列として指定しています。
+バリデータにユーザーIDを無視するように指示するには、ルールをスムーズに定義できる`Rule`クラスを使います。
 
 ```php
 use Illuminate\Support\Facades\Validator;
@@ -2510,9 +2507,9 @@ Rule::unique('users')->withoutTrashed('was_deleted_at');
 有効と見なすURLプロトコルを指定したい場合は、バリデーションルールのパラメータとして、そのプロトコルを渡すことができます：
 
 ```php
-'url' => 'url:http,https',
+'url' => ['url:http,https'],
 
-'game' => 'url:minecraft,steam',
+'game' => ['url:minecraft,steam'],
 ```
 
 <a name="rule-ulid"></a>
@@ -2528,7 +2525,7 @@ Rule::unique('users')->withoutTrashed('was_deleted_at');
 また、指定UUIDがバージョンによるUUID仕様と一致するかを検証することもできます。
 
 ```php
-'uuid' => 'uuid:4'
+'uuid' => ['uuid:4']
 ```
 
 <a name="conditionally-adding-rules"></a>
@@ -2543,9 +2540,9 @@ Rule::unique('users')->withoutTrashed('was_deleted_at');
 use Illuminate\Support\Facades\Validator;
 
 $validator = Validator::make($data, [
-    'has_appointment' => 'required|boolean',
-    'appointment_date' => 'exclude_if:has_appointment,false|required|date',
-    'doctor_name' => 'exclude_if:has_appointment,false|required|string',
+    'has_appointment' => ['required', 'boolean'],
+    'appointment_date' => ['exclude_if:has_appointment,false', 'required', 'date'],
+    'doctor_name' => ['exclude_if:has_appointment,false', 'required', 'string'],
 ]);
 ```
 
@@ -2553,9 +2550,9 @@ $validator = Validator::make($data, [
 
 ```php
 $validator = Validator::make($data, [
-    'has_appointment' => 'required|boolean',
-    'appointment_date' => 'exclude_unless:has_appointment,true|required|date',
-    'doctor_name' => 'exclude_unless:has_appointment,true|required|string',
+    'has_appointment' => ['required', 'boolean'],
+    'appointment_date' => ['exclude_unless:has_appointment,true', 'required', 'date'],
+    'doctor_name' => ['exclude_unless:has_appointment,true', 'required', 'string'],
 ]);
 ```
 
@@ -2566,7 +2563,7 @@ $validator = Validator::make($data, [
 
 ```php
 $validator = Validator::make($data, [
-    'email' => 'sometimes|required|email',
+    'email' => ['sometimes', 'required', 'email'],
 ]);
 ```
 
@@ -2584,8 +2581,8 @@ $validator = Validator::make($data, [
 use Illuminate\Support\Facades\Validator;
 
 $validator = Validator::make($request->all(), [
-    'email' => 'required|email',
-    'games' => 'required|integer|min:0',
+    'email' => ['required', 'email'],
+    'games' => ['required', 'integer', 'min:0'],
 ]);
 ```
 
@@ -2594,7 +2591,7 @@ $validator = Validator::make($request->all(), [
 ```php
 use Illuminate\Support\Fluent;
 
-$validator->sometimes('reason', 'required|max:500', function (Fluent $input) {
+$validator->sometimes('reason', ['required', 'max:500'], function (Fluent $input) {
     return $input->games >= 100;
 });
 ```
@@ -2657,7 +2654,7 @@ $input = [
 ];
 
 Validator::make($input, [
-    'user' => 'array:name,username',
+    'user' => ['array:name,username'],
 ]);
 ```
 
@@ -2672,7 +2669,7 @@ Validator::make($input, [
 use Illuminate\Support\Facades\Validator;
 
 $validator = Validator::make($request->all(), [
-    'photos.profile' => 'required|image',
+    'photos.profile' => ['required', 'image'],
 ]);
 ```
 
@@ -2680,8 +2677,8 @@ $validator = Validator::make($request->all(), [
 
 ```php
 $validator = Validator::make($request->all(), [
-    'users.*.email' => 'email|unique:users',
-    'users.*.first_name' => 'required_with:users.*.last_name',
+    'users.*.email' => ['email', 'unique:users'],
+    'users.*.first_name' => ['required_with:users.*.last_name'],
 ]);
 ```
 
@@ -2737,7 +2734,7 @@ $input = [
 ];
 
 Validator::validate($input, [
-    'photos.*.description' => 'required',
+    'photos.*.description' => ['required'],
 ], [
     'photos.*.description.required' => 'Please describe photo #:position.',
 ]);
@@ -3101,7 +3098,7 @@ $validator = Validator::make($request->all(), [
 ```php
 use Illuminate\Support\Facades\Validator;
 
-$rules = ['name' => 'unique:users,name'];
+$rules = ['name' => ['unique:users,name']];
 
 $input = ['name' => ''];
 
