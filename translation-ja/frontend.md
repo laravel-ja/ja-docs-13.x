@@ -160,7 +160,7 @@ export default function Show({ user }) {
 <a name="inertia-starter-kits"></a>
 ### スターターキット
 
-InertiaとReact／Svelte／Vueを使用してフロントエンドを構築したい場合は、[ReactまたはVueアプリケーション・スターターキット](/docs/{{version}}/starter-kits)を活用してアプリケーションの開発をジャンプスタートできます。どちらのスターターキットも、Inertia、React／Svelte／Vue、[Tailwind](https://tailwindcss.com)、[Vite](https://vitejs.dev)を使用して、アプリケーションのバックエンドとフロントエンドの認証フローをスカフォールドしており、次の大きなアイデアを作り始めることができます。
+InertiaとReact／Svelte／Vueを使用してフロントエンドを構築したい場合は、[ReactまたはVueアプリケーション・スターターキット](/docs/{{version}}/starter-kits)を活用してアプリケーションの開発をジャンプスタートできます。全てのスターターキットは、Inertia、React／Svelte／Vue、[Tailwind](https://tailwindcss.com)、[Vite](https://vitejs.dev)を使用して、アプリケーションのバックエンドとフロントエンドの認証フローをスカフォールドしており、次の大きなアイデアを作り始めることができます。
 
 <a name="bundling-assets"></a>
 ## アセットの結合

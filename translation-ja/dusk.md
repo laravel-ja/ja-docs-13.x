@@ -996,6 +996,13 @@ $browser->controlClick();
 $browser->controlClick('.selector');
 ```
 
+`clickWhenVisible`または`clickWhenEnabled`メソッドを使用すると、要素の準備が整うのを待ってから、正確に一度だけクリックできます。
+
+```php
+$browser->clickWhenVisible('@save-button');
+$browser->clickWhenEnabled('@submit-button');
+```
+
 <a name="mouseover"></a>
 #### マウスオーバ
 

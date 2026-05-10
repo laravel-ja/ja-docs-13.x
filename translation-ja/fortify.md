@@ -14,6 +14,13 @@
     - [２要素認証の有効化](#enabling-two-factor-authentication)
     - [２要素認証による認証](#authenticating-with-two-factor-authentication)
     - [２要素認証の無効化](#disabling-two-factor-authentication)
+- [パスキー](#passkeys)
+    - [パスキーの有効化](#enabling-passkeys)
+    - [JavaScriptクライアント](#passkeys-javascript-client)
+    - [パスキーによる認証](#authenticating-with-passkeys)
+    - [パスキーによるパスワード確認](#confirming-password-with-passkeys)
+    - [パスキー登録](#registering-passkeys)
+    - [パスキー削除](#deleting-passkeys)
 - [ユーザー登録](#registration)
     - [ユーザー登録のカスタマイズ](#customizing-registration)
 - [パスワードリセット](#password-reset)
@@ -355,6 +362,170 @@ Fortifyはこのビューを返す、`/two-factor-challenge`ルートの定義�
 ### ２要素認証の無効化
 
 ２要素認証を無効にするには、アプリケーションが`/user/two-factor-authentication`エンドポイントに対してDELETEリクエストを行う必要があります。 Fortifyの2要素認証エンドポイントは、呼び出される前に[パスワード確認](#password-confirmation)を必要とすることを忘れないでください。
+
+<a name="passkeys"></a>
+## パスキー
+
+FortifyはWebAuthnを使用したパスキー認証をサポートしています。パスキーにより、ユーザーはFace ID、Touch ID、Windows Helloなどのプラットフォーム認証器や、ハードウェアセキュリティキーを使用して、パスワードなしで認証できます。
+
+<a name="enabling-passkeys"></a>
+### パスキーの有効化
+
+利用開始するには、アプリケーションの`fortify`設定ファイルで、`passkeys`機能を確実に有効にしてください。
+
+```php
+use Laravel\Fortify\Features;
+
+'features' => [
+    // ...
+    Features::passkeys([
+        'confirmPassword' => true,
+    ]),
+],
+```
+
+`confirmPassword`オプションは、パスキーの登録または削除の前に、Fortifyが[パスワード確認](#password-confirmation)を必要とするかどうかを決定します。
+
+次に、アプリケーションの`App\Models\User`モデルが`Laravel\Fortify\Contracts\PasskeyUser`を実装し、`Laravel\Fortify\PasskeyAuthenticatable`トレイトを使用していることを確認してください。
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Fortify\Contracts\PasskeyUser;
+use Laravel\Fortify\PasskeyAuthenticatable;
+
+class User extends Authenticatable implements PasskeyUser
+{
+    use Notifiable, PasskeyAuthenticatable;
+}
+```
+
+Fortifyのパスキー設定オプションは、アプリケーションの`config/fortify.php`ファイルにある`passkeys`設定配列を使用してカスタマイズできます。
+
+```php
+'passkeys' => [
+    'relying_party_id' => parse_url(config('app.url'), PHP_URL_HOST),
+    'allowed_origins' => [config('app.url')],
+    'user_handle_secret' => config('app.key'),
+    'timeout' => 60000,
+],
+```
+
+> [!NOTE]
+> Fortifyは`laravel/passkeys` Composerパッケージをラップし、設定を自動で行います。Fortifyのパスキー機能を使用している場合は、アプリケーションの`config/fortify.php`ファイルを使用してパスキーを設定してください。`laravel/passkeys`の設定ファイルを公開する必要はなく、そこで定義された値はFortifyによって上書きされます。
+
+`relying_party_id`はアプリケーションのドメインと一致させる必要があります。`allowed_origins`配列には、パスキーの登録と認証を完了できるブラウザのオリジンをリストします。`user_handle_secret`は不透明なユーザー識別子を派生させるために使用し、同じユーザーを複数のパスキー登録にわたり認識できるようにします。`timeout`オプションは、パスキーの登録および認証操作をどのくらいの時間有効にするか制御します。
+
+Fortifyは、パスキーのログイン、確認、登録ルートに専用のパスキーレート制限を適用します。必要に応じ、`fortify.limiters.passkeys`設定オプションと、対応する`RateLimiter::for(...)`定義を使用してカスタマイズしてください。
+
+<a name="passkeys-javascript-client"></a>
+### JavaScriptクライアント
+
+ブラウザ側スクリプトを使用したBladeアプリケーションを含む、カスタムフロントエンドを構築している場合は、公式の[`@laravel/passkeys`](https://www.npmjs.com/package/@laravel/passkeys)パッケージを使用できます。このパッケージはブラウザのWebAuthnセレモニーを処理し、Fortifyのパスキーエンドポイントへリクエストを送信します。
+
+npm経由でパッケージをインストールします。
+
+```shell
+npm install @laravel/passkeys
+```
+
+これで、フロントエンドからパスキーの登録・検証を開始できます。
+
+```js
+import { Passkeys } from "@laravel/passkeys";
+
+await Passkeys.register({ name: "MacBook Pro" });
+await Passkeys.verify();
+```
+
+アプリケーションでカスタムパスキーエンドポイントURIを使用している場合は、呼び出しごとにルートをオーバーライドできます。
+
+```js
+await Passkeys.verify({
+    routes: {
+        options: "/passkeys/confirm/options",
+        submit: "/passkeys/confirm",
+    },
+});
+
+await Passkeys.register({
+    name: "MacBook Pro",
+    routes: {
+        options: "/user/passkeys/options",
+        submit: "/user/passkeys",
+    },
+});
+```
+
+このパッケージは、`@laravel/passkeys/react`、`@laravel/passkeys/vue`、`@laravel/passkeys/svelte`を介して、React、Vue、Svelteのヘルパも提供しています。
+
+<a name="authenticating-with-passkeys"></a>
+### パスキーによる認証
+
+パスキーでユーザーを認証するには、アプリケーションはまず`/passkeys/login/options`エンドポイントへGETリクエストを送信する必要があります。このエンドポイントは、フロントエンドが`navigator.credentials.get(...)`へ渡すべきWebAuthnチャレンジオプションを返します。
+
+ブラウザが認証情報を返した後、アプリケーションは認証情報のペイロードを含めて`/passkeys/login`へPOSTリクエストを送信する必要があります。また、論理値の`remember`フィールドも含められます。
+
+リクエストが成功すると、Fortifyは設定済みのガードでユーザーをログインさせ、以下のいずれかを返します。
+
+<div class="content-list" markdown="1">
+
+- 標準のリクエストに対して、意図した閲覧ページへのリダイレクトレスポンス。
+- XHRリクエストに対して、`redirect`キーを持つJSONペイロードを含む`200` HTTPレスポンス。
+
+</div>
+
+<a name="confirming-password-with-passkeys"></a>
+### パスキーによるパスワード確認
+
+認証済みセッションについて、Fortifyは現在のセッションでLaravelのパスワード確認要件を満たす、パスキー確認エンドポイントを提供します。
+
+パスキーで確認するには、アプリケーションはまず`/passkeys/confirm/options`へGETリクエストを送信する必要があります。このエンドポイントは、フロントエンドが`navigator.credentials.get(...)`へ渡すべきWebAuthnチャレンジオプションを返します。
+
+ブラウザが認証情報を返した後、アプリケーションは認証情報のペイロードを含めて`/passkeys/confirm`へPOSTリクエストを送信する必要があります。
+
+リクエストが成功すると、Fortifyは現在のセッションをパスワード確認済みとしてマークし、以下のいずれかを返します。
+
+<div class="content-list" markdown="1">
+
+- 標準のリクエストに対して、意図した閲覧ページへのリダイレクトレスポンス。
+- XHRリクエストに対して、`redirect`キーを持つJSONペイロードを含む`200` HTTPレスポンス。
+
+</div>
+
+<a name="registering-passkeys"></a>
+### パスキー登録
+
+認証済みユーザーのパスキーを登録するには、アプリケーションはまず`/user/passkeys/options`へGETリクエストを送信してください。このエンドポイントは、フロントエンドが`navigator.credentials.create(...)`へ渡すべきWebAuthn作成オプションを返します。
+
+ブラウザが認証情報を返した後、アプリケーションは`name`フィールドと、`navigator.credentials.create(...)`が返したシリアル化済みの[`PublicKeyCredential`](https://developer.mozilla.org/en-US/docs/Web/API/PublicKeyCredential)オブジェクトを含む`credential`フィールドを添えて、`/user/passkeys`へPOSTリクエストを送信する必要があります。
+
+リクエストが成功すると、Fortifyは以下のいずれかを返します。
+
+<div class="content-list" markdown="1">
+
+- 標準のリクエストに対して、セッションに`passkey-registered`ステータスを保持したリダイレクトバックレスポンス。
+- 以前に登録されたパスキーの`id`と`name`、および`status`キーを含むJSONペイロードを持つ`200` HTTPレスポンス。
+
+</div>
+
+<a name="deleting-passkeys"></a>
+### パスキー削除
+
+パスキーを削除するには、アプリケーションは`/user/passkeys/{passkey}`へDELETEリクエストを送信してください。
+
+リクエストが成功すると、Fortifyは以下のいずれかを返します。
+
+<div class="content-list" markdown="1">
+
+- 標準のリクエストに対して、セッションに`passkey-deleted`ステータスを保持したリダイレクトバックレスポンス。
+- XHRリクエストに対して、`status`キーを含むJSONペイロードを持つ`200` HTTPレスポンス。
+
+</div>
 
 <a name="registration"></a>
 ## ユーザー登録

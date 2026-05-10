@@ -891,9 +891,9 @@ $table->mediumText('data')->charset('binary'); // MEDIUMBLOB
 <a name="column-method-morphs"></a>
 #### `morphs()` {.collection-method}
 
-`morphs`メソッドは、`{column}_id`、`{column}_type`、`VARCHAR`型のカラムを追加する便利なメソッドです。`{column}_id`のカラム型は、モデルキーの型に応じて`UNSIGNED BIGINT`、`CHAR(36)`、`CHAR(26)`のいずれかになります。
+`morphs`メソッドは、`{column}_type` `VARCHAR`カラムと、`{column}_id`に相当するカラムを追加する便利なメソッドです。`{column}_id`のカラム型は、モデルのキーの型に応じて、`UNSIGNED BIGINT`、`CHAR(36)`、`CHAR(26)`のいずれかになります。
 
-このメソッドは、ポリモーフィック[Eloquentリレーション](/docs/{{version}}/eloquent-relationships)に必要なカラムを定義するときに使用することを目的としています。次の例では、`taggable_id`カラムと`taggable_type`カラムが作成されます。
+このメソッドは、ポリモーフィック[Eloquentリレーション](/docs/{{version}}/eloquent-relationships)に必要なカラムを定義するときに使用することを目的としています。次の例では、`taggable_type`カラムと`taggable_id`カラムを作成します。
 
 ```php
 $table->morphs('taggable');
@@ -1139,9 +1139,9 @@ $table->unsignedTinyInteger('votes');
 <a name="column-method-ulidMorphs"></a>
 #### `ulidMorphs()` {.collection-method}
 
-`ulidMorphs`メソッドは、`{column}_id` `CHAR(26)`カラムと、`{column}_type` `VARCHAR`カラムを追加する便利なメソッドです。
+`ulidMorphs`メソッドは、`{column}_type`　`VARCHAR`カラムと、`{column}_id`　`CHAR(26)`に相当するカラムを追加する便利なメソッドです。
 
-このメソッドは、ULID識別子を使用するポリモーフィック[Eloquentリレーション](/docs/{{version}}/eloquent-relationships)に必要なカラムを定義するために使用することを想定しています。以下の例では、`taggable_id`と`taggable_type`というカラムが作成されます。
+このメソッドは、ULID識別子を使用するポリモーフィック[Eloquentリレーション](/docs/{{version}}/eloquent-relationships)に必要なカラムを定義する際に使用することを想定しています。次の例では、`taggable_type`カラムと`taggable_id`カラムを作成します。
 
 ```php
 $table->ulidMorphs('taggable');
@@ -1150,9 +1150,9 @@ $table->ulidMorphs('taggable');
 <a name="column-method-uuidMorphs"></a>
 #### `uuidMorphs()` {.collection-method}
 
-`uuidMorphs`メソッドは、`{column}_id` `CHAR(36)`カラムと、`{column}_type` `VARCHAR`カラムを追加する便利なメソッドです。
+`uuidMorphs`メソッドは、`{column}_type` `VARCHAR`カラムと、`{column}_id` `CHAR(36)`に相当するカラムを追加する便利なメソッドです。
 
-このメソッドは、UUID識別子を使用する[ポリモーフィックEloquentリレーション](/docs/{{version}}/eloquent-relationships#polymorphic-relationships)に必要なカラムを定義するときに使用します。以下の例では、`taggable_id`カラムと`taggable_type`カラムが作成されます。
+このメソッドは、UUID識別子を使用する[ポリモーフィックEloquentリレーション](/docs/{{version}}/eloquent-relationships#polymorphic-relationships)に必要なカラムを定義する際に使用することを想定しています。次の例では、`taggable_type`カラムと`taggable_id`カラムを作成します。
 
 ```php
 $table->uuidMorphs('taggable');
@@ -1385,7 +1385,7 @@ Laravelは、一般的なタイプのカラムの削除の便利な方法を提�
 
 | コマンド                           | 説明                                               |
 | ---------------------------------- | -------------------------------------------------- |
-| `$table->dropMorphs('morphable');` | `morphable_id`カラムと`morphable_type`カラムを削除 |
+| `$table->dropMorphs('morphable');` | `morphable_type`カラムと`morphable_id`カラムを削除 |
 | `$table->dropRememberToken();`     | `remember_token`カラムを削除                       |
 | `$table->dropSoftDeletes();`       | `deleted_at`カラムを削除                           |
 | `$table->dropSoftDeletesTz();`     | `dropSoftDeletes（）`メソッドのエイリアス          |

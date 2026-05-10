@@ -1112,6 +1112,7 @@ Laravelの`Illuminate\Testing\TestResponse`クラスは、アプリケーショ�
 [assertSessionHasNoErrors](#assert-session-has-no-errors)
 [assertSessionDoesntHaveErrors](#assert-session-doesnt-have-errors)
 [assertSessionMissing](#assert-session-missing)
+[assertSessionMissingInput](#assert-session-missing-input)
 [assertStatus](#assert-status)
 [assertSuccessful](#assert-successful)
 [assertTooManyRequests](#assert-too-many-requests)
@@ -1933,6 +1934,15 @@ $response->assertSessionDoesntHaveErrors($keys = [], $format = null, $errorBag =
 
 ```php
 $response->assertSessionMissing($key);
+```
+
+<a name="assert-session-missing-input"></a>
+#### assertSessionMissingInput
+
+セッションの一時保存済み入力配列に、指定した入力キーが存在しないことを宣言します。
+
+```php
+$response->assertSessionMissingInput($key);
 ```
 
 <a name="assert-status"></a>

@@ -1039,8 +1039,8 @@ users
 images
     id - integer
     url - string
-    imageable_id - integer
     imageable_type - string
+    imageable_id - integer
 ```
 
 `images`テーブルの`imageable_id`カラムと`imageable_type`カラムに注意してください。`imageable_id`カラムには投稿またはユーザーのID値が含まれ、`imageable_type`カラムには親モデルのクラス名が含まれます。`imageable_type`カラムは、`imageable`リレーションへのアクセス時に返す親モデルの「タイプ」を決めるため、Eloquentが使用します。この場合、カラムには`App\Models\Post`か`App\Models\User`のどちらかが入ります。
@@ -1160,8 +1160,8 @@ videos
 comments
     id - integer
     body - text
-    commentable_id - integer
     commentable_type - string
+    commentable_id - integer
 ```
 
 <a name="one-to-many-polymorphic-model-structure"></a>
@@ -1353,8 +1353,8 @@ tags
 
 taggables
     tag_id - integer
-    taggable_id - integer
     taggable_type - string
+    taggable_id - integer
 ```
 
 > [!NOTE]

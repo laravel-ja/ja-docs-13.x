@@ -125,12 +125,12 @@ AI SDKは、その機能全体でさまざまなプロバイダをサポート�
 
 | 機能 | プロバイダ |
 |---|---|
-| テキスト | OpenAI, Anthropic, Gemini, Azure, Groq, xAI, DeepSeek, Mistral, Ollama |
-| 画像 | OpenAI, Gemini, xAI |
-| TTS | OpenAI, ElevenLabs |
-| STT | OpenAI, ElevenLabs, Mistral |
-| 埋め込み | OpenAI, Gemini, Azure, Cohere, Mistral, Jina, VoyageAI |
-| リランク | Cohere, Jina |
+| テキスト | OpenAI, Anthropic, Gemini, Azure, Bedrock, Groq, xAI, DeepSeek, Mistral, Ollama, OpenRouter |
+| 画像 | OpenAI, Gemini, xAI, Azure, Bedrock, OpenRouter |
+| TTS | OpenAI, ElevenLabs, Gemini |
+| STT | OpenAI, ElevenLabs, Mistral, Gemini |
+| 埋め込み | OpenAI, Gemini, Azure, Bedrock, Cohere, Mistral, Jina, VoyageAI, Ollama, OpenRouter |
+| リランク | Cohere, Jina, VoyageAI |
 | ファイル | OpenAI, Anthropic, Gemini |
 
 `Laravel\Ai\Enums\Lab`列挙型（enum）は、プレーンな文字列を使用する代わりに、コード全体でプロバイダを参照するために使用できます。
@@ -925,6 +925,7 @@ PHP属性を使用して、エージェントのテキスト生成オプショ�
 - `Provider`: エージェントに使用するAIプロバイダ（またはフェイルオーバ用のプロバイダ）
 - `Temperature`: 生成に使用するサンプリング温度（0.0～1.0）
 - `Timeout`: エージェントリクエストのHTTPタイムアウト（秒単位、デフォルトは60）
+-  `TopP`: 生成に使用するニュークリアスサンプリングの確率 (0.0～1.0)
 - `UseCheapestModel`: コスト最適化のため、プロバイダの最も安価なテキストモデルを使用
 - `UseSmartestModel`: 複雑なタスクのため、プロバイダの最も有能なテキストモデルを使用
 
@@ -939,6 +940,7 @@ use Laravel\Ai\Attributes\Model;
 use Laravel\Ai\Attributes\Provider;
 use Laravel\Ai\Attributes\Temperature;
 use Laravel\Ai\Attributes\Timeout;
+use Laravel\Ai\Attributes\TopP;
 use Laravel\Ai\Contracts\Agent;
 use Laravel\Ai\Enums\Lab;
 use Laravel\Ai\Promptable;
@@ -949,6 +951,7 @@ use Laravel\Ai\Promptable;
 #[MaxTokens(4096)]
 #[Temperature(0.7)]
 #[Timeout(120)]
+#[TopP(0.9)]
 class SalesCoach implements Agent
 {
     use Promptable;
@@ -1016,6 +1019,7 @@ class SalesCoach implements Agent, HasProviderOptions
             ],
             Lab::Anthropic => [
                 'thinking' => ['budget_tokens' => 1024],
+                'cache_control' => ['type' => 'ephemeral'],
             ],
             default => [],
         };
@@ -1024,6 +1028,8 @@ class SalesCoach implements Agent, HasProviderOptions
 ```
 
 `providerOptions`メソッドは、現在使用しているプロバイダ（`Lab`列挙型または文字列）を受け取るため、プロバイダごとに異なるオプションを返せます。これは[フェイルオーバ](#failover)を使用する場合、各フォールバックプロバイダが独自の構成を受け取れるため、特に便利です。
+
+上記のAnthropicの例では、`cache_control`を介して[プロンプトキャッシュ](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching)も有効にしています。
 
 <a name="images"></a>
 ## 画像

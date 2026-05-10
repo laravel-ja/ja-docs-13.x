@@ -993,7 +993,7 @@ Laravelの組み込みバリデーションルールエラーメッセージの�
 
 ```php
 Validator::make($request->all(), [
-    'credit_card_number' => ['required_if:payment_type,cc]'
+    'credit_card_number' => ['required_if:payment_type,cc']
 ]);
 ```
 
