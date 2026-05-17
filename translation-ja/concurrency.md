@@ -2,6 +2,8 @@
 
 - [イントロダクション](#introduction)
 - [タスクの同時実行](#running-concurrent-tasks)
+    - [名前付き結果](#named-results)
+    - [タスクのタイムアウト](#task-timeouts)
 - [タスクの遅延実行](#deferring-concurrent-tasks)
 
 <a name="introduction"></a>
@@ -49,6 +51,49 @@ $results = Concurrency::driver('fork')->run(...);
 
 ```shell
 php artisan config:publish concurrency
+```
+
+<a name="named-results"></a>
+### 名前付き結果
+
+並列処理タスクの結果に位置ではなく名前でアクセスしたい場合は、クロージャの連想配列を指定します。各結果は、対応するクロージャと同じキーで返されます。
+
+```php
+use Illuminate\Support\Facades\Concurrency;
+use Illuminate\Support\Facades\DB;
+
+$results = Concurrency::run([
+    'users' => fn () => DB::table('users')->count(),
+    'orders' => fn () => DB::table('orders')->count(),
+]);
+
+$userCount = $results['users'];
+$orderCount = $results['orders'];
+```
+
+<a name="task-timeouts"></a>
+### タスクのタイムアウト
+
+`process`ドライバ（デフォルト）を使用する場合、`run`メソッドにタイムアウトを指定することで、並列処理タスクが終了するまでに実行を許可する最大秒数を指定できます。
+
+```php
+use Illuminate\Support\Facades\Concurrency;
+use Illuminate\Support\Facades\DB;
+
+[$userCount, $orderCount] = Concurrency::run([
+    fn () => DB::table('users')->count(),
+    fn () => DB::table('orders')->count(),
+], timeout: 30);
+```
+
+より表現力豊かなタイムアウト定義がお好みならば、`CarbonInterval`インスタンスを指定することもできます。
+
+```php
+use Illuminate\Support\Facades\Concurrency;
+
+use function Illuminate\Support\seconds;
+
+Concurrency::run([...], timeout: seconds(30));
 ```
 
 <a name="deferring-concurrent-tasks"></a>

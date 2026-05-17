@@ -568,6 +568,7 @@ Schema::table('users', function (Blueprint $table) {
 [foreignIdFor](#column-method-foreignIdFor)
 [foreignUlid](#column-method-foreignUlid)
 [foreignUuid](#column-method-foreignUuid)
+[foreignUuidFor](#column-method-foreignUuidFor)
 [morphs](#column-method-morphs)
 [nullableMorphs](#column-method-nullableMorphs)
 
@@ -745,6 +746,15 @@ $table->foreignUlid('user_id');
 
 ```php
 $table->foreignUuid('user_id');
+```
+
+<a name="column-method-foreignUuidFor"></a>
+#### `foreignUuidFor()` {.collection-method}
+
+`foreignUuidFor`メソッドは、指定したモデルクラスに対応する`{column}_id` UUIDカラムを追加します。
+
+```php
+$table->foreignUuidFor(User::class);
 ```
 
 <a name="column-method-geography"></a>

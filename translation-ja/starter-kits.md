@@ -100,7 +100,7 @@ Livewireスターターキットは、Livewire、Tailwind、[Flux UI](https://fl
 <a name="react-customization"></a>
 ### React
 
-Reactスターターキットは、Inertia2、React19、Tailwind4、および[shadcn/ui](https://ui.shadcn.com)で構築しています。すべてのスターターキットと同様に、バックエンドとフロントエンドのコードはすべてアプリケーション内に存在し、フルカスタマイズが可能です。
+Reactスターターキットは、Inertia3、React19、Tailwind4、および[shadcn/ui](https://ui.shadcn.com)で構築しています。すべてのスターターキットと同様に、バックエンドとフロントエンドのコードはすべてアプリケーション内に存在し、フルカスタマイズが可能です。
 
 フロントエンドのコードの大部分は、`resources/js`ディレクトリにあります。アプリケーションの外観や動作をカスタマイズするために、自由にコードを変更できます。
 
@@ -171,7 +171,7 @@ import AuthLayoutTemplate from '@/layouts/auth/auth-split-layout'; // [tl! add]
 <a name="svelte-customization"></a>
 ### Svelte
 
-Svelteのスターターキットは、Inertia2、Svelte5、Tailwind、および[shadcn-svelte](https://www.shadcn-svelte.com/)で構築しています。すべてのスターターキットと同様に、バックエンドとフロントエンドのすべてのコードがアプリケーション内に存在し、自由にカスタマイズできます。
+Svelteのスターターキットは、Inertia3、Svelte5、Tailwind、および[shadcn-svelte](https://www.shadcn-svelte.com/)で構築しています。すべてのスターターキットと同様に、バックエンドとフロントエンドのすべてのコードがアプリケーション内に存在し、自由にカスタマイズできます。
 
 フロントエンドのコードの大部分は、`resources/js`ディレクトリにあります。アプリケーションの外観や動作をカスタマイズするために、自由にコードを変更できます。
 
@@ -237,7 +237,7 @@ import AuthLayout from '@/layouts/auth/AuthSplitLayout.svelte'; // [tl! add]
 <a name="vue-customization"></a>
 ### Vue
 
-Vueスターターキットは、Inertia2、Vue3 Composition API、Tailwind、および[shadcn-vue](https://www.shadcn-vue.com/)を使用して構築しています。他のスターターキットと同様に、バックエンドとフロントエンドのコードはすべてアプリケーション内に存在し、フルカスタマイズ可能です。
+Vueスターターキットは、Inertia3、Vue3 Composition API、Tailwind、および[shadcn-vue](https://www.shadcn-vue.com/)を使用して構築しています。他のスターターキットと同様に、バックエンドとフロントエンドのコードはすべてアプリケーション内に存在し、フルカスタマイズ可能です。
 
 フロントエンドのコードの大部分は、`resources/js`ディレクトリにあります。アプリケーションの外観や動作をカスタマイズするために、自由にコードを変更できます。
 

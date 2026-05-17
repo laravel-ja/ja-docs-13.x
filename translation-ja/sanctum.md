@@ -309,7 +309,7 @@ php artisan config:publish cors
 
 次に、アプリケーションのCORS設定が `Access-Control-Allow-Credentials`ヘッダを`True`の値で確実に返すようにします。これは、アプリケーションの`config/cors.php`設定ファイル内の`supports_credentials`オプションを`true`に設定することで実現できます。
 
-さらに、アプリケーションのグローバルな`axios`インスタンスで`withCredentials`と`withXSRFToken`オプションを有効にする必要があります。通常、これは`resources/js/bootstrap.js`ファイルで実行する必要があります。フロントエンドからHTTPリクエストを行うためにAxiosを使用していない場合は、独自のHTTPクライアントで同等の構成を実行する必要があります。
+さらに、アプリケーションのグローバルな`axios`インスタンスで`withCredentials`と`withXSRFToken`オプションを有効にする必要があります。通常、これは`resources/js/app.js`ファイルで実行可能です。フロントエンドからHTTPリクエストを行うためにAxiosを使用していない場合は、独自のHTTPクライアントで同等の構成を実行する必要があります。
 
 ```js
 axios.defaults.withCredentials = true;

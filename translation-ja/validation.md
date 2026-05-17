@@ -2892,6 +2892,17 @@ Password::min(8)
     ->uncompromised()
 ```
 
+`toPasswordRulesString`メソッドを使用すると、`Password`ルールオブジェクトをHTMLの`passwordrules`属性に適した文字列に変換できます。
+
+```blade
+<input
+    type="password"
+    name="password"
+    autocomplete="new-password"
+    passwordrules="{{ Password::defaults()->toPasswordRulesString() }}"
+/>
+```
+
 <a name="defining-default-password-rules"></a>
 #### デフォルトパスワードルールの定義
 

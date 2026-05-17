@@ -15,6 +15,7 @@
     - [キューイング](#queueing)
     - [ツール](#tools)
     - [プロバイダツール](#provider-tools)
+    - [サブエージェント](#sub-agents)
     - [ミドルウェア](#middleware)
     - [匿名エージェント](#anonymous-agents)
     - [エージェント設定](#agent-configuration)
@@ -810,6 +811,108 @@ new FileSearch(stores: ['store_id'], where: fn (FileSearchQuery $query) =>
         ->whereIn('category', ['news', 'updates'])
 );
 ```
+
+<a name="sub-agents"></a>
+### サブエージェント
+
+エージェントは、別のエージェントの`tools`メソッドから返すこともできます。エージェントをツールとして返すと、親エージェントは特定のタスクをサブエージェントに委任し、元のプロンプトに回答する際にサブエージェントのレスポンスを利用できます。これは、汎用エージェントが、独自の指示、ツール、モデル設定、またはプロバイダの優先設定を持つ専門特化型エージェントにアクセスする必要がある場合に便利です。
+
+たとえば、カスタマーサポートエージェントは、返金の資格に関する質問を専用の返金エージェントに委任できます。
+
+```php
+<?php
+
+namespace App\Ai\Agents;
+
+use Laravel\Ai\Contracts\Agent;
+use Laravel\Ai\Contracts\HasTools;
+use Laravel\Ai\Promptable;
+
+class CustomerSupportAgent implements Agent, HasTools
+{
+    use Promptable;
+
+    /**
+     * エージェントが従うべき指示を取得
+     */
+    public function instructions(): string
+    {
+        return 'You help customers with account, order, and billing questions. Delegate refund policy questions to the refunds specialist.';
+    }
+
+    /**
+     * エージェントが利用可能なツールを取得
+     *
+     * @return Tool[]
+     */
+    public function tools(): iterable
+    {
+        return [
+            new RefundsAgent,
+        ];
+    }
+}
+```
+
+サブエージェントを親エージェントに公開する方法をカスタマイズするには、サブエージェントに`CanActAsTool`インターフェイスを実装し、ツールとしての名前と説明を定義します。
+
+```php
+<?php
+
+namespace App\Ai\Agents;
+
+use App\Ai\Tools\LookupOrder;
+use Laravel\Ai\Attributes\Provider;
+use Laravel\Ai\Contracts\Agent;
+use Laravel\Ai\Contracts\CanActAsTool;
+use Laravel\Ai\Contracts\HasTools;
+use Laravel\Ai\Enums\Lab;
+use Laravel\Ai\Promptable;
+
+#[Provider(Lab::Anthropic)]
+class RefundsAgent implements Agent, CanActAsTool, HasTools
+{
+    use Promptable;
+
+    /**
+     * エージェントが従うべき指示を取得
+     */
+    public function instructions(): string
+    {
+        return 'You are a refunds specialist. Use order details and the refund policy to give concise eligibility guidance.';
+    }
+
+    /**
+     * エージェントのツール名を取得
+     */
+    public function name(): string
+    {
+        return 'refunds_specialist';
+    }
+
+    /**
+     * エージェントのツールの説明を取得
+     */
+    public function description(): string
+    {
+        return 'Determine whether an order is eligible for a refund and explain the next step.';
+    }
+
+    /**
+     * ージェントが利用可能なツールを取得
+     *
+     * @return Tool[]
+     */
+    public function tools(): iterable
+    {
+        return [
+            new LookupOrder,
+        ];
+    }
+}
+```
+
+サブエージェントが`CanActAsTool`を実装していない場合、Laravelはエージェントのクラスのベース名をツール名として使用し、親エージェントに明確で自己完結したタスクの説明を渡すよう求める汎用的な説明を使用します。各サブエージェントの呼び出しは分離して実行し、親エージェントの会話履歴は受け取りません。
 
 <a name="middleware"></a>
 ### ミドルウェア

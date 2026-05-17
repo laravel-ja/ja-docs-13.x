@@ -17,6 +17,7 @@
 - [ジョブのディスパッチ](#dispatching-jobs)
     - [ディスパッチの遅延](#delayed-dispatching)
     - [同期ディスパッチ](#synchronous-dispatching)
+    - [ディスパッチ前のジョブ準備](#preparing-jobs-before-dispatch)
     - [ジョブとデータベーストランザクション](#jobs-and-database-transactions)
     - [ジョブチェーン](#job-chaining)
     - [キューと接続のカスタマイズ](#customizing-the-queue-and-connection)
@@ -153,6 +154,32 @@ Redisキューを使用する場合は、`block_for`設定オプションを使�
 
 > [!WARNING]
 > `block_for`を`0`に設定すると、ジョブが使用可能になるまでキューワーカが無期限にブロックします。これにより、次のジョブが処理されるまで、`SIGTERM`などのシグナルが処理されなくなります。
+
+<a name="sqs-overflow-storage"></a>
+#### SQSオーバーフロー・ストレージ
+
+Amazon SQSは、キューに投入するメッセージペイロードの最大サイズを制限しています。この制限を超える可能性のあるペイロードを持つジョブをディスパッチする必要がある場合は、サイズの大きなSQSペイロードをキャッシュストアに保存し、代わりにSQS経由でポインタを送信するようにLaravelを設定できます。この機能を有効にするには、SQSキュー接続設定に`overflow`配列を追加してください。
+
+```php
+'sqs' => [
+    'driver' => 'sqs',
+    'key' => env('AWS_ACCESS_KEY_ID'),
+    'secret' => env('AWS_SECRET_ACCESS_KEY'),
+    'prefix' => env('SQS_PREFIX', 'https://sqs.us-east-1.amazonaws.com/your-account-id'),
+    'queue' => env('SQS_QUEUE', 'default'),
+    'suffix' => env('SQS_SUFFIX'),
+    'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
+    'after_commit' => false,
+    'overflow' => [
+        'enabled' => env('SQS_OVERFLOW_ENABLED', false),
+        'store' => env('SQS_OVERFLOW_STORE'),
+        'always' => false,
+        'delete_after_processing' => true,
+    ],
+],
+```
+
+オーバーフロー・ストレージを有効にすると、Laravelは１MB以上のペイロードを設定したキャッシュストアに保存します。`always`オプションが`true`の場合、サイズに関係なくすべてのSQSペイロードをキャッシュストアに保存します。キュー投入したジョブを処理する際にキャッシュストアからペイロードを取得する必要があるため、ワーカが処理するまでペイロードを保持できるストアを選択する必要があります。デフォルトでは、ジョブの処理が成功しSQSから削除された後に、保存したペイロードも削除します。
 
 <a name="other-driver-prerequisites"></a>
 #### その他のドライバの事前要件
@@ -828,6 +855,28 @@ public function middleware(): array
 }
 ```
 
+The `backoff` method also accepts a closure that receives the thrown exception, allowing the delay to be determined dynamically:
+
+```php
+use App\Exceptions\RateLimitedException;
+use Illuminate\Queue\Middleware\ThrottlesExceptions;
+use Throwable;
+
+/**
+ * Get the middleware the job should pass through.
+ *
+ * @return array<int, object>
+ */
+public function middleware(): array
+{
+    return [(new ThrottlesExceptions(10, 5 * 60))->backoff(
+        fn (Throwable $throwable) => $throwable instanceof RateLimitedException
+            ? $throwable->retryAfterMinutes()
+            : 5
+    )];
+}
+```
+
 内部的には、このミドルウェアはLaravelのキャッシュシステムを使用してレート制限を実装し、ジョブのクラス名をキャッシュ「キー」として利用します。ジョブにミドルウェアを添付するときに`by`メソッドを呼び出し、このキーを上書きできます。これは、複数のジョブが同じサードパーティのサービスとやり取りする場合に便利で、共通のスロットル「バケット」を共有させることで、確実に単一の共有制限を守らせられます。
 
 ```php
@@ -1090,6 +1139,44 @@ RecordDelivery::dispatch($order)->onConnection('deferred');
 
 ```php
 RecordDelivery::dispatch($order)->onConnection('background');
+```
+
+<a name="preparing-jobs-before-dispatch"></a>
+### ディスパッチ前のジョブ準備
+
+ジョブをキューに投入する前に状態を準備したり検査したりする必要がある場合は、ジョブに`Illuminate\Contracts\Queue\PreparesForDispatch`インターフェイスを実装します。Laravelはジョブをディスパッチする前に、ジョブの`prepareForDispatch`メソッドを呼び出します。このメソッドが`false`を返した場合、ジョブはディスパッチされません。
+
+```php
+<?php
+
+namespace App\Jobs;
+
+use Illuminate\Contracts\Queue\PreparesForDispatch;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Cache;
+
+class SyncPodcasts implements PreparesForDispatch, ShouldQueue
+{
+    use Queueable;
+
+    /**
+     * 新しいジョブインスタンスの生成
+     */
+    public function __construct(
+        public array $podcastIds,
+    ) {}
+
+    /**
+     * ディスパッチ前にジョブを準備
+     */
+    public function prepareForDispatch(): bool
+    {
+        return collect($this->podcastIds)
+            ->reject(fn (int $id) => Cache::has("podcast-syncing:{$id}"))
+            ->isNotEmpty();
+    }
+}
 ```
 
 <a name="jobs-and-database-transactions"></a>

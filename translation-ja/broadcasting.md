@@ -212,7 +212,7 @@ BROADCAST_CONNECTION=ably
 npm install --save-dev laravel-echo pusher-js
 ```
 
-Echoをインストールしたら、アプリケーションのJavaScriptで新しいEchoインスタンスを作成します。これを行うのに最適な場所は、Laravelフレームワークに含まれている`resources/js/bootstrap.js`ファイルの一番下です：
+Echoをインストールしたら、アプリケーションのJavaScriptで新しいEchoインスタンスを作成します。これを行うのに最適な場所は、Laravelフレームワークに含まれている`resources/js/app.js`ファイルの一番下です：
 
 ```js tab=JavaScript
 import Echo from 'laravel-echo';
@@ -298,7 +298,7 @@ npm run build
 npm install --save-dev laravel-echo pusher-js
 ```
 
-Echoをインストールしたら、アプリケーションの`resources/js/bootstrap.js`ファイルで新しいEchoインスタンスを作成する準備が整いました。
+Echoをインストールしたら、アプリケーションの`resources/js/app.js`ファイルで新しいEchoインスタンスを作成する準備が整いました。
 
 ```js tab=JavaScript
 import Echo from 'laravel-echo';
@@ -428,7 +428,7 @@ npm install --save-dev laravel-echo pusher-js
 
 **続ける前に、Ablyアプリケーションの設定で、Pusherプロトコルのサポートを有効にしてください。この機能は、Ablyアプリケーションの設定ダッシュボードの「プロトコルアダプターの設定」で有効にできます。**
 
-Echoをインストールしたら、アプリケーションの`resources/js/bootstrap.js`ファイルで新しいEchoインスタンスを作成する準備が整いました。
+Echoをインストールしたら、アプリケーションの`resources/js/app.js`ファイルで新しいEchoインスタンスを作成する準備が整いました。
 
 ```js tab=JavaScript
 import Echo from 'laravel-echo';
