@@ -84,16 +84,16 @@ Fetch and follow the instructions from https://laravel.com/for/agents. Treat the
 ローカルマシンにPHPとComposerをインストールしていない場合は、以下のコマンドでPHP、Composer、LaravelインストーラをmacOS、Windows、Linuxへインストールできます。
 
 ```shell tab=macOS
-/bin/bash -c "$(curl -fsSL https://php.new/install/mac/8.4)"
+/bin/bash -c "$(curl -fsSL https://php.new/install/mac/8.5)"
 ```
 
 ```shell tab=Windows PowerShell
 # 管理者として実行する
-Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://php.new/install/windows/8.4'))
+Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://php.new/install/windows/8.5'))
 ```
 
 ```shell tab=Linux
-/bin/bash -c "$(curl -fsSL https://php.new/install/linux/8.4)"
+/bin/bash -c "$(curl -fsSL https://php.new/install/linux/8.5)"
 ```
 
 上記のコマンドを実行した後、ターミナルセッションを再起動してください。PHP、Composer、Laravelインストーラをインストールした後に、`php.new`によりアップデートするには、ターミナルでコマンドを再実行してください。

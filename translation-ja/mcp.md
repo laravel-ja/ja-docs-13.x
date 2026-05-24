@@ -1290,6 +1290,25 @@ public function handle(Request $request): Response
 }
 ```
 
+<a name="resource-link-responses"></a>
+#### リソースリンクレスポンス
+
+リソースリンクを返すには、URIと名前を指定して`resourceLink`メソッドを使用します。埋め込みリソースとは異なり、リソースリンクはAIクライアントが独立して取得するURIポインタを返します。
+
+```php
+return Response::resourceLink(
+    uri: 'file:///data/report.json',
+    name: 'monthly-report',
+    mimeType: 'application/json',
+);
+```
+
+登録済みのリソースクラスまたはインスタンスを渡すこともでき、その場合はリソースのURI、名前、タイトル、説明、MIMEタイプを自動的に継承します。
+
+```php
+return Response::resourceLink(new WeatherForecastResource);
+```
+
 <a name="resource-blob-responses"></a>
 #### Blobレスポンス
 

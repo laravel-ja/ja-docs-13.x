@@ -324,7 +324,29 @@ $response = (new SalesCoach)->forUser($user)->prompt('こんにちは！');
 $conversationId = $response->conversationId;
 ```
 
-会話IDはレスポンスで返され、将来の参照のために保存できます。あるいは、`agent_conversations`テーブルからユーザーのすべての会話を直接取得することもできます。
+レスポンスは会話IDを返すため、今後の参照のため保存できます。Eloquentを使用してユーザーのすべての会話を取得したい場合は、ユーザーモデルに`HasConversations`トレイトを追加してください。
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Laravel\Ai\Concerns\HasConversations;
+
+class User extends Authenticatable
+{
+    use HasConversations;
+}
+```
+
+モデルにトレイトを追加すれば、`conversations`リレーションを介してユーザーの会話を取得し、クエリを実行できます。
+
+```php
+$conversations = $user->conversations()
+    ->latest('updated_at')
+    ->paginate(20);
+```
 
 既存の会話を継続するには、`continue`メソッドを使用してください。
 
@@ -1087,6 +1109,9 @@ class ComplexReasoner implements Agent
     // 最も有能なモデル（例：Opus）を使用
 }
 ```
+
+> [!NOTE]
+> プロバイダが新しいモデルをリリースするのに伴い、Laravel AI SDKのリリース間で`UseCheapestModel`や`UseSmartestModel`が選択する基底モデルが変わる可能性があります。モデルを切り替えると、動作の変化、非推奨のパラメータ、大幅な価格差が生じる場合があります。安定性、予測可能なモデルと価格設定が必要な場合は、`Model`属性を使用して明示的にモデルを指定してください。
 
 <a name="provider-options"></a>
 ### プロバイダオプション

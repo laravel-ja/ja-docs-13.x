@@ -175,11 +175,14 @@ Amazon SQSは、キューに投入するメッセージペイロードの最大�
         'store' => env('SQS_OVERFLOW_STORE'),
         'always' => false,
         'delete_after_processing' => true,
+        'flush_on_clear' => env('SQS_OVERFLOW_FLUSH_ON_CLEAR', false),
     ],
 ],
 ```
 
 オーバーフロー・ストレージを有効にすると、Laravelは１MB以上のペイロードを設定したキャッシュストアに保存します。`always`オプションが`true`の場合、サイズに関係なくすべてのSQSペイロードをキャッシュストアに保存します。キュー投入したジョブを処理する際にキャッシュストアからペイロードを取得する必要があるため、ワーカが処理するまでペイロードを保持できるストアを選択する必要があります。デフォルトでは、ジョブの処理が成功しSQSから削除された後に、保存したペイロードも削除します。
+
+`flush_on_clear`オプションが`true`の場合、`queue:clear`コマンドがSQSキューをクリアしたときに、設定済みのオーバーフローキャッシュストアをフラッシュします。キャッシュストアのフラッシュは、そのストアからすべてのアイテムを削除する可能性があるため、このオプションを有効にする場合は、専用のキャッシュストアを使用するようにSQSオーバーフロー・ストレージを設定する必要があります。
 
 <a name="other-driver-prerequisites"></a>
 #### その他のドライバの事前要件
@@ -3096,11 +3099,14 @@ test('orders can be shipped', function () {
     // ジョブが投入されないことをアサート
     Queue::assertNothingPushed();
 
-    // 一つのジョブが指定キューへ投入されたことをアサート
+    // 一つのジョブが指定キューへ投入されることをアサート
     Queue::assertPushedOn('queue-name', ShipOrder::class);
 
-    // ジョブが投入されたことをアサート
+    // ジョブが投入されることをアサート
     Queue::assertPushed(ShipOrder::class);
+
+    // ジョブが正確に１回投入されることをアサート
+    Queue::assertPushedOnce(ShipOrder::class);
 
     // 一つのジョブが２回投入されることをアサート
     Queue::assertPushedTimes(ShipOrder::class, 2);
@@ -3143,8 +3149,11 @@ class ExampleTest extends TestCase
         // 一つのジョブが指定キューへ投入されることをアサート
         Queue::assertPushedOn('queue-name', ShipOrder::class);
 
-        // ジョブが投入されたことをアサート
+        // ジョブが投入されることをアサート
         Queue::assertPushed(ShipOrder::class);
+
+        // ジョブが正確に１回投入されることをアサート
+        Queue::assertPushedOnce(ShipOrder::class);
 
         // ジョブを２回投入することをアサート
         Queue::assertPushedTimes(ShipOrder::class, 2);
@@ -3446,5 +3455,18 @@ Queue::looping(function () {
     while (DB::transactionLevel() > 0) {
         DB::rollBack();
     }
+});
+```
+
+キューワーカがキューからジョブを取得できなかったとき、Laravelは`Illuminate\Queue\Events\WorkerIdle`イベントもディスパッチします。
+
+```php
+use Illuminate\Queue\Events\WorkerIdle;
+use Illuminate\Support\Facades\Event;
+
+Event::listen(function (WorkerIdle $event) {
+    // $event->connectionName
+    // $event->queue
+    // $event->workerOptions
 });
 ```

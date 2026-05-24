@@ -32,7 +32,7 @@
 <a name="configuration"></a>
 ## 設定
 
-アプリケーションのキャッシュ設定ファイルは、`config/cache.php`にあります。アプリケーション全体でデフォルトとして使用するキャッシュストアをこのファイルで指定します。Laravelは、[Memcached](https://memcached.org)、[Redis](https://redis.io)、[DynamoDB](https://aws.amazon.com/dynamodb)、リレーショナルデータベースなど一般的なキャッシュバックエンドをサポートしています。さらに、ファイルベースのキャッシュドライバも利用でき、`array`キャッシュドライバと`null`キャッシュドライバは、自動テストに便利なキャッシュバックエンドを提供します。
+アプリケーションのキャッシュ設定ファイルは、`config/cache.php`にあります。アプリケーション全体でデフォルトとして使用するキャッシュストアをこのファイルで指定します。Laravelは、[Memcached](https://memcached.org)、[Redis](https://redis.io)、[DynamoDB](https://aws.amazon.com/dynamodb)、ファイルシステムなど一般的なキャッシュバックエンドをサポートしています。さらに、ファイルベースのキャッシュドライバも利用でき、`array`キャッシュドライバと`null`キャッシュドライバは、自動テストに便利なキャッシュバックエンドを提供します。
 
 キャッシュ設定ファイルには、他にも様々なオプションがあるので確認してください。Laravelはデフォルトで、`database`キャッシュドライバを使用するように設定してあり、シリアライズ済みのキャッシュオブジェクトをアプリケーションのデータベースに保存します。
 
@@ -91,6 +91,19 @@ Memcachedドライバを使用するには、[Memcached PECLパッケージ](htt
 LaravelでRedisキャッシュを使用する前に、PECL経由でPhpRedis PHP拡張をインストールするか、Composer経由で`predis/predis`パッケージ（~2.0）をインストールする必要があります。[Laravel Sail](/docs/{{version}}/sail)は、あらかじめこの拡張機能を用意してあります。また、[Laravel Cloud](https://cloud.laravel.com)や[Laravel Forge](https://forge.laravel.com)などの公式Laravelアプリケーションプラットフォームでは、デフォルトでPhpRedis拡張をインストールしています。
 
 Redisの設定の詳細については、[Laravelドキュメントページ](/docs/{{version}}/redis#configuration)を参照してください。
+
+<a name="storage"></a>
+#### Storage
+
+`storage`キャッシュドライバを使用すると、アプリケーションが設定している任意の[ファイルシステムディスク](/docs/{{version}}/filesystem)にキャッシュ値を保存できます。これは、S3ディスクなどの既存のディスクをキー／値のキャッシュストアとして使用したい場合に便利です。
+
+```php
+'storage' => [
+    'driver' => 'storage',
+    'disk' => env('CACHE_STORAGE_DISK'),
+    'path' => env('CACHE_STORAGE_PATH', 'framework/cache/data'),
+],
+```
 
 <a name="dynamodb"></a>
 #### DynamoDB
@@ -427,7 +440,7 @@ cache()->remember('users', $seconds, function () {
 ## キャッシュタグ
 
 > [!WARNING]
-> `file`、`dynamodb`、`database`キャッシュドライバを使用する場合、キャッシュタグはサポートしていません。
+> `file`、`dynamodb`、`database`、`storage`キャッシュドライバを使用する場合、キャッシュタグはサポートしていません。
 
 <a name="storing-tagged-cache-items"></a>
 ### タグ付きキャッシュ項目の保存
