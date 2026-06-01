@@ -115,6 +115,34 @@ php artisan event:list
 
 アプリケーションを高速化するために、`optimize`または`event:cache` Artisanコマンドを使用して、アプリケーションのすべてのリスナのマニフェストをキャッシュする必要があります。通常、このコマンドはアプリケーションの[デプロイプロセス](/docs/{{version}}/deployment#optimization)の一部として実行する必要があります。このマニフェストは、イベント登録処理を高速化するためにフレームワークが使用します。イベントキャッシュを破棄するには、`event:clear`コマンドを使用します。
 
+<a name="dynamic-event-discovery"></a>
+#### 動的イベント検出
+
+特定のリスナを検出するかを動的に制御するには、リスナクラスに`ShouldBeDiscovered`インターフェイスを実装し、boolean値を返す`shouldBeDiscovered`メソッドを定義します。このメソッドが`false`を返す場合、イベント検出時にそのリスナを登録しません。
+
+```php
+use Illuminate\Contracts\Events\ShouldBeDiscovered;
+
+class SendPodcastNotification implements ShouldBeDiscovered
+{
+    /**
+     * イベントの処理
+     */
+    public function handle(PodcastProcessed $event): void
+    {
+        // ...
+    }
+
+    /**
+     * リスナを検出するかを決定
+     */
+    public static function shouldBeDiscovered(): bool
+    {
+        return app()->environment('production');
+    }
+}
+```
+
 <a name="manually-registering-events"></a>
 ### イベントの手作業登録
 

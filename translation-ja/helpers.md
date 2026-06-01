@@ -118,6 +118,7 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
 [Number::format](#method-number-format)
 [Number::ordinal](#method-number-ordinal)
 [Number::pairs](#method-number-pairs)
+[Number::parse](#method-number-parse)
 [Number::parseInt](#method-number-parse-int)
 [Number::parseFloat](#method-number-parse-float)
 [Number::percentage](#method-number-percentage)
@@ -1837,6 +1838,23 @@ $result = Number::pairs(25, 10);
 $result = Number::pairs(25, 10, offset: 0);
 
 // [[0, 10], [10, 20], [20, 25]]
+```
+
+<a name="method-number-parse"></a>
+#### `Number::parse()` {.collection-method}
+
+`Number::parse`メソッドは、PHPの`NumberFormatter`を使用して、ローカライズされた数値文字列をパースします。
+
+```php
+use Illuminate\Support\Number;
+
+$result = Number::parse('10,123', locale: 'en');
+
+// 10123.0
+
+$result = Number::parse('10,123', locale: 'fr');
+
+// 10.123
 ```
 
 <a name="method-number-parse-int"></a>

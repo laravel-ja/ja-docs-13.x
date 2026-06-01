@@ -1754,6 +1754,7 @@ $store->remove('file_abc123', deleteFile: true);
 
 ```php
 use App\Ai\Agents\SalesCoach;
+use Laravel\Ai\Enums\Lab;
 use Laravel\Ai\Image;
 
 $response = (new SalesCoach)->prompt(
@@ -1763,6 +1764,22 @@ $response = (new SalesCoach)->prompt(
 
 $image = Image::of('キッチンカウンターに置いてあるドーナツ')
     ->generate(provider: [Lab::Gemini, Lab::xAI]);
+```
+
+フェイルオーバは、レート制限（`RateLimitedException`）、過負荷または利用不可能なプロバイダ（`ProviderOverloadedException`）、不十分なクレジット（`InsufficientCreditsException`）などの`FailoverableException`が投げられた場合にのみ行われます。バリデーションや不正なリクエストエラーのような通常のエラーでは、フェイルオーバをトリガーしません。
+
+`[Lab::OpenAI, Lab::Anthropic]`のようにプロバイダのプレーンなリストを渡す場合、各プロバイダはデフォルトのモデルを使用します。フェイルオーバチェーン内の各プロバイダへ特定のモデルを指定するには、連想配列を渡します。その際、PHPの配列キーにEnumの列挙子が直接使用できないため、配列のキーはプロバイダーを表す`Lab` Enum値の`value`をキーとして使用してください。
+
+```php
+use Laravel\Ai\Enums\Lab;
+
+$response = (new SalesCoach)->prompt(
+    'Analyze this sales transcript...',
+    provider: [
+        Lab::Gemini->value => 'gemini-3-flash-preview',
+        Lab::DeepSeek->value => 'deepseek-v4-pro',
+    ],
+);
 ```
 
 <a name="testing"></a>

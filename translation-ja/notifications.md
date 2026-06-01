@@ -709,22 +709,6 @@ public function toMail(object $notifiable): MailMessage
 }
 ```
 
-Mailableオブジェクトにファイルを添付するのとは異なり、`attachFromStorage`を使用してストレージディスクから直接ファイルを添付することはできません。むしろ、ストレージディスク上のファイルへの絶対パスを指定して`attach`メソッドを使用する必要があります。または、`toMail`メソッドから[mailable](/docs/{{version}}/mail#generated-mailables)を返すこともできます。
-
-```php
-use App\Mail\InvoicePaid as InvoicePaidMailable;
-
-/**
- * 通知のメールプレゼンテーションを取得
- */
-public function toMail(object $notifiable): Mailable
-{
-    return (new InvoicePaidMailable($this->invoice))
-        ->to($notifiable->email)
-        ->attachFromStorage('/path/to/file');
-}
-```
-
 必要であれば、`attachMany` メソッドを用いて、複数のファイルをメッセージへ添付できます。
 
 ```php
@@ -741,6 +725,24 @@ public function toMail(object $notifiable): MailMessage
                 'as' => 'Logo.svg',
                 'mime' => 'image/svg+xml',
             ],
+        ]);
+}
+```
+
+特定の[ファイルシステムディスク](/docs/{{version}}/filesystem)上に存在するファイルを添付するには、`attachFromStorageDisk`メソッドを使用します。このメソッドは、ディスク名とそのディスク上のファイルへのパスを引数に取ります。
+
+```php
+use App\Mail\InvoicePaid as InvoicePaidMailable;
+
+/**
+ * 通知のメール表現を取得
+ */
+public function toMail(object $notifiable): Mailable
+{
+    return (new InvoicePaidMailable($this->invoice))
+        ->to($notifiable->email)
+        ->attachFromStorageDisk('s3', '/path/to/file', 'invoice.pdf', [
+            'mime' => 'application/pdf',
         ]);
 }
 ```
