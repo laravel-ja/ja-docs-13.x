@@ -1028,6 +1028,20 @@ Mail::to($request->user())
     ->queue($message);
 ```
 
+あるいは、Mailableクラスで`Connection`属性と`Queue`属性を使用して、接続先とキューを指定することもできます。
+
+```php
+use Illuminate\Queue\Attributes\Connection;
+use Illuminate\Queue\Attributes\Queue;
+
+#[Connection('sqs')]
+#[Queue('emails')]
+class OrderShipped extends Mailable
+{
+    // ...
+}
+```
+
 <a name="queueing-by-default"></a>
 #### デフォルトでのキュー投入
 

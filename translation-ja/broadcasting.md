@@ -1444,6 +1444,43 @@ const status = useConnectionStatus();
 
 </div>
 
+<a name="react-vue-socket-id"></a>
+#### ソケットID
+
+`useSocketId`フックを使用して、現在のWebSocketのソケットIDを取得できます。このフックは、接続が新しいソケットIDで再接続されたときに自動的に更新されるリアクティブな値を提供します。
+
+```js tab=React
+import { useSocketId } from "@laravel/echo-react";
+
+function SocketIndicator() {
+    const socketId = useSocketId();
+
+    return <div>Socket ID: {socketId}</div>;
+}
+```
+
+```vue tab=Vue
+<script setup lang="ts">
+import { useSocketId } from "@laravel/echo-vue";
+
+const socketId = useSocketId();
+</script>
+
+<template>
+    <div>Socket ID: {{ socketId }}</div>
+</template>
+```
+
+```svelte tab=Svelte
+<script>
+import { useSocketId } from "@laravel/echo-svelte";
+
+const socketId = useSocketId();
+</script>
+
+<div>Socket ID: {socketId()}</div>
+```
+
 <a name="presence-channels"></a>
 ## プレゼンスチャンネル
 

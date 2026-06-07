@@ -1651,6 +1651,8 @@ class User extends Model
 $users = User::ofType('admin')->get();
 ```
 
+属性スコープメソッドは、`protected`にする必要があります。モデルクラス内から属性スコープを呼び出す場合は、`static::query()->ofType('admin')`のようにクエリビルダインスタンスを経由してスコープを呼び出してください。これにより、呼び出しがEloquentのスコープ機能で処理することを保証します。
+
 <a name="pending-attributes"></a>
 ### 属性の保持
 

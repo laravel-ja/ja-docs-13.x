@@ -316,6 +316,8 @@ class SalesCoach implements Agent, Conversational
 }
 ```
 
+`RemembersConversations`トレイトを使用する場合、エージェントクラス内で`messages`メソッドを自分で定義しないでください。`messages`メソッドが存在すると、トレイトの実装よりも優先され、データベースから会話履歴が読み込まれなくなります。
+
 あるユーザーで新しい会話を開始するには、プロンプトを送る前に`forUser`メソッドを呼び出してください。
 
 ```php

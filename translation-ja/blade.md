@@ -15,6 +15,7 @@
     - [サブビューの読み込み](#including-subviews)
     - [`@once`ディレクティブ](#the-once-directive)
     - [生PHP](#raw-php)
+    - [フォント](#fonts)
     - [コメント](#comments)
 - [コンポーネント](#components)
     - [コンポーネントのレンダ](#rendering-components)
@@ -708,6 +709,39 @@ Bladeの`@include`ディレクティブを使用すると、別のビュー内�
 ```blade
 @use(function App\Helpers\{format_currency, format_date})
 @use(const App\Constants\{MAX_ATTEMPTS, DEFAULT_TIMEOUT})
+```
+
+<a name="fonts"></a>
+### フォント
+
+[LaravelのViteフォント最適化](/docs/{{version}}/vite#working-with-fonts)を使用する場合、`@fonts`ディレクティブを使用して、設定済みのフォントプリロードリンクとインラインフォントCSSをアプリケーションのレイアウト内にレンダできます。
+
+```blade
+<!doctype html>
+<head>
+    {{-- ... --}}
+
+    @fonts
+    @vite('resources/js/app.js')
+</head>
+```
+
+`@fonts`ディレクティブは、`vite.config.js`ファイルで設定したすべてのフォントファミリーをレンダします。このディレクティブは通常、アプリケーションのルートレイアウトの`<head>`内で、それらのフォントを使用するコンテンツよりも前に配置してください。
+
+一部のフォントのみページに必要としている場合は、ディレクティブに１つまたは複数のフォントエイリアスを渡してください。
+
+```blade
+{{-- 単一のフォントエイリアスを読み込む --}}
+@fonts('sans')
+
+{{-- 複数のフォントエイリアスを読み込む --}}
+@fonts(['sans', 'mono'])
+```
+
+フォントエイリアスは、Viteの設定でフォントを定義する際に`alias`オプションを使用して設定します。`@fonts`ディレクティブは`Vite`ファサードが提供する`fonts`メソッドを呼び出しますが、このメソッドは直接呼び出すことも可能です。
+
+```blade
+{{ Vite::fonts(['sans', 'mono']) }}
 ```
 
 <a name="comments"></a>

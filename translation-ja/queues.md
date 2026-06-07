@@ -17,6 +17,7 @@
 - [ジョブのディスパッチ](#dispatching-jobs)
     - [ディスパッチの遅延](#delayed-dispatching)
     - [同期ディスパッチ](#synchronous-dispatching)
+    - [バルクディスパッチ](#bulk-dispatching)
     - [ディスパッチ前のジョブ準備](#preparing-jobs-before-dispatch)
     - [ジョブとデータベーストランザクション](#jobs-and-database-transactions)
     - [ジョブチェーン](#job-chaining)
@@ -1142,6 +1143,20 @@ RecordDelivery::dispatch($order)->onConnection('deferred');
 
 ```php
 RecordDelivery::dispatch($order)->onConnection('background');
+```
+
+<a name="bulk-dispatching"></a>
+### バルクディスパッチ
+
+多くの独立したジョブを一度にディスパッチする必要があり、[バッチ](#job-batching)の追跡やコールバックが不要な場合は、`Bus`ファサードの`bulk`メソッドを使用してください。Laravelは設定済みのキュー接続とキュー名ごとにジョブをグループ化し、各グループを適切なキューへ一括で投入します。
+
+```php
+use App\Jobs\ProcessUser;
+use Illuminate\Support\Facades\Bus;
+
+Bus::bulk(
+    $users->map(fn ($user) => new ProcessUser($user))
+);
 ```
 
 <a name="preparing-jobs-before-dispatch"></a>

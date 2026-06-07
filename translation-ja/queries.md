@@ -916,6 +916,18 @@ $users = DB::table('users')
     ->get();
 ```
 
+**whereNullSafeEquals／orWhereNullSafeEquals**
+
+`whereNullSafeEquals`メソッドと`orWhereNullSafeEquals`メソッドを使用して、カラムの値と指定した値を比較できます。このとき、2つの`NULL`値は等しいものとして扱われます。
+
+```php
+$lastLoginIp = $request->input('last_login_ip');
+
+$users = DB::table('users')
+    ->whereNullSafeEquals('last_login_ip', $lastLoginIp)
+    ->get();
+```
+
 **whereDate／whereMonth／whereDay／whereYear／whereTime**
 
 `whereDate`メソッドを使用して、カラム値を日付と比較できます。

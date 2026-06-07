@@ -15,6 +15,10 @@
   - [Inertia](#inertia)
   - [URL処理](#url-processing)
 - [スタイルシートの操作](#working-with-stylesheets)
+- [フォント操作](#working-with-fonts)
+  - [フォントプロバイダ](#font-providers)
+  - [ローカルフォント](#local-fonts)
+  - [フォントオプション](#font-options)
 - [Bladeとルートの操作](#working-with-blade-and-routes)
   - [Viteによる静的アセットの処理](#blade-processing-static-assets)
   - [保存時の再描写](#blade-refreshing-on-save)
@@ -473,15 +477,130 @@ composer run dev
 
 アプリケーションのCSSは、`resources/css/app.css`ファイル内に設置します。
 
+<a name="working-with-fonts"></a>
+## フォント操作
+
+Laravel Viteプラグインは、最適化したセルフホストフォントをアプリケーションに提供可能です。フォントを設定すると、このプラグインは要求されたフォントファイルを解決し、Viteアセットとして出力し、フォントCSSを生成します。そして、Bladeの[`@fonts`ディレクティブ](/docs/{{version}}/blade#fonts)で使用可能なフォントマニフェストを書き出します。
+
+フォントを設定するには、`laravel-vite-plugin/fonts`から１つ以上のプロバイダヘルパをインポートし、Laravelプラグインの`fonts`オプションに追加します。
+
+```js
+import { defineConfig } from 'vite';
+import laravel from 'laravel-vite-plugin';
+import { google } from 'laravel-vite-plugin/fonts';
+
+export default defineConfig({
+    plugins: [
+        laravel({
+            input: 'resources/js/app.js',
+            fonts: [
+                google('Inter', {
+                    alias: 'sans',
+                    weights: [400, 500, 600, 700],
+                    styles: ['normal', 'italic'],
+                    subsets: ['latin'],
+                    display: 'swap',
+                    preload: [
+                        { weight: 400 },
+                        { weight: 700 },
+                    ],
+                    fallbacks: ['system-ui', 'sans-serif'],
+                }),
+            ],
+        }),
+    ],
+});
+```
+
+この例では、`Inter`フォントを`sans`エイリアス経由で使用できるようになります。プラグインは、`--font-sans` CSS変数と、生成されたフォントスタックを適用する`.font-sans`ユーティリティクラスを生成します。
+
+<a name="font-providers"></a>
+### フォントプロバイダ
+
+Laravel Viteプラグインは、Google Fonts、Bunny Fonts、Fontsource、およびローカルフォント用のプロバイダヘルパを用意しています。
+
+```js
+import { defineConfig } from 'vite';
+import laravel from 'laravel-vite-plugin';
+import { bunny, fontsource, google, local } from 'laravel-vite-plugin/fonts';
+
+export default defineConfig({
+    plugins: [
+        laravel({
+            input: 'resources/js/app.js',
+            fonts: [
+                google('Inter', { alias: 'sans' }),
+                bunny('Figtree', { alias: 'body' }),
+                fontsource('JetBrains Mono', { alias: 'mono' }),
+                local('Brand Sans', {
+                    alias: 'brand',
+                    src: 'resources/fonts/brand-sans',
+                }),
+            ],
+        }),
+    ],
+});
+```
+
+`fontsource`プロバイダは、インストール済みのFontsourceパッケージからフォントを読み取ります。パッケージ名はデフォルトで、`@fontsource/jetbrains-mono`のようにフォントファミリーから派生します。アプリケーションで別のパッケージ名を使用している場合は、`package`オプションを使用して指定します。
+
+<a name="local-fonts"></a>
+### ローカルフォント
+
+ローカルフォントを使用する場合、`src`オプションは単一のフォントファイル、ディレクトリ、またはglobパターンを指すことができます。プラグインはサポートしているフォントファイルを見つけ出し、ファイル名からそのウェイトとスタイルを推測します。
+
+```js
+local('Brand Sans', {
+    alias: 'brand',
+    src: 'resources/fonts/brand-sans/*.woff2',
+})
+```
+
+利用可能なバリアントを完全に制御する必要がある場合は、`variants`オプションを使用してそれらを明示的に定義できます。
+
+```js
+local('Brand Sans', {
+    alias: 'brand',
+    variants: [
+        { src: 'resources/fonts/BrandSans-Regular.woff2', weight: 400 },
+        { src: 'resources/fonts/BrandSans-Italic.woff2', weight: 400, style: 'italic' },
+        { src: ['resources/fonts/BrandSans-Bold.woff2', 'resources/fonts/BrandSans-Bold.ttf'], weight: 700 },
+    ],
+})
+```
+
+<a name="font-options"></a>
+### フォントオプション
+
+プロバイダに応じて、フォント定義では生成するフォントCSSをカスタマイズするために、いくつかのオプションを指定できます。
+
+<div class="content-list" markdown="1">
+
+- `alias`はBladeの`@fonts`ディレクティブで使用する名前を定義し、デフォルトはフォントファミリーのスラグです。
+- `variable`は生成するCSS変数を定義し、デフォルトは`--font-{alias}`です。
+- `weights`は解決すべきリモートまたはFontsourceのフォントウェイトを定義し、デフォルトは`[400]`です。
+- `styles`は解決すべきリモートまたはFontsourceのフォントスタイルを定義し、デフォルトは`['normal']`です。
+- `subsets`は解決すべきリモートまたはFontsourceのフォントサブセットを定義し、デフォルトは`['latin']`です。
+- `display`は`font-display`値を定義し、デフォルトは`swap`です。
+- `preload`は、どのWOFF2フォントバリアントをプリロードするかを制御します。このオプションは`true`、`false`、または`{ weight, style }`セレクタの配列を指定できます。
+- `fallbacks`は、生成済みのフォントスタックへ追加すべき代替フォントを定義します。
+- `optimizedFallbacks`は、オプションの`fontaine`パッケージを使用してメトリクスを調整した代替フォントフェイスの生成を試み、デフォルトは`true`です。
+
+</div>
+
+ローカルフォントは、`weights`、`styles`、`subsets`を使用する代わりに、前述の`src`または`variants`オプションから解決します。
+
 <a name="working-with-blade-and-routes"></a>
 ## Bladeとルートの操作
 
 <a name="blade-processing-static-assets"></a>
 ### Viteによる静的アセットの処理
 
-JavaScriptやCSSのアセットを参照する場合、Viteは自動的に処理し、バージョン付けを行います。また、Bladeベースのアプリケーションを構築する場合、Bladeのテンプレート内だけで参照する静的なアセットもViteで処理し、バージョン付け可能です。
+JavaScriptやCSSでアセットを参照すると、Viteは自動的にそれらを処理してバージョン管理します。さらに、Bladeベースのアプリケーションを構築する場合、ViteはBladeテンプレート内でのみ参照している静的アセットも処理およびバージョン管理できます。
 
-しかし、これを実現するには、プラグインの`assets`オプションでアセットを指定し、Viteに認識させる必要があります。例えば、`resources/images`に保存されているすべての画像と、`resources/fonts`に保存されているすべてのフォントを処理してバージョン管理したい場合は、Viteの設定に以下を追加してください。
+しかし、これを実現するには、プラグインの`assets`オプションでアセットを指定し、Viteにそのアセットを認識させる必要があります。このオプションは、`Vite::asset`で直接参照したい静的ファイルのためのものです。LaravelにフォントCSSとプリロードリンクを生成させたい場合は、代わりに[`fonts`オプション](#working-with-fonts)を使用してください。
+
+たとえば、`resources/images`に保存されているすべての画像と、`resources/fonts`に保存されているすべてのフォントを処理およびバージョン管理したい場合は、Vite設定に以下を追加してください。
 
 ```js
 laravel({
