@@ -78,6 +78,20 @@ RateLimiter::increment('send-message:'.$user->id);
 // メッセージ送信処理…
 ```
 
+同時に多くのリクエストを受信する可能性があるエンドポイントをレート制限する場合、`tooManyAttempts`と`increment`を個別の操作として使用する代わりに、`increment`メソッドが返す値を確認する方法が有効です。`redis`、`memcached`、`database`キャッシュストアを使用している場合、この値はアトミックに増分されるため、並行リクエストそれぞれに対し確実に一意のカウントが保証されます。
+
+```php
+use Illuminate\Support\Facades\RateLimiter;
+
+$perMinute = 5;
+
+if (RateLimiter::increment('send-message:'.$user->id) > $perMinute) {
+    return 'Too many attempts!';
+}
+
+// メッセージ送信処理…
+```
+
 他にも、`remaining`メソッドを使って、指定キーの残りの試行回数を取得することも可能です。指定キーに再試行回数が残っている場合は、`increment`メソッドを呼び出して総試行回数を増やせます。
 
 ```php

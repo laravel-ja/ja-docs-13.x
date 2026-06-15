@@ -96,6 +96,22 @@ Scoutジョブで使用する接続とキューを指定するには、`queue`�
 php artisan queue:work redis --queue=scout
 ```
 
+<a name="unique-jobs"></a>
+#### ユニークジョブ
+
+アプリケーションで頻繁に書き込みが行われ場合は、Scoutが同じモデルレコードに対して重複したジョブをキューに投入するのを防ぎたい場合があるでしょう。通常はサービスプロバイダの`boot`メソッド内で、`MakeSearchableUniquely`と`RemoveFromSearchUniquely`ジョブクラスを登録することで、ユニークなインデックス作成ジョブを選択できます。
+
+```php
+use Laravel\Scout\Jobs\MakeSearchableUniquely;
+use Laravel\Scout\Jobs\RemoveFromSearchUniquely;
+use Laravel\Scout\Scout;
+
+Scout::makeSearchableUsing(MakeSearchableUniquely::class);
+Scout::removeFromSearchUsing(RemoveFromSearchUniquely::class);
+```
+
+これらのジョブは、Laravel [ユニークジョブクラス](/docs/{{version}}/queues#unique-jobs を使用して、一致するジョブがすでにキューに存在している間、同じ検索可能モデルレコードに対して重複したインデックス作成操作をキューへディスパッチするのを回避します。
+
 <a name="driver-prerequisites"></a>
 ## ドライバ動作要件
 

@@ -14,6 +14,7 @@
     - [ブロードキャスト](#broadcasting)
     - [キューイング](#queueing)
     - [ツール](#tools)
+    - [MCPツール](#mcp-tools)
     - [プロバイダツール](#provider-tools)
     - [サブエージェント](#sub-agents)
     - [ミドルウェア](#middleware)
@@ -725,6 +726,65 @@ public function tools(): iterable
 SimilaritySearch::usingModel(Document::class, 'embedding')
     ->withDescription('関連する記事をナレッジベースで検索します。'),
 ```
+
+<a name="mcp-tools"></a>
+### MCPツール
+
+アプリケーションで [Laravel MCP](/docs/{{version}}/mcp)を使用している場合、[Model Context Protocol](https://modelcontextprotocol.io)サーバが公開しているツールをエージェントへ与えることができます。[Laravel MCPクライアント](/docs/{{version}}/mcp#client)を使用して、リモートまたはローカルのMCPサーバに接続し、そのツールをエージェントへ直接渡すことができます。
+
+> [!NOTE]
+> MCPツールを使用するには、アプリケーションに[Laravel MCP](/docs/{{version}}/mcp)パッケージをインストールしている必要があります。
+
+MCPクライアントの `tools` メソッドはコレクションを返すため、`...` オペレータを使用してエージェントの `tools` 配列に展開してください。
+
+```php
+use App\Ai\Tools\RandomNumberGenerator;
+use Laravel\Mcp\Client;
+
+/**
+ * エージェントが利用可能なツールを取得
+ *
+ * @return Tool[]
+ */
+public function tools(): iterable
+{
+    return [
+        ...Client::web('https://mcp.example.com')
+            ->withToken($token)
+            ->tools(),
+
+        new RandomNumberGenerator,
+    ];
+}
+```
+
+AI SDKは各MCPツールを自動的にラップするため、エージェントは他のツールと同様にそれらを呼び出せます。[名前付きMCPクライアント](/docs/{{version}}/mcp#named-clients)を使用することも可能です。
+
+```php
+use Laravel\Mcp\Facades\Mcp;
+
+public function tools(): iterable
+{
+    return [
+        ...Mcp::client('github')->tools(),
+    ];
+}
+```
+
+または、[ローカルMCPサーバ](/docs/{{version}}/mcp#client-connecting)へ接続します。
+
+```php
+use Laravel\Mcp\Client;
+
+public function tools(): iterable
+{
+    return [
+        ...Client::local('php', ['artisan', 'mcp:start'])->tools(),
+    ];
+}
+```
+
+ベアラートークンやOAuthを含む、MCPクライアントの作成と認証に関する詳細については、[MCPクライアントのドキュメント](/docs/{{version}}/mcp#client)を参照してください。
 
 <a name="provider-tools"></a>
 ### プロバイダツール

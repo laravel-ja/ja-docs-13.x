@@ -241,6 +241,14 @@ $value = Cache::remember('users', $seconds, function () {
 
 アイテムがキャッシュに存在しない場合、`remember`メソッドに渡されたクロージャが実行され、その結果がキャッシュに配置されます。
 
+指定したクロージャを実行する代わりに、キャッシュからアイテムを取得したかを知る必要がある場合は、`rememberWithWarmth`メソッドを使用します。このメソッドは、キャッシュ済み値と、そのアイテムが「ウォーム（warm）」であったか、つまりクロージャによって解決されずキャッシュから取得されたかを示す論理値を含む配列を返します。
+
+```php
+[$value, $warm] = Cache::rememberWithWarmth('users', $seconds, function () {
+    return DB::table('users')->get();
+});
+```
+
 `rememberForever`メソッドを使用して、キャッシュからアイテムを取得するか、アイテムが存在しない場合は永久に保存できます。
 
 ```php

@@ -43,6 +43,13 @@
     - [OAuth 2.1](#oauth)
     - [Sanctum](#sanctum)
 - [認可](#authorization)
+- [MCPクライアント](#client)
+    - [サーバへの接続](#client-connecting)
+    - [名前付きクライアント](#named-clients)
+    - [クライアント認証](#client-authentication)
+    - [ツール](#client-tools)
+    - [プロンプト](#client-prompts)
+    - [リソース](#client-resources)
 - [サーバのテスト](#testing-servers)
     - [MCPインスペクタ](#mcp-inspector)
     - [ユニットテスト](#unit-tests)
@@ -1663,6 +1670,256 @@ public function handle(Request $request): Response
 
     // ...
 }
+```
+
+<a name="client"></a>
+## MCPクライアント
+
+サーバの構築に加えて、Laravel MCPは、ファーストパーティ製かサードパーティ製かを問わず、他のMCPサーバに接続するためのクライアントを用意しています。クライアントを使用し、アプリケーションはMCPサーバが公開しているツールを検出して呼び出せます。これは特に、外部のMCPサーバが提供する機能へのアクセス権を [AIエージェント](/docs/{{version}}/ai-sdk#mcp-tools)へ与える場合に便利です。
+
+<a name="client-connecting"></a>
+### サーバへの接続
+
+HTTPアクセス可能なMCPサーバに接続するには、`Client::web`メソッドを使用し、サーバのURLを渡します。
+
+```php
+use Laravel\Mcp\Client;
+
+$client = Client::web('https://mcp.example.com');
+```
+
+コマンドを実行するローカルのMCPサーバへ接続するには、`Client::local`メソッドを使用し、コマンドとサーバの起動に必要な引数を指定します。
+
+```php
+use Laravel\Mcp\Client;
+
+$client = Client::local('php', ['artisan', 'mcp:start']);
+```
+
+ツールを初めて一覧表示するか呼び出すときに、クライアントと遅延接続し、自動的に接続を確立します。接続を手作業で管理する必要がある場合は、`connect`、`connected`、`ping`、`disconnect`メソッドを使用します。
+
+```php
+$client->connect();
+
+$client->ping();
+
+if ($client->connected()) {
+    // ...
+}
+
+$client->disconnect();
+```
+
+`withTimeout` メソッドを使用して、リクエストのタイムアウトをカスタマイズできます。
+
+```php
+$client = Client::web('https://mcp.example.com')->withTimeout(30);
+```
+
+<a name="named-clients"></a>
+### 名前付きクライアント
+
+クライアントが必要になるたびに構築するのではなく、再利用可能な名前付きクライアントを登録できます。これは通常、`Mcp`ファサードを使用して、サービスプロバイダの `boot`メソッド内で行います。
+
+```php
+use Laravel\Mcp\Client;
+use Laravel\Mcp\Facades\Mcp;
+
+Mcp::registerClient('github', fn () => Client::web('https://mcp.example.com'));
+```
+
+一度登録すれば、アプリケーションの任意の場所で名前を指定してクライアントを解決できます。
+
+```php
+use Laravel\Mcp\Facades\Mcp;
+
+$client = Mcp::client('github');
+```
+
+名前付きクライアントはリクエストごとに1回解決され、リクエストサイクルの終了時に自動的に切断されます。
+
+<a name="client-authentication"></a>
+### クライアント認証
+
+ベアラートークンで保護されているWeb MCPサーバに接続するには、`withToken` メソッドを使用します。トークン文字列、またはトークンを遅延解決するクロージャを渡すことができます。
+
+```php
+use Illuminate\Support\Facades\Auth;
+use Laravel\Mcp\Client;
+
+$client = Client::web('https://mcp.example.com')->withToken($token);
+
+$client = Client::web('https://mcp.example.com')->withToken(
+    fn () => Auth::user()->mcpToken(),
+);
+```
+
+[OAuth 2.1](#oauth)で保護しているサーバの場合は、`withOAuth`メソッドを使用してクライアントを構成します。これは、自身のサーバをOAuthで保護する処理のクライアント側に相当する機能です。
+
+```php
+use Laravel\Mcp\Client;
+use Laravel\Mcp\Facades\Mcp;
+
+Mcp::registerClient('github', fn () => Client::web('https://mcp.example.com')->withOAuth(
+    clientId: config('services.github_mcp.client_id'),
+    clientSecret: config('services.github_mcp.client_secret'),
+));
+```
+
+> [!NOTE]
+> MCPサーバが[動的クライアント登録](https://datatracker.ietf.org/doc/html/rfc7591)をサポートしている場合、`clientId`と`clientSecret`引数は省略できます。その場合、クライアントは自身を自動的に登録します。
+
+次に、`oAuthRoutesFor`メソッドを使用して、`routes/ai.php`ファイルに名前付きクライアント用のOAuthルートを登録します。指定するクロージャは、認可コードをアクセストークンと交換した後に、クライアント名と結果の`TokenSet`を受け取ります。
+
+```php
+use Illuminate\Support\Facades\Auth;
+use Laravel\Mcp\Client\OAuth\TokenSet;
+use Laravel\Mcp\Facades\Mcp;
+
+Mcp::oAuthRoutesFor('github', function (string $client, TokenSet $token) {
+    Auth::user()->update([
+        'github_mcp_token' => $token->accessToken,
+    ]);
+
+    return redirect('/dashboard');
+});
+```
+
+これにより、２つの名前付きルートを登録します。ユーザーを認可サーバへリダイレクトする接続ルート（`mcp.oauth.{client}.connect`）と、認可コードを交換してハンドラを呼び出すコールバックルート（`mcp.oauth.{client}.callback`）です。両方のルートはデフォルトで、`web`ミドルウェアグループを使用しますが、`middleware`引数を使用してオーバーライドできます。
+
+認可フローを開始するには、ユーザーを接続ルートへリダイレクトします。
+
+```php
+return redirect()->route('mcp.oauth.github.connect');
+```
+
+<a name="client-tools"></a>
+### ツール
+
+MCPサーバが公開しているツールを取得するには、`tools`メソッドを使用します。このメソッドは、名前をキーとするツールのコレクションを返します。
+
+```php
+use Laravel\Mcp\Facades\Mcp;
+
+$tools = Mcp::client('github')->tools();
+
+foreach ($tools as $tool) {
+    $tool->name;
+    $tool->title;
+    $tool->description;
+    $tool->inputSchema;
+}
+```
+
+クライアントは、利用可能なすべてのツールを自動的にペジネーションします。`limit`引数を使用して、返されるツールの数を制限できます。
+
+```php
+$tools = Mcp::client('github')->tools(limit: 10);
+```
+
+ツールを呼び出すには、`callTool`メソッドを使用し、ツールの名前と引数の配列を渡します。返される`ToolResult`インスタンスは、ツールのレスポンスを公開します。
+
+```php
+use Laravel\Mcp\Facades\Mcp;
+
+$result = Mcp::client('github')->callTool('current-weather', [
+    'location' => 'New York',
+]);
+
+$result->text(); // レスポンスのテキストコンテンツ
+(string) $result; // text()の呼び出しと同等
+$result->isError; // ツールがエラーを報告したか
+$result->structuredContent;  // 構造化コンテンツがあれば、そのコンテンツ
+```
+
+あるいは、リスト済みのツールインスタンスからツールを直接呼び出すこともできます。
+
+```php
+$tools = Mcp::client('github')->tools();
+
+$result = $tools['current-weather']->call([
+    'location' => 'New York',
+]);
+```
+
+[Laravel AI SDK](/docs/{{version}}/ai-sdk)を使用してエージェントを構築している場合は、MCPクライアントからのツールをエージェントへ直接提供することもできます。これにより、モデルはプロンプトに応答しながらそれらを呼び出すことができます。詳細については、AI SDKドキュメントの[MCPツール](/docs/{{version}}/ai-sdk#mcp-tools)セクションを参照してください。
+
+<a name="client-prompts"></a>
+### プロンプト
+
+MCPサーバが公開しているプロンプトを取得するには、`prompts`メソッドを使用します。このメソッドは、名前をキーとするプロンプトのコレクションを返します。
+
+```php
+use Laravel\Mcp\Facades\Mcp;
+
+$prompts = Mcp::client('github')->prompts();
+
+foreach ($prompts as $prompt) {
+    $prompt->name;
+    $prompt->title;
+    $prompt->description;
+    $prompt->arguments;
+}
+```
+
+クライアントは、利用可能なすべてのプロンプトを自動的にペジネーションします。`limit`引数を使用して、返されるプロンプトの数を制限できます。
+
+```php
+$prompts = Mcp::client('github')->prompts(limit: 10);
+```
+
+プロンプトを取得するには、`getPrompt`メソッドを使用し、プロンプトの名前と引数の配列を渡します。返される`PromptResult`インスタンスは、生成したメッセージを公開します。
+
+```php
+use Laravel\Mcp\Facades\Mcp;
+
+$result = Mcp::client('github')->getPrompt('describe-weather', [
+    'location' => 'New York',
+]);
+
+$result->text(); // メッセージのテキストコンテンツ
+(string) $result; // text()の呼び出しと同等
+$result->messages; // プロンプトが返した生のメッセージ
+$result->description; // プロンプトの説明がある場合は、その説明
+```
+
+<a name="client-resources"></a>
+### リソース
+
+MCPサーバが公開しているリソースを取得するには、`resources`メソッドを使用します。このメソッドは、URIをキーとするリソースのコレクションを返します。
+
+```php
+use Laravel\Mcp\Facades\Mcp;
+
+$resources = Mcp::client('github')->resources();
+
+foreach ($resources as $resource) {
+    $resource->uri;
+    $resource->name;
+    $resource->title;
+    $resource->description;
+    $resource->mimeType;
+    $resource->size;
+}
+```
+
+クライアントは、利用可能なすべてのリソースを自動的にペジネーションします。`limit`引数を使用して、返されるリソースの数を制限できます。
+
+```php
+$resources = Mcp::client('github')->resources(limit: 10);
+```
+
+リソースを読み取るには、`readResource`メソッドを使用し、リソースのURIを渡します。返される`ResourceReadResult`インスタンスは、リソースのコンテンツを公開します。
+
+```php
+use Laravel\Mcp\Facades\Mcp;
+
+$result = Mcp::client('github')->readResource('weather://guidelines');
+
+$result->content(); // 必要に応じてbase64 blobをデコードした、リソースのコンテンツ
+(string) $result; // content()の呼び出しと同等
+$result->mimeType(); // リソースのMIMEタイプがある場合は、そのタイプ
+$result->contents; // リソースが返した生のコンテンツ
 ```
 
 <a name="testing-servers"></a>
