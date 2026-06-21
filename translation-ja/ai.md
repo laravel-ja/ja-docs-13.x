@@ -103,7 +103,7 @@ Boostは、AIエージェントが17,000件を超えるLaravelエコシステム
 
 機能の仕組みを理解する必要がある場合、エージェントはBoostのドキュメントAPIを検索し、正確でバージョン固有の情報を受け取れます。これにより、AIエージェントが古いフレームワークバージョンの非推奨メソッドや構文を提案してしまうという、よくある問題を排除します。
 
-<a name="agent-integration"></a>
+<a name="agents-integration"></a>
 ### エージェント統合
 
 Boostは、Model Context Protocolをサポートする人気のIDEやAIツールと統合します。Cursor、Claude Code、Codex、Gemini CLI、GitHub Copilot、Junieの詳細なセットアップ手順については、Boostドキュメントの[エージェントのセットアップ](/docs/{{version}}/boost#set-up-your-agents)セクションを参照してください。

@@ -105,7 +105,7 @@ You may configure custom base URLs by adding a `url` parameter to your provider 
     'openai' => [
         'driver' => 'openai',
         'key' => env('OPENAI_API_KEY'),
-        'url' => env('OPENAI_BASE_URL'),
+        'url' => env('OPENAI_URL'),
     ],
 
     'anthropic' => [
@@ -456,6 +456,26 @@ public function schema(JsonSchema $schema): array
                 ])
             )
             ->required(),
+    ];
+}
+```
+
+If a value may match one of several schemas, use the `anyOf` method:
+
+```php
+public function schema(JsonSchema $schema): array
+{
+    return [
+        'content' => $schema->anyOf([
+            $schema->object(fn ($schema) => [
+                'type' => $schema->string()->enum(['article'])->required(),
+                'title' => $schema->string()->required(),
+            ]),
+            $schema->object(fn ($schema) => [
+                'type' => $schema->string()->enum(['image'])->required(),
+                'url' => $schema->string()->required(),
+            ]),
+        ])->required(),
     ];
 }
 ```

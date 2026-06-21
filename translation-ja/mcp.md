@@ -39,6 +39,7 @@
     - [アプリ設定](#app-configuration)
     - [Boostによるアプリ構築](#building-apps-with-boost)
 - [メタデータ](#metadata)
+- [アイコン](#icons)
 - [認証](#authentication)
     - [OAuth 2.1](#oauth)
     - [Sanctum](#sanctum)
@@ -1562,6 +1563,55 @@ class CurrentWeatherTool extends Tool
     // ...
 }
 ```
+
+<a name="icons"></a>
+## アイコン
+
+MCPクライアントは、サーバとそのプリミティブのアイコンを表示できます。`Icon`属性を使用して、サーバ、ツール、リソース、またはプロンプトにアイコンを宣言できます。
+
+```php
+use Laravel\Mcp\Enums\IconTheme;
+use Laravel\Mcp\Server\Attributes\Icon;
+
+#[Icon('mcp/server.png', mimeType: 'image/png', sizes: ['48x48'])]
+#[Icon('mcp/server-dark.svg', theme: IconTheme::Dark)]
+class WeatherServer extends Server
+{
+    // ...
+}
+```
+
+`Icon`属性は繰り返し指定できるため、複数のアイコンを宣言して異なるサイズやライトテーマとダークテーマのバリアントを提供できます。
+
+あるいは、アイコンが実行時の条件に依存する場合などに便利な、`icons`メソッドをオーバーライドしてプログラムでアイコンを定義することもできます。
+
+```php
+use Laravel\Mcp\Schema\Icon;
+
+class CurrentWeatherTool extends Tool
+{
+    /**
+     * ツールのアイコンを取得
+     *
+     * @return array<int, Icon>
+     */
+    public function icons(): array
+    {
+        return [
+            Icon::from('mcp/tool.png', mimeType: 'image/png'),
+        ];
+    }
+}
+```
+
+属性と`icons`メソッドを介して定義したアイコンは自動的に結合します。アイコンのパスは次のように解決します。
+
+<div class="content-list" markdown="1">
+
+- `https:`や`data:`などのURIスキームを持つパスは、そのまま使用します。
+- 相対パスは、Laravelの`asset`ヘルパを使用してURLに解決します。
+
+</div>
 
 <a name="authentication"></a>
 ## 認証

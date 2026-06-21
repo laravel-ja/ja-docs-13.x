@@ -588,6 +588,14 @@ local('Brand Sans', {
 
 </div>
 
+最適化した代替フォントには`fontaine`パッケージが必要ですが、デフォルトでインストールしていません。Laravelにメトリクスを調整した代替フォントフェイスを生成させたい場合は、開発依存パッケージとして`fontaine`をインストールする必要があります。
+
+```shell
+npm install --save-dev fontaine
+```
+
+`fontaine`がインストールされていない場合、またはフォントファイルを読み込めない場合、Laravelはそのフォントの最適化した代替フォントをスキップし、`fallbacks`オプションで設定したフォントを引き続き使用します。
+
 ローカルフォントは、`weights`、`styles`、`subsets`を使用する代わりに、前述の`src`または`variants`オプションから解決します。
 
 <a name="working-with-blade-and-routes"></a>

@@ -15,6 +15,7 @@
 - [アトミックロック](#atomic-locks)
     - [ロック管理](#managing-locks)
     - [プロセス間でのロック管理](#managing-locks-across-processes)
+    - [ロックのリフレッシュ](#refreshing-locks)
     - [同時実行制限](#concurrency-limiting)
 - [キャッシュフェイルオーバ](#cache-failover)
 - [カスタムキャッシュドライバの追加](#adding-custom-cache-drivers)
@@ -572,6 +573,26 @@ Cache::restoreLock('processing', $this->owner)->release();
 
 ```php
 Cache::lock('processing')->forceRelease();
+```
+
+<a name="refreshing-locks"></a>
+### ロックのリフレッシュ
+
+現在所有しているロックの有効期限を延長する必要がある場合は、`refresh`メソッドを使用します。秒数を指定しない場合、ロックの元の有効時間が使用されます。これは、非常に長い有効時間のロックを取得する代わりに、短いロックを取得して定期的に延長したい長期実行タスクに便利です。
+
+```php
+$lock = Cache::lock('generate-reports', 60);
+
+if ($lock->get()) {
+    foreach ($reports as $report) {
+        $report->generate();
+
+        // ロックをさらに60秒間延長
+        $lock->refresh();
+    }
+
+    $lock->release();
+}
 ```
 
 <a name="concurrency-limiting"></a>

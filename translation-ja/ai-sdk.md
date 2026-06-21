@@ -105,7 +105,7 @@ XAI_API_KEY=
     'openai' => [
         'driver' => 'openai',
         'key' => env('OPENAI_API_KEY'),
-        'url' => env('OPENAI_BASE_URL'),
+        'url' => env('OPENAI_URL'),
     ],
 
     'anthropic' => [
@@ -456,6 +456,26 @@ public function schema(JsonSchema $schema): array
                 ])
             )
             ->required(),
+    ];
+}
+```
+
+値が複数のスキーマのいずれかに一致する可能性がある場合は、`anyOf`メソッドを使用します。
+
+```php
+public function schema(JsonSchema $schema): array
+{
+    return [
+        'content' => $schema->anyOf([
+            $schema->object(fn ($schema) => [
+                'type' => $schema->string()->enum(['article'])->required(),
+                'title' => $schema->string()->required(),
+            ]),
+            $schema->object(fn ($schema) => [
+                'type' => $schema->string()->enum(['image'])->required(),
+                'url' => $schema->string()->required(),
+            ]),
+        ])->required(),
     ];
 }
 ```

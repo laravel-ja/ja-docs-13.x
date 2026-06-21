@@ -110,4 +110,4 @@
     - [Socialite](/docs/{{version}}/socialite)
     - [Telescope](/docs/{{version}}/telescope)
     - [Valet](/docs/{{version}}/valet)
-- [APIドキュメント](https://api.laravel.com/docs/12.x)
+- [API Documentation](https://api.laravel.com/docs/13.x)

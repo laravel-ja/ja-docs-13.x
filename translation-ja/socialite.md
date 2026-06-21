@@ -256,14 +256,14 @@ test('user is redirected to github', function () {
 <a name="faking-the-callback"></a>
 #### コールバックのFake
 
-アプリケーションのコールバックルートをテストするには、`fake`メソッドを呼び出し、アプリケーションがプロバイダにユーザーの詳細を要求したときに返すべき`User`インスタンスを指定します。`User`インスタンスは`map`メソッドを使用して作成できます。
+アプリケーションのコールバックルートをテストするには、`fake`メソッドを呼び出し、アプリケーションがプロバイダにユーザーの詳細を要求したときに返すべき`User`インスタンスを指定します。`User`インスタンスは`fake`メソッドを使用して作成できます。
 
 ```php
 use Laravel\Socialite\Socialite;
 use Laravel\Socialite\Two\User;
 
 test('user can login with github', function () {
-    Socialite::fake('github', (new User)->map([
+    Socialite::fake('github', User::fake([
         'id' => 'github-123',
         'name' => 'Jason Beggs',
         'email' => 'jason@example.com',
@@ -281,15 +281,18 @@ test('user can login with github', function () {
 });
 ```
 
-`User`インスタンスはデフォルトで、`token`プロパティも含んでいます。必要に応じて、`User`インスタンスに追加のプロパティを手作業で指定できます。
+デフォルトで、`User`インスタンスは偽のOAuthトークン値を持っています。必要に応じて、`fake`メソッドに追加の属性を渡すことで、これらの値を上書きできます。
 
 ```php
-$fakeUser = (new User)->map([
+$fakeUser = User::fake([
     'id' => 'github-123',
     'name' => 'Jason Beggs',
     'email' => 'jason@example.com',
-])->setToken('fake-token')
-  ->setRefreshToken('fake-refresh-token')
-  ->setExpiresIn(3600)
-  ->setApprovedScopes(['read', 'write'])
+    'token' => 'fake-token',
+    'refreshToken' => 'fake-refresh-token',
+    'expiresIn' => 3600,
+    'approvedScopes' => ['read', 'write'],
+]);
 ```
+
+OAuth 1ユーザーは、`Laravel\Socialite\One\User`クラスを使用してフェイクを作成できます。

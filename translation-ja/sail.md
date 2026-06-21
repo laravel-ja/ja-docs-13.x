@@ -23,6 +23,7 @@
 - [メールのプレビュー](#previewing-emails)
 - [コンテナCLI](#sail-container-cli)
 - [PHPバージョン](#sail-php-versions)
+    - [追加のPHP拡張](#sail-php-extensions)
 - [Nodeバージョン](#sail-node-versions)
 - [サイトの共有](#sharing-your-site)
 - [Xdebugによるデバッグ](#debugging-with-xdebug)
@@ -424,6 +425,20 @@ sail build --no-cache
 
 sail up
 ```
+
+<a name="sail-php-extensions"></a>
+### 追加のPHP拡張
+
+Sailのランタイムイメージには、一般的なPHP拡張のセットが含まれています。アプリケーションで追加の拡張が必要な場合は、アプリケーションの`compose.yaml`ファイルにある`laravel.test`サービスにスペース区切りの`PHP_EXTENSIONS`ビルド引数を追加することで、イメージの構築時にそれらをインストールできます。
+
+```yaml
+build:
+    args:
+        WWWGROUP: '${WWWGROUP}'
+        PHP_EXTENSIONS: 'gmp imagick'
+```
+
+アプリケーションの`compose.yaml`ファイルを更新した後は、コンテナイメージを再構築する必要があります。
 
 <a name="sail-node-versions"></a>
 ## Nodeバージョン

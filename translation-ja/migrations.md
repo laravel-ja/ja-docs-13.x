@@ -1607,18 +1607,19 @@ Schema::withoutForeignKeyConstraints(function () {
 <a name="events"></a>
 ## イベント
 
-利便が良いように、各マイグレート操作は[イベント](/docs/{{version}}/events)を発行します。以下のイベントはすべて、`Illuminate\Database\Events\MigrationEvent`基本クラスを継承しています。
+利便を良くするため、各マイグレート操作は[イベント](/docs/{{version}}/events)を発行します。以下のイベントはすべて、`Illuminate\Database\Events\MigrationEvent`基本クラスを継承しています。
 
 <div class="overflow-auto">
 
  | クラス                                             | 説明                                  |
  | ---------------------------------------------- | ------------------------------------------------ |
- | `Illuminate\Database\Events\MigrationsStarted`   | マイグレーションのバッチが実行されようとしている |
- | `Illuminate\Database\Events\MigrationsEnded`     | マイグレーションのバッチが実行終了した           |
+| `Illuminate\Database\Events\DatabaseRefreshed`   | `migrate:refresh`コマンドが終了した         |
+ | `Illuminate\Database\Events\MigrationsStarted`   | マイグレーションのバッチが実行されようとしている  |
+| `Illuminate\Database\Events\MigrationsEnded`     | マイグレーションのバッチが終了した              |
  | `Illuminate\Database\Events\MigrationStarted`    | 単一マイグレーションが実行されようとしている     |
- | `Illuminate\Database\Events\MigrationEnded`      | 単一マイグレーションが実行終了した |               |
+| `Illuminate\Database\Events\MigrationEnded`      | 単一マイグレーションが終了した                 |
  | `Illuminate\Database\Events\NoPendingMigrations` | 未適用のマイグレーションをみつけられなかった     |
- | `Illuminate\Database\Events\SchemaDumped`        | データベーススキマのダンプが終了した             |
+| `Illuminate\Database\Events\SchemaDumped`        | データベーススキマのダンプが終了した             |
  | `Illuminate\Database\Events\SchemaLoaded`        | 既存のデータベーススキマのダンプをロードした     |
 
 </div>

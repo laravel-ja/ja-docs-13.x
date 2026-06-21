@@ -402,7 +402,7 @@ class PhotoController extends Controller
         #[DB('mysql')] protected Connection $connection,
         #[Give(DatabaseRepository::class)] protected UserRepository $users,
         #[Log('daily')] protected LoggerInterface $log,
-        #[RouteParameter('photo')] protected Photo $photo,
+        #[RouteParameter] protected Photo $photo,
         #[Tag('reports')] protected iterable $reports,
     ) {
         // ...
@@ -410,7 +410,9 @@ class PhotoController extends Controller
 }
 ```
 
-さらに、Laravelは現在の認証済みユーザーを指定ルートやクラスへ注入するために、`CurrentUser`属性を提供しています。
+`RouteParameter`属性は、変数名に一致するルートパラメータを解決します。必要に応じて、`#[RouteParameter('photo')]`のようにルートパラメータ名を明示的に指定することもできます。
+
+さらに、Laravelは現在認証済みのユーザーを特定のルートやクラスへ注入するための`CurrentUser`属性も提供しています。
 
 ```php
 use App\Models\User;
