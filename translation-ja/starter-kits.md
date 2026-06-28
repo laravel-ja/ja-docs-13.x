@@ -354,6 +354,8 @@ Livewireスターターキットに含まれている、ログインページや
 
 Fortifyは、アプリケーションの`config/fortify.php`設定ファイルで有効化してある機能に基づき、以下の認証ルートを自動的に登録します。
 
+<div class="overflow-auto">
+
 | ルート                              | メソッド   | 説明                                 |
 | ---------------------------------- | ------   | ----------------------------------- |
 | `/login`                           | `GET`    | ログインフォーム表示                     |
@@ -372,6 +374,8 @@ Fortifyは、アプリケーションの`config/fortify.php`設定ファイル�
 | `/user/confirm-password`           | `POST`   | パスワード確認                          |
 | `/two-factor-challenge`            | `GET`    | ２要素挑戦フォーム表示                    |
 | `/two-factor-challenge`            | `POST`   | ２要素コード確認                        |
+
+</div>
 
 `php artisan route:list` Artisanコマンドを使用すると、アプリケーション内のすべてのルートを表示できます。
 
@@ -403,11 +407,15 @@ use Laravel\Fortify\Features;
 
 ユーザーが登録またはパスワードをリセットすると、Fortifyはアプリケーションの`app/Actions/Fortify`ディレクトリにあるアクションクラスを呼び出します：
 
+<div class="overflow-auto">
+
 | ファイル                        | 説明                                   |
 | ----------------------------- | ------------------------------------- |
 | `CreateNewUser.php`           | 新しいユーザーの確認と登録                  |
 | `ResetUserPassword.php`       | ユーザーパスワードの確認と登録               |
 | `PasswordValidationRules.php` | パスワード確認ルールの定義                  |
+
+</div>
 
 たとえば、アプリケーションの登録ロジックをカスタマイズするには、`CreateNewUser`アクションを編集する必要があります:
 

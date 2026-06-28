@@ -90,10 +90,12 @@ composer require mongodb/laravel-mongodb
 設定を完了したら、`mongodb`パッケージとデータベース接続をアプリケーションで使い、様々な強力な機能を活用することができます。
 
 - [Eloquentを使用し](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/eloquent-models/)、モデルをMongoDBのコレクションに格納することができます。Eloquentの標準機能に加えて、Laravel MongoDBパッケージは埋め込みリレーションシップなどの追加機能を提供します。このパッケージはMongoDBドライバへの直接アクセスも提供し、素のクエリや集約パイプラインのような操作を実行するために使用できます。
- - クエリビルダを使って[複雑なクエリを書く](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/query-builder/)。
- - `mongodb`[キャッシュドライバ](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/cache/) は、TTLインデックスなどのMongoDBの機能を使用し、期限切れのキャッシュエントリを自動的に消去するように最適化されています。
- - `mongodb`キュー・ドライバを使った、[キュー投入するジョブのディスパッチと処理](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/queues/)。
- - [Flysystem用GridFSアダプタ](https://flysystem.thephpleague.com/docs/adapter/filesystems/)を介して、[GridFSにファイルを保存する](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/gridfs/)。
- - データベース接続やEloquentを使うサードパーティ製パッケージのほとんどは、MongoDBと一緒に使うことができます。
+- クエリビルダを使って[複雑なクエリを書く](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/query-builder/)。
+- ベクトル埋め込みと`vectorSearch` Eloquentメソッドを使い、[類似性／ベクトル検索を行う](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/fundamentals/vector-search/)。
+- `mongodb`[キャッシュドライバ](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/cache/) は、TTLインデックスなどのMongoDBの機能を使用し、期限切れのキャッシュエントリを自動的に消去するように最適化されています。
+- `mongodb`キュー・ドライバを使った、[キュー投入するジョブのディスパッチと処理](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/queues/)。
+- [Flysystem用GridFSアダプタ](https://flysystem.thephpleague.com/docs/adapter/gridfs/)を介して、[GridFSにファイルを保存する](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/filesystems/)。
+- `mongodb` Scoutエンジンを使い、[全文検索を行う](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/scout/)。
+- データベース接続やEloquentを使うサードパーティ製パッケージのほとんどは、MongoDBと一緒に使うことができます。
 
 MongoDBとLaravelの使い方を引き続き学ぶには、MongoDBの[クイックスタートガイド](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/quick-start/)を参照してください。

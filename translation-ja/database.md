@@ -3,6 +3,7 @@
 - [イントロダクション](#introduction)
     - [設定](#configuration)
     - [読み／書き接続](#read-and-write-connections)
+    - [プール済みPostgreSQL接続](#pooled-postgresql-connections)
 - [SQLクエリの実行](#running-queries)
     - [複数データベース接続の使用](#using-multiple-database-connections)
     - [クエリイベントのリッスン](#listening-for-query-events)
@@ -89,7 +90,7 @@ SELECTステートメントに１つのデータベース接続を使用し、IN
 ```php
 'mysql' => [
     'driver' => 'mysql',
-    
+
     'read' => [
         'host' => [
             '192.168.1.1',
@@ -102,7 +103,7 @@ SELECTステートメントに１つのデータベース接続を使用し、IN
         ],
     ],
     'sticky' => true,
-    
+
     'port' => env('DB_PORT', '3306'),
     'database' => env('DB_DATABASE', 'laravel'),
     'username' => env('DB_USERNAME', 'root'),
@@ -128,6 +129,42 @@ SELECTステートメントに１つのデータベース接続を使用し、IN
 #### `sticky`オプション
 
 `sticky`オプションは、現在のリクエストサイクル中にデータベースへ書き込まれたレコードをすぐに読み取るため使用する**オプション**値です。`sticky`オプションが有効になっており、現在のリクエストサイクル中にデータベースへ対し「書き込み」操作が実行された場合、それ以降の「読み取り」操作では「書き込み」接続が使用されます。これにより、要求サイクル中に書き込まれたデータを、同じ要求中にデータベースからすぐに読み戻すことができます。これがアプリケーションにとって望ましい動作であるかどうかを判断するのは使用者の皆さん次第です。
+
+<a name="pooled-postgresql-connections"></a>
+### プール済みPostgreSQL接続
+
+多くのマネージドPostgreSQLプロバイダは、PgBouncerなどのサービスや接続プロキシを介して、トランザクションモードの接続ポーリングを提供しています。これらのプーラはアプリケーションのクエリには最適ですが、一部のスキーマ操作、マイグレーション、メンテナンスコマンドには直接のデータベース接続が必要です。
+
+PostgreSQLでトランザクションプーラを使用するには、通常通りプール済み接続を設定し、`direct`設定オプションを介して直接接続の詳細を提供します。
+
+```php
+'pgsql' => [
+    'driver' => 'pgsql',
+    // ...
+    'pooled' => env('DB_POOLED', false),
+    'direct' => array_filter([
+        'host' => env('DB_DIRECT_HOST'),
+        'port' => env('DB_DIRECT_PORT'),
+        'username' => env('DB_DIRECT_USERNAME'),
+        'password' => env('DB_DIRECT_PASSWORD'),
+        'sslmode' => env('DB_DIRECT_SSLMODE'),
+    ]),
+],
+```
+
+PostgreSQL接続をプール済みとして設定すると、Laravelは自動的にプール済み接続をエミュレートした事前ペアを有効にします。直接接続は、`direct`設定で明示的に定義していないオプションをすべて引き継ぎ、デフォルトでネイティブの事前ペアを使用します。
+
+Laravelはマイグレーション、スキーマのダンプとリストア、`db:wipe`、`db:show`、`db:table`へ、自動的に直接接続を使用します。また、プールモードが有効で直接接続が設定されている場合、`db`コマンドでもデフォルトで直接接続を使用します。代わりにプール済み接続へ接続するには、`--pooled`オプションを渡します。
+
+```shell
+php artisan db --pooled
+```
+
+アプリケーションで明示的に直接接続を使用する必要がある場合は、接続名に`::direct`サフィックスを追加してください。
+
+```php
+DB::connection('pgsql::direct')->statement('create extension if not exists "uuid-ossp"');
+```
 
 <a name="running-queries"></a>
 ## SQLクエリの実行

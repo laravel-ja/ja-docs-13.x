@@ -18,6 +18,7 @@
 - [バリデーション前の入力変換](#transforming-input-before-validation)
 - [フォーム](#forms)
 - [情報メッセージ](#informational-messages)
+- [コールアウト](#callouts)
 - [テーブル](#tables)
 - [スピン](#spin)
 - [プログレスバー](#progress)
@@ -1095,6 +1096,87 @@ outro("Your name is {$responses['name']} and you are {$responses['age']} years o
 use function Laravel\Prompts\info;
 
 info('Package installed successfully.');
+```
+
+<a name="callouts"></a>
+## コールアウト
+
+`callout`関数は、ラベルとコンテンツを含むボックスメッセージを表示します。コールアウトは、デプロイの概要、エラーの詳細、ステータスの更新など、目立たせるべき重要な情報を表示するのに便利です。
+
+```php
+use function Laravel\Prompts\callout;
+
+callout(
+    label: 'Environment Configured',
+    content: 'Your application is running in production mode with 4 workers.',
+);
+```
+
+コールアウトの視覚スタイルを変更するには、`type`引数として`warning`または`error`を渡します。
+
+```php
+callout(
+    label: 'Deprecation Notice',
+    content: 'The `--prefer-stable` flag will be removed in v4.0. Use `--stability=stable` instead.',
+    type: 'warning',
+);
+
+callout(
+    label: 'Database Connection Failed',
+    content: 'Could not connect to MySQL on 127.0.0.1:3306.',
+    type: 'error',
+);
+```
+
+`info`引数はコールアウトにフッター行を追加します。これは、IDやタイムスタンプのようなメタデータを表示するのに便利です。
+
+```php
+callout(
+    label: 'Deployment Summary',
+    content: 'Your application was deployed to production.',
+    info: 'deploy-id: d4f8a2c',
+);
+```
+
+<a name="callout-rich-content"></a>
+#### リッチコンテンツ
+
+文字列を渡す代わりに、文字列と要素の配列を渡し、構造化したリッチなコールアウトも構築できます。`Element`クラスは、見出し、箇条書きリスト、番号付きリスト、キーバリューリストを作成するためのファクトリメソッドを提供します。
+
+```php
+use Laravel\Prompts\Elements\Element;
+
+use function Laravel\Prompts\callout;
+
+callout('Deployment Summary', [
+    'Your application was deployed to production at 2024-03-15 14:32 UTC.',
+    Element::heading('What Changed'),
+    Element::bulletedList([
+        'Migrated 3 pending database migrations',
+        'Cleared and rebuilt route cache',
+        'Restarted 4 queue workers',
+    ]),
+    Element::heading('Next Steps'),
+    Element::numberedList([
+        'Verify the health check endpoint at /up',
+        'Monitor error rates for the next 15 minutes',
+        'Confirm background jobs are processing',
+    ]),
+]);
+```
+
+ラベル付きデータを表示するために、`Element::keyValueList`を使用することもできます。
+
+```php
+callout('Database Connection Failed', [
+    'Could not connect to the database server.',
+    Element::keyValueList([
+        'Host' => '127.0.0.1',
+        'Port' => '3306',
+        'Database' => 'forge',
+        'Status' => 'Connection refused',
+    ]),
+], type: 'error');
 ```
 
 <a name="tables"></a>

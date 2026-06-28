@@ -1616,6 +1616,35 @@ class ProcessPodcast implements ShouldQueue
 
 この例では、アプリケーションがRedisロックを取得できない場合、ジョブは１０秒間解放され、最大２５回再試行され続けます。ただし、ジョブによって３つの未処理の例外がスローされると、ジョブは失敗します。
 
+<a name="stopping-retries-by-exception"></a>
+#### 例外によるリトライの停止
+
+例外によっては、キュー投入したジョブを再試行するためリリースするのではなく、すぐに失敗させると示す必要があります。アプリケーションの`bootstrap/app.php`ファイルにある`dontRetry`例外メソッドを使い、ジョブのリトライを停止すべき例外タイプを設定できます。
+
+```php
+use App\Exceptions\InvalidPodcastSourceException;
+use Illuminate\Foundation\Configuration\Exceptions;
+
+->withExceptions(function (Exceptions $exceptions): void {
+    $exceptions->dontRetry([
+        InvalidPodcastSourceException::class,
+    ]);
+})
+```
+
+リトライを停止するタイミングをより詳細に制御する必要がある場合は、`dontRetryWhen`メソッドへクロージャを指定できます。クロージャが`true`を返すと、ジョブを失敗としてマークし、リトライしません。
+
+```php
+use App\Exceptions\PodcastProcessingException;
+use Illuminate\Foundation\Configuration\Exceptions;
+
+->withExceptions(function (Exceptions $exceptions): void {
+    $exceptions->dontRetryWhen(function (PodcastProcessingException $e) {
+        return $e->reason() === 'Subscription expired';
+    });
+})
+```
+
 <a name="timeout"></a>
 #### タイムアウト
 

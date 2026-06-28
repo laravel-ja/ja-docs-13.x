@@ -119,7 +119,7 @@ composer require symfony/mailgun-mailer symfony/http-client
 ],
 ```
 
-米国の[Mailgunリージョン](https://documentation.mailgun.com/docs/mailgun/api-reference/#mailgun-regions)を使用していない場合は、`services`設定ファイルでリージョンのエンドポイントを定義してください。
+米国の[Mailgunリージョン](https://documentation.mailgun.com/docs/mailgun/api-reference/api-overview#mailgun-regions)を使用していない場合は、`services`設定ファイルでリージョンのエンドポイントを定義してください。
 
 ```php
 'mailgun' => [

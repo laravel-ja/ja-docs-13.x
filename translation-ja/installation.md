@@ -110,7 +110,7 @@ composer global require laravel/installer
 <a name="creating-an-application"></a>
 ### アプリケーションの生成
 
-PHP、Composer、Laravelインストーラをインストールしたら、新しいLaravelアプリケーションを作成する準備ができました。Laravelインストーラは、希望するテストフレームワーク、データベース、スターターキットを選択するように促します。
+PHP、Composer、Laravelインストーラをインストールし終えたら、新しいLaravelアプリケーションを作成する準備は完了です。インストーラは、お好みのスターターキット、テストフレームワーク、データベースを選択するようにプロンプトを表示します。
 
 ```shell
 laravel new example-app
@@ -124,7 +124,7 @@ npm install && npm run build
 composer run dev
 ```
 
-開発サーバを起動すると、アプリケーションはウェブブラウザで[http://localhost:8000](http://localhost:8000)からアクセスできるようになります。これで、[Laravelエコシステムへの次のステップを開始する](#next-steps)準備が整いました。もちろん、[データベースを設定する](#databases-and-migrations)ことも必要でしょう。
+開発サーバを起動したら、Webブラウザから[http://localhost:8000](http://localhost:8000)でアプリケーションにアクセスできます。次に、[Laravelエコシステムへの次のステップを踏み出す](#next-steps)準備が整います。もちろん、[データベースを設定](#databases-and-migrations)し、必要なマイグレーションを実行することもできます。
 
 > [!NOTE]
 > Laravelアプリケーションを開発する際に、有利なスタートダッシュを切りたければ、[スターターキット](/docs/{{version}}/starter-kits)の１つを使用することを検討してください。Laravelのスターターキットは、新しいLaravelアプリケーションのために、バックエンドとフロントエンド側の認証のスカフォールドを提供します。

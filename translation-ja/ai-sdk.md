@@ -125,6 +125,8 @@ XAI_API_KEY=
 
 AI SDKは、その機能全体でさまざまなプロバイダをサポートしています。以下の表は、各機能で利用可能なプロバイダをまとめたものです。
 
+<div class="overflow-auto">
+
 | 機能 | プロバイダ |
 |---|---|
 | テキスト | OpenAI, Anthropic, Gemini, Azure, Bedrock, Groq, xAI, DeepSeek, Mistral, Ollama, OpenRouter |
@@ -134,6 +136,8 @@ AI SDKは、その機能全体でさまざまなプロバイダをサポート�
 | 埋め込み | OpenAI, Gemini, Azure, Bedrock, Cohere, Mistral, Jina, VoyageAI, Ollama, OpenRouter |
 | リランク | Cohere, Jina, VoyageAI |
 | ファイル | OpenAI, Anthropic, Gemini |
+
+</div>
 
 `Laravel\Ai\Enums\Lab`列挙型（enum）は、プレーンな文字列を使用する代わりに、コード全体でプロバイダを参照するために使用できます。
 
