@@ -1179,6 +1179,19 @@ callout('Database Connection Failed', [
 ], type: 'error');
 ```
 
+`Element::link`メソッドは、[OSC 8](https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda)をサポートするターミナルでクリック可能なハイパーリンクを作成します。URLのみ、またはカスタムラベル付きのURLを指定できます。
+
+```php
+callout('Server Health Check', [
+    'Multiple services are reporting degraded performance.',
+    Element::heading('Affected Services'),
+    'Look here: '.Element::link('https://example.com/health', 'Health Dashboard'),
+    Element::link('https://example.com/health'),
+]);
+```
+
+ラベルを指定しない場合は、URL自体をリンクテキストとして表示します。
+
 <a name="tables"></a>
 ## テーブル
 

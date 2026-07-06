@@ -230,23 +230,44 @@ Predisを使用する場合、Laravelはクライアントサイドシャーデ�
 ],
 ```
 
-Predis3.4.0以降では、`Retry`クラスによる組み込みの再試行とバックオフ設定をサポートしています。`NoBackoff`、`EqualBackoff`、`ExponentialBackoff`戦略のいずれかを`retry`オプションで設定してください：
+Predis3.4.0以降は、`Retry`クラスによる組み込みの再試行とバックオフの設定をサポートしています。`max_retries`オプションを使用して再試行を設定し、`retry`オプションを使用してバックオフ戦略を設定できます。`retry`オプションには、`NoBackoff`、`EqualBackoff`、`ExponentialBackoff`の戦略クラスのいずれかをキーとする配列を指定する必要があります。
 
 ```php
-use Predis\Retry;
 use Predis\Retry\Strategy\ExponentialBackoff;
 
 'default' => [
     'url' => env('REDIS_URL'),
     // ...
-    'retry' => new Retry(
-        new ExponentialBackoff(
+    'retry' => [
+        ExponentialBackoff::class => [
             env('REDIS_BACKOFF_BASE', 100),
             env('REDIS_BACKOFF_CAP', 1000),
-            true, // Enables jitter
-        ),
-        env('REDIS_MAX_RETRIES', 3)
-    )
+            true, // Enable jitter...
+        ],
+    ],
+    'max_retries' => env('REDIS_MAX_RETRIES', 3),
+],
+```
+
+RedisクラスタでPredisを使用する場合、クラスタ設定の`parameters`オプションで再試行設定を定義してください。
+
+```php
+use Predis\Retry\Strategy\NoBackoff;
+
+'clusters' => [
+    'default' => [
+        // ...
+    ],
+],
+
+'options' => [
+    'cluster' => env('REDIS_CLUSTER', 'redis'),
+    'parameters' => [
+        'retry' => [
+            NoBackoff::class => [],
+        ],
+        'max_retries' => env('REDIS_MAX_RETRIES', 3),
+    ],
 ],
 ```
 

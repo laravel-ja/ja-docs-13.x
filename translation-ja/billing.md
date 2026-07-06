@@ -649,130 +649,163 @@ $url = $request->user()->billingPortalUrl(route('billing'));
 <a name="storing-payment-methods"></a>
 ### 支払い方法の保存
 
-Stripeでサブスクリプションを作成したり、「１回限りの」料金を実行したりするには、支払い方法を保存し、Stripeからその識別子を取得する必要があります。これを実現するアプローチは、支払方法をサブスクリプションにするか、単一料金にするかにより異なるため、以降で両方とも説明します。
+Stripeでサブスクリプションを作成したり、「１回限り」の請求を実行したりするには、アプリケーションが顧客から支払い情報を安全に収集する必要があります。これを実現するために使用する方法は、将来のサブスクリプションのために支払い方法を保存する予定か、それとも即座に１回限りの請求を処理するかによって異なるため、以下で両方を確認します。
 
-<a name="payment-methods-for-subscriptions"></a>
-#### サブスクリプションの支払い方法
+Stripeの[Payment Element](https://stripe.com/docs/payments/payment-element)を使用すると、カード、Apple Pay、Google Pay、iDEALなどの複数の支払い方法をサポートできます。
 
-サブスクリプションで将来使用するときのため顧客のクレジットカード情報を保存する場合、Stripeの"Setup Intents" APIを使用して、顧客の支払い方法の詳細を安全に収集する必要があります。"Setup Intent"は、顧客の支払い方法により課金する意図をStripeに示します。Cashierの`Billable`トレイトには、新しいSetup Intentsを簡単に作成するための`createSetupIntent`メソッドを用意しています。顧客の支払い方法の詳細を収集するフォームをレンダするルートまたはコントローラからこのメソッドを呼び出す必要があります。
+<a name="payment-element-for-subscriptions"></a>
+#### Paymeサブスクリプション用のPayment Element
+
+まず、Setup Intentを作成し、ビューへ渡します。
 
 ```php
-return view('update-payment-method', [
+return view('subscribe', [
     'intent' => $user->createSetupIntent()
 ]);
 ```
 
-Setup Intentsを作成してビューに渡したら、支払い方法を収集する要素にそのシークレットを添付する必要があります。たとえば、次の「支払い方法の更新」フォームについて考えてみます。
+Setup Intentの`client_secret`を使用して、Payment Elementをマウントします。
 
 ```html
-<input id="card-holder-name" type="text">
+<div id="payment-element"></div>
+<button id="submit">Subscribe</button>
 
-<!-- ストライプ要素のプレースホルダ -->
-<div id="card-element"></div>
-
-<button id="card-button" data-secret="{{ $intent->client_secret }}">
-    Update Payment Method
-</button>
-```
-
-次に、Stripe.jsライブラリを使用して、[Stripe要素](https://stripe.com/docs/stripe-js)をフォームに添付し、顧客の支払いの詳細を安全に収集します。
-
-```html
 <script src="https://js.stripe.com/v3/"></script>
-
 <script>
     const stripe = Stripe('stripe-public-key');
 
-    const elements = stripe.elements();
-    const cardElement = elements.create('card');
+    const elements = stripe.elements({
+        clientSecret: '{{ $intent->client_secret }}'
+    });
 
-    cardElement.mount('#card-element');
+    const paymentElement = elements.create('payment');
+
+    paymentElement.mount('#payment-element');
+
+    document.getElementById('submit').addEventListener('click', async () => {
+        const { error } = await stripe.confirmSetup({
+            elements,
+            confirmParams: {
+                return_url: '{{ route("subscription.complete") }}',
+            },
+        });
+
+        if (error) {
+            // Display "error.message" to the user...
+        }
+    });
 </script>
 ```
 
-次に、カードを確認し、[Stripeの`confirmCardSetup`メソッド](https://stripe.com/docs/js/setup_intents/confirm_card_setup)を使用してStripeから安全な「支払い方法識別子」を取得します。
+Stripeが`return_url`へリダイレクトした後、`setup_intent` IDがクエリ文字列パラメータとして利用できるようになります。この値を使用して、支払い方法を取得し、サブスクリプションを作成できます。
 
-```js
-const cardHolderName = document.getElementById('card-holder-name');
-const cardButton = document.getElementById('card-button');
-const clientSecret = cardButton.dataset.secret;
+```php
+use Illuminate\Http\Request;
 
-cardButton.addEventListener('click', async (e) => {
-    const { setupIntent, error } = await stripe.confirmCardSetup(
-        clientSecret, {
-            payment_method: {
-                card: cardElement,
-                billing_details: { name: cardHolderName.value }
-            }
-        }
+Route::get('/subscription/complete', function (Request $request) {
+    $setupIntent = $request->user()->findSetupIntent(
+        $request->setup_intent
     );
 
-    if (error) {
-        // "error.message"をユーザーに表示…
-    } else {
-        // カードは正常に検証された…
-    }
+    $paymentMethod = $setupIntent->payment_method;
+
+    $request->user()
+        ->newSubscription('default', 'price_xxx')
+        ->create($paymentMethod);
+
+    return redirect('/dashboard');
+})->name('subscription.complete');
+```
+
+サブスクリプションを作成する代わりに、顧客のデフォルトの支払い方法を更新するためにPayment Elementを使用している場合は、支払い方法の識別子を[`updateDefaultPaymentMethod`](#updating-the-default-payment-method)メソッドへ渡してください。
+
+<a name="payment-element-for-single-charges"></a>
+#### 一回限りの請求用のPayment Element
+
+一回限りの支払いの場合は、Cashierの`pay`メソッドを使用してPayment Intentを作成します。通常は、Stripeが顧客をアプリケーションにリダイレクトした後に注文を取得できるように、アプリケーションの対応する注文にPayment Intent IDを保存する必要があります。次の例は、アプリケーションに`user_id`、`amount`、`status`、および`stripe_payment_intent_id`カラムを持つ`Order`モデルがあると想定しています。
+
+```php
+use App\Models\Order;
+use Illuminate\Http\Request;
+
+Route::post('/pay', function (Request $request) {
+    $amount = 1000;
+
+    $payment = $request->user()->pay($amount);
+
+    $order = Order::create([
+        'user_id' => $request->user()->id,
+        'amount' => $amount,
+        'status' => 'pending',
+        'stripe_payment_intent_id' => $payment->id,
+    ]);
+
+    return view('checkout', [
+        'clientSecret' => $payment->client_secret,
+        'order' => $order,
+    ]);
 });
 ```
 
-Stripeがカードを検証したあとに、結果の`setupIntent.payment_method`識別子をLaravelアプリケーションに渡し、顧客にアタッチします。支払い方法は、[新しい支払い方法として追加](#adding-payment-methods)または[デフォルトの支払い方法の更新に使用](#updating-the-default-payment-method)のいずれかです。すぐに支払い方法識別子を使用して[新しいサブスクリプションを作成](#creating-subscriptions)することもできます。
-
-> [!NOTE]
-> Setup Intentsと顧客の支払いの詳細の収集について詳しく知りたい場合は、[Stripeが提供しているこの概要を確認してください](https://stripe.com/docs/payments/save-and-reuse#php)。
-
-<a name="payment-methods-for-single-charges"></a>
-#### 一回限りの支払いの支払い方法
-
-もちろん、顧客の支払い方法に対して１回請求を行う場合、支払い方法IDを使用する必要があるのは１回だけです。Stripeの制約により、顧客が保存したデフォルトの支払い方法を単一の請求に使用することはできません。Stripe.jsライブラリを使用して、顧客が支払い方法の詳細を入力できるようにする必要があります。たとえば、次のフォームについて考えてみます。
+次に、Payment Elementをマウントし、支払いを確定します。
 
 ```html
-<input id="card-holder-name" type="text">
+<div id="payment-element"></div>
+<button id="submit">Pay Now</button>
 
-<!-- ストライプ要素のプレースホルダ -->
-<div id="card-element"></div>
-
-<button id="card-button">
-    Process Payment
-</button>
-```
-
-このようなフォームを定義した後、Stripe.jsライブラリを使用して[Stripe要素](https://stripe.com/docs/stripe-js)をフォームに添付し、顧客の支払いの詳細を安全に収集します。
-
-```html
 <script src="https://js.stripe.com/v3/"></script>
-
 <script>
     const stripe = Stripe('stripe-public-key');
 
-    const elements = stripe.elements();
-    const cardElement = elements.create('card');
+    const elements = stripe.elements({
+        clientSecret: '{{ $clientSecret }}'
+    });
 
-    cardElement.mount('#card-element');
+    const paymentElement = elements.create('payment');
+
+    paymentElement.mount('#payment-element');
+
+    document.getElementById('submit').addEventListener('click', async () => {
+        const { error } = await stripe.confirmPayment({
+            elements,
+            confirmParams: {
+                return_url: '{{ route("payment.complete") }}',
+            },
+        });
+
+        if (error) {
+            // ユーザーへ"error.message"を表示…
+        }
+    });
 </script>
 ```
 
-次にカードを確認し、[Stripeの`createPaymentMethod`メソッド](https://stripe.com/docs/stripe-js/reference#stripe-create-payment-method)を使用してStripeから安全な「支払い方法識別子」を取得します。
+リダイレクト後、`payment_intent`クエリ文字列パラメータを使用して、対応する注文とPayment Intentを取得してください。注文を履行する前に、注文が認証済みユーザーのものであること、およびPayment Intentが認証済みユーザーのものであり、かつ成功していることを確認する必要があります。
 
-```js
-const cardHolderName = document.getElementById('card-holder-name');
-const cardButton = document.getElementById('card-button');
+```php
+use App\Models\Order;
+use Illuminate\Http\Request;
 
-cardButton.addEventListener('click', async (e) => {
-    const { paymentMethod, error } = await stripe.createPaymentMethod(
-        'card', cardElement, {
-            billing_details: { name: cardHolderName.value }
-        }
-    );
+Route::get('/payment/complete', function (Request $request) {
+    $order = Order::where('user_id', $request->user()->id)
+        ->where('stripe_payment_intent_id', $request->payment_intent)
+        ->firstOrFail();
 
-    if (error) {
-        // "error.message"をユーザーに表示…
-    } else {
-        // カードは正常に検証された…
+    $paymentIntent = $request->user()
+        ->stripe()
+        ->paymentIntents
+        ->retrieve($request->payment_intent);
+
+    if ($paymentIntent->customer === $request->user()->stripe_id &&
+        $paymentIntent->status === 'succeeded') {
+        $order->update(['status' => 'paid']);
+
+        // 注文の履行…
     }
-});
-```
 
-カードが正常に確認されたら、`paymentMethod.id`をLaravelアプリケーションに渡して、[一回限りの請求](#simple-charge)を処理できます。
+    return redirect('/dashboard');
+})->name('payment.complete');
+```
 
 <a name="retrieving-payment-methods"></a>
 ### 支払い方法の取得
@@ -1972,13 +2005,13 @@ Webフックの検証を有効にするには、`STRIPE_WEBHOOK_SECRET`環境変
 <a name="simple-charge"></a>
 ### シンプルな支払い
 
-顧客に対して1回限りの請求を行う場合は、Billableなモデルインスタンスで`charge`メソッドを使用します。`charge`メソッドの２番目の引数として[支払い方法識別子を指定](#payment-methods-for-single-charges)する必要があります。
+支払い方法の識別子を使用し、顧客に一回限りの請求を行いたい場合は、Billableモデルインスタンスの`charge`メソッドを使用します。一回限りの請求を処理する前に、顧客から支払い情報を収集する必要がある場合は、[一回限りの請求用のPayment Element](#payment-element-for-single-charges)のドキュメントを参照してください。
 
 ```php
 use Illuminate\Http\Request;
 
 Route::post('/purchase', function (Request $request) {
-    $stripeCharge = $request->user()->charge(
+    $payment = $request->user()->charge(
         100, $request->paymentMethodId
     );
 
@@ -1986,7 +2019,7 @@ Route::post('/purchase', function (Request $request) {
 });
 ```
 
-`charge`メソッドは３番目の引数を取り、ベースにあるStripeの課金作成へのオプションを指定できます。課金作成時に利用できるオプションの詳細は、[Stripeドキュメント](https://stripe.com/docs/api/charges/create)を参照してください。
+`charge`メソッドは３番目の引数を取り、ベースにあるStripeのPayment Intent作成のオプションを指定できます。Payment Intent作成時に利用できるオプションの詳細は、[Stripeドキュメント](https://stripe.com/docs/api/payment_intents/create)を参照してください。
 
 ```php
 $user->charge(100, $paymentMethod, [
@@ -1999,7 +2032,7 @@ $user->charge(100, $paymentMethod, [
 ```php
 use App\Models\User;
 
-$stripeCharge = (new User)->charge(100, $paymentMethod);
+$payment = (new User)->charge(100, $paymentMethod);
 ```
 
 課金失敗の場合、`charge`メソッドは例外を投げます。課金が成功すると、メソッドは`Laravel\Cashier\Payment`のインスタンスを返します。
@@ -2094,7 +2127,7 @@ Route::post('/pay', function (Request $request) {
 <a name="refunding-charges"></a>
 ### 支払の返金
 
-Stripeの料金を払い戻す必要がある場合は、`refund`メソッドを使用します。このメソッドは、最初の引数にStripe[支払いインテントID](#payment-methods-for-single-charges)を取ります。
+Stripeの支払いを返金する必要がある場合は、`refund` methodを使用します。このメソッドは、第１引数にStripeのPayment Intent IDを取ります。
 
 ```php
 $payment = $user->charge(100, $paymentMethodId);

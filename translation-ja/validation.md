@@ -1161,6 +1161,7 @@ The credit card number field is required when payment type is credit card.
 [ファイル](#rule-file)
 [イメージ](#rule-image)
 [最大値](#rule-max)
+[最小値](#rule-min)
 [MIMEタイプ](#rule-mimetypes)
 [拡張子によるMIMEタイプ](#rule-mimes)
 [サイズ](#rule-size)

@@ -110,7 +110,7 @@ composer global require laravel/installer
 <a name="creating-an-application"></a>
 ### アプリケーションの生成
 
-PHP、Composer、Laravelインストーラをインストールし終えたら、新しいLaravelアプリケーションを作成する準備は完了です。インストーラは、お好みのスターターキット、テストフレームワーク、データベースを選択するようにプロンプトを表示します。
+PHP、Composer、Laravelインストーラをインストールし終えたら、新しいLaravelアプリケーションを作成する準備は完了です。
 
 ```shell
 laravel new example-app
