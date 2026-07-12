@@ -548,6 +548,28 @@ $queueName = $this->option('queue');
 $options = $this->options();
 ```
 
+コマンドの引数やオプションを`Illuminate\Console\CommandInput`インスタンスとして取得するため、`input`メソッドを使用できます。このインスタンスは、HTTPリクエストやその他のデータコンテナで利用可能なものと同じ型付きアクセサを提供しています。
+
+```php
+use App\Enums\ReportType;
+
+/**
+ * コンソールコマンドの実行
+ */
+public function handle(): void
+{
+    $input = $this->input()->date('from');
+
+    // ...
+}
+```
+
+`input`メソッドは、引数またはオプションのいずれかから、単一の入力値を取得するためにも使用できます。
+
+```php
+$queue = $this->input('queue', 'default');
+```
+
 <a name="prompting-for-input"></a>
 ### 入力のプロンプト
 

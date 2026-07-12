@@ -13,6 +13,7 @@
     - [レート制限](#rate-limiting)
     - [ジョブのオーバーラップの防止](#preventing-job-overlaps)
     - [例外による利用制限](#throttling-exceptions)
+    - [ジョブの開放](#releasing-jobs)
     - [ジョブのスキップ](#skipping-jobs)
 - [ジョブのディスパッチ](#dispatching-jobs)
     - [ディスパッチの遅延](#delayed-dispatching)
@@ -970,6 +971,45 @@ public function middleware(): array
 
 ```php
 return [(new ThrottlesExceptionsWithRedis(10, 10 * 60))->connection('limiter')];
+```
+
+<a name="releasing-jobs"></a>
+### ジョブの開放
+
+`Release`ミドルウェアを使用すると、ジョブを実行せずにキューへ戻せます。`Release::when`メソッドは、指定した条件が`true`と評価された場合にジョブを開放し、`Release::unless`メソッドは、条件が`false`と評価された場合にジョブを開放します。
+
+```php
+use Illuminate\Queue\Middleware\Release;
+
+/**
+ * ジョブを通過させる必要のあるミドルウェアを取得
+ */
+public function middleware(): array
+{
+    return [
+        Release::when($condition, releaseAfter: 60),
+    ];
+}
+```
+
+ジョブをキューへ戻しても、ジョブの総試行回数は増分します。そのため、ジョブクラスの`Tries`属性や`MaxExceptions`属性を状況に応じて調整することをおすすめします。
+
+より複雑な条件評価を行うために、`when`メソッドと`unless`メソッドに**クロージャ**を渡すこともできます。
+
+```php
+use Illuminate\Queue\Middleware\Release;
+
+/**
+ * ジョブを通過させる必要のあるミドルウェアを取得
+ */
+public function middleware(): array
+{
+    return [
+        Release::when(function (): bool {
+            return ! $this->order->isPaid();
+        }, releaseAfter: 60),
+    ];
+}
 ```
 
 <a name="skipping-jobs"></a>

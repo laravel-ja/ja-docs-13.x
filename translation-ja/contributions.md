@@ -108,7 +108,7 @@ Laravelへ提出されるすべてのプルリクエストに感謝します。�
 <a name="security-vulnerabilities"></a>
 ## セキュリティ脆弱性
 
-Laravelにセキュリティー脆弱性を見つけたときは、メールで[Taylor Otwell(taylorotwell@laravel.com)](mailto:taylor@laravel.com)に連絡してください。全セキュリティー脆弱性は、速やかに対応されるでしょう。
+Laravel内のセキュリティ脆弱性を発見した場合は、<a href="mailto:security@laravel.com">security@laravel.com</a>のセキュリティチームへメールを送信してください。すべてのセキュリティ脆弱性へ迅速に対応します。
 
 <a name="coding-style"></a>
 ## コーディングスタイル
