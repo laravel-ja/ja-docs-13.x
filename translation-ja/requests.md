@@ -753,6 +753,14 @@ if ($request->hasFile('photo')) {
 }
 ```
 
+アップロードしたファイルが、保存前に操作する必要のある画像である場合、`image`メソッドを使用して`Illuminate\Image\Image`インスタンスを取得できます。ファイルが存在しない場合は`null`を返します。
+
+```php
+$image = $request->image('photo');
+```
+
+画像操作に関する詳細情報は、完全な[画像操作ドキュメント](/docs/{{version}}/images)を参照してください。
+
 <a name="validating-successful-uploads"></a>
 #### 正常なアップロードのバリデーション
 

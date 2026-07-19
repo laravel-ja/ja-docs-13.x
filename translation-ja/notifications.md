@@ -1843,7 +1843,7 @@ Notification::assertSentTo(
 );
 ```
 
-<a name="on-demand-notifications"></a>
+<a name="testing-on-demand-notifications"></a>
 #### オンデマンド通知
 
 テストするコードが、[オンデマンド通知](#on-demand-notifications)を送信する場合、`assertSentOnDemand`メソッドでオンデマンド通知を送信したことをテストできます。

@@ -42,6 +42,7 @@
     - [ファイルストレージ](/docs/{{version}}/filesystem)
     - [ヘルパ](/docs/{{version}}/helpers)
     - [HTTPクライアント](/docs/{{version}}/http-client)
+    - [画像操作](/docs/{{version}}/images)
     - [多言語化](/docs/{{version}}/localization)
     - [メール](/docs/{{version}}/mail)
     - [通知](/docs/{{version}}/notifications)

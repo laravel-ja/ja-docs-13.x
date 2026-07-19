@@ -1,6 +1,7 @@
 # パッケージ開発
 
 - [イントロダクション](#introduction)
+    - [パッケージの生成](#creating-a-package)
     - [ファサード使用の注意](#a-note-on-facades)
 - [パッケージディスカバリー](#package-discovery)
 - [サービスプロバイダ](#service-providers)
@@ -26,6 +27,17 @@
 パッケージにはさまざまな種類があります。スタンドアロン型のパッケージもあり、どのPHPフレームワークでも動作します。CarbonやPestはスタンドアロンパッケージの例です。これらのパッケージは、`composer.json`ファイルで要求すれば、Laravelで使用できます。
 
 逆にLaravelと一緒に使用することを意図したパッケージもあります。こうしたパッケージはLaravelアプリケーションを高めること特に意図したルート、コントローラ、ビュー、設定を持つでしょう。このガイドでは、Laravelに特化したパッケージの開発を主に説明します。
+
+<a name="creating-a-package"></a>
+### パッケージの生成
+
+新しいLaravelパッケージの開発を始める一番簡単な方法は、公式の[Laravel package skeleton](https://github.com/laravel/package-skeleton)を使用することです。このスケルトンは、サービスプロバイダ、Pestによるテスト、Larastanによる静的解析、Pintによるコードフォーマット、およびエンドツーエンドのパッケージ開発用のワークベンチアプリケーションなど、Laravelパッケージの開発に必要なすべてを提供します。[LaravelインストーラCLI](/docs/{{version}}/installation#creating-a-laravel-project)の`package`コマンドを使用して、新しいパッケージを生成できます。
+
+```shell
+laravel package my-package
+```
+
+対話型の設定スクリプトが、名前空間、サービスプロバイダや、設定ファイル、ルート、ビュー、翻訳、マイグレーション、アセット、コマンド、ファサードなど、必要な機能だけをセットアップし、パッケージに合わせてスケルトンをパーソナライズします。
 
 <a name="a-note-on-facades"></a>
 ### ファサード使用の注意

@@ -222,6 +222,34 @@ class UserController
 }
 ```
 
+コントローラまたは個別のコントローラメソッドからミドルウェアを除外するには、`WithoutMiddleware`属性を使用します。クラスレベルの属性を特定のコントローラメソッドに限定するために、`only`引数や`except`引数を使用できます。
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Middleware\EnsureTokenIsValid;
+use Illuminate\Routing\Attributes\Controllers\WithoutMiddleware;
+
+#[WithoutMiddleware('subscribed', except: ['index'])]
+class UserController
+{
+    #[WithoutMiddleware(EnsureTokenIsValid::class)]
+    public function index()
+    {
+        // ...
+    }
+
+    public function show()
+    {
+        // ...
+    }
+}
+```
+
+クラスレベルの`WithoutMiddleware`属性は、子コントローラに継承されます。この属性で削除できるのはルートミドルウェアのみであり、[グローバルミドルウェア](/docs/{{version}}/middleware#global-middleware)には適用できません。
+
 <a name="authorization-attributes"></a>
 ### 認可属性
 

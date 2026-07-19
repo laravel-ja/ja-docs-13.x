@@ -20,6 +20,7 @@
     - [自動ストリーミング](#automatic-streaming)
     - [ファイルのアップロード](#file-uploads)
     - [ファイルの可視性](#file-visibility)
+    - [画像操作](#image-manipulation)
 - [ファイルの削除](#deleting-files)
 - [ディレクトリ](#directories)
 - [テスト](#testing)
@@ -668,6 +669,24 @@ $path = $request->file('avatar')->storePubliclyAs(
 );
 ```
 
+<a name="image-manipulation"></a>
+### 画像操作
+
+アップロードした画像を保存する前に、サイズ変更、クロップ、変換を行う必要がある場合は、Laravelの[画像操作機能](/docs/{{version}}/images)を使用します。
+
+```php
+$path = $request->image('avatar')
+    ->cover(400, 400)
+    ->toWebp()
+    ->storePublicly('avatars', 'public');
+```
+
+ファイルシステムディスクのいずれかにすでに保存しているファイルから、画像インスタンスを作成することもできます。
+
+```php
+$image = Storage::disk('public')->image('avatars/photo.jpg');
+```
+
 <a name="local-files-and-visibility"></a>
 #### ローカルファイルと可視性
 
@@ -789,6 +808,9 @@ test('albums can be uploaded', function () {
 
     // 指定ディレクトリが空であることをアサート
     Storage::disk('photos')->assertDirectoryEmpty('/wallpapers');
+
+    // ディスクにファイルが含まれていないことをアサート
+    Storage::disk('photos')->assertEmpty();
 });
 ```
 
@@ -825,6 +847,9 @@ class ExampleTest extends TestCase
 
         // 指定ディレクトリが空であることをアサート
         Storage::disk('photos')->assertDirectoryEmpty('/wallpapers');
+
+        // ディスクにファイルが含まれていないことをアサート
+        Storage::disk('photos')->assertEmpty();
     }
 }
 ```

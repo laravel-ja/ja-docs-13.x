@@ -1717,7 +1717,7 @@ class ProcessPodcast implements ShouldQueue
 ソケットや送信HTTP接続などのＩ／Ｏブロッキングプロセスが、指定するタイムアウトを尊重しない場合があります。したがって、これらの機能を使用するときは、常にAPIを使用してタイムアウトを指定するようにしてください。たとえば、[Guzzle](https://docs.guzzlephp.org)を使用する場合は、常に接続を指定し、タイムアウト値をリクエストする必要があります。
 
 > [!WARNING]
-> ジョブのタイムアウトを指定するには、[PCNTL](https://www.php.net/manual/en/book.pcntl.php) PHP拡張モジュールをインストールする必要があります。加えて、ジョブの"timeout"の値は、常に["retry after"](#job-expiration)値よりも小さい必要があります。そうしない場合、ジョブの実行が終了する前に再試行したり、タイムアウトしたりする可能性があります。
+> ジョブのタイムアウトを指定するには、[PCNTL](https://www.php.net/manual/en/book.pcntl.php) PHP拡張モジュールをインストールする必要があります。加えて、ジョブの"timeout"の値は、常に["retry after"](#job-expiration)値よりも小さい必要があります。そうしない場合、ジョブの実行が終了する前に再試行したり、タイムアウトしたりする可能性があります。`queue:work`コマンドを`--once`オプション付きで起動する場合、`--timeout`オプションは効果がありません。
 
 <a name="failing-on-timeout"></a>
 #### タイムアウトによる失敗
@@ -2583,7 +2583,7 @@ php artisan queue:work --force
 <a name="resource-considerations"></a>
 #### リソースに関する検討事項
 
-デーモンキューワーカは、各ジョブを処理する前にフレームワークを「再起動」しません。したがって、各ジョブが完了した後、重いリソースを解放する必要があります。たとえば、[GDライブラリ](https://www.php.net/manual/ja/book.image.php)を使用して画像操作を行っている場合は、画像の処理が完了したら、`imagedestroy`を使用してメモリを解放する必要があります。
+デーモンキューワーカは、各ジョブを処理する前にフレームワークを「再起動」しません。したがって、各ジョブが完了した後、重いリソースを解放する必要があります。たとえば、[GDライブラリ](https://www.php.net/manual/ja/book.image.php)を使用して[画像操作](/docs/{{version}}/images)を行っている場合は、画像の処理が完了したら、`imagedestroy`を使用してメモリを解放する必要があります。
 
 <a name="queue-priorities"></a>
 ### キューの優先度

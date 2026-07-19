@@ -21,6 +21,9 @@
 - [プログラムからのコマンド実行](#programmatically-executing-commands)
     - [他コマンドからのコマンド呼び出し](#calling-commands-from-other-commands)
 - [シグナルの処理](#signal-handling)
+- [Devコマンド](#the-dev-command)
+    - [Dev処理のカスタマイズ](#customizing-dev-processes)
+    - [Dev処理のフィルタリング](#filtering-dev-processes)
 - [スタブのカスタマイズ](#stub-customization)
 - [イベント](#events)
 
@@ -909,6 +912,93 @@ $this->trap([SIGTERM, SIGQUIT], function (int $signal) {
 
     dump($signal); // SIGTERM / SIGQUIT
 });
+```
+
+<a name="the-dev-command"></a>
+## Devコマンド
+
+`dev` Artisanコマンドは、ローカル開発に必要なすべてのプロセスを単一のターミナルウィンドウで起動します。デフォルトでは、PHP開発サーバ、キューワーカ、[Pail](/docs/{{version}}/logging#tailing-log-messages-using-pail)によるログの追跡、およびViteアセットのコンパイルを同時に実行します。
+
+```shell
+php artisan dev
+```
+
+裏では、`dev`コマンドが`concurrently` npmパッケージを使用してプロセスを管理します。各プロセスにはターミナル出力でラベルと色分けが適用されるため、簡単に区別できます。いずれかのプロセスが失敗した場合、他のすべてのプロセスは自動的に停止します。
+
+デフォルトのプロセスは以下の通りです。
+
+| 名前 | コマンド |
+| --- | --- |
+| `server` | `php artisan serve --host=localhost` |
+| `queue` | `php artisan queue:listen --tries=1 --timeout=0` |
+| `logs` | `php artisan pail --timeout=0` |
+| `vite` | `npm run dev` |
+
+> [!NOTE]
+> `vite`プロセスはNodeパッケージマネージャ（npm、pnpm、Yarn、Bun）を自動的に検出し、適切な実行コマンドを使用します。
+
+<a name="customizing-dev-processes"></a>
+### Dev処理のカスタマイズ
+
+通常は、アプリケーションの`AppServiceProvider`の`boot`メソッド内で`DevCommands`クラスを使用すれば、`dev`コマンドが実行するプロセスをカスタマイズできます。`register`メソッドはコマンド文字列と、オプションで名前を受け入れます。
+
+```php
+use Illuminate\Foundation\DevCommands;
+
+/**
+ * 全アプリケーションプロセスの初期起動処理
+ */
+public function boot(): void
+{
+    DevCommands::register('some-command --flag', 'my-process');
+}
+```
+
+Artisanコマンドを登録する場合、コマンドの先頭に`php artisan`を自動的に付加する`artisan`メソッドを使用できます。
+
+```php
+DevCommands::artisan('horizon', 'horizon');
+```
+
+同様に、`node`メソッドは検出したパッケージマネージャの実行コマンド（例：`npm run`）をコマンドの先頭に付加し、`nodeExec`メソッドはパッケージマネージャの実行コマンド（例：`npx`）をコマンドの先頭に付加します。
+
+```php
+DevCommands::node('storybook', 'storybook');
+
+DevCommands::nodeExec('tailwindcss -i resources/css/app.css -o public/css/app.css --watch', 'tailwind');
+```
+
+デフォルトのプロセスと同じ名前でプロセスを登録すると、登録したプロセスがデフォルトのプロセスを置き換えます。たとえば、別のポートを使用するようにサーバプロセスをカスタマイズできます。
+
+```php
+DevCommands::artisan('serve --host=localhost --port=9000', 'server');
+```
+
+ターミナル内のプロセスラベルの色もカスタマイズできます。利用可能なカラーメソッドは、`blue`、`purple`、`pink`、`orange`、`green`、`yellow`です。`color`メソッドにカスタムの16進数カラーを渡すこともできます。
+
+```php
+DevCommands::register('my-command', 'my-process')->green();
+
+DevCommands::register('my-command', 'my-process')->color('#ff6347');
+```
+
+登録済みのDevプロセスを起動せずにすべて確認するには、`dev:list`コマンドを使用します。
+
+```shell
+php artisan dev:list
+```
+
+<a name="filtering-dev-processes"></a>
+### Dev処理のフィルタリング
+
+`only`メソッドを使用して起動すれば、特定のプロセスのみを実行するように`dev`コマンドへ指示できます。同様に、`except`メソッドを使用して特定のプロセスを除外できます。
+
+```php
+// serverプロセスとviteプロセスのみを実行
+DevCommands::only('server', 'vite');
+
+// キューワーカ以外のすべてのプロセスを実行
+DevCommands::except('queue');
 ```
 
 <a name="stub-customization"></a>
