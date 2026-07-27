@@ -60,7 +60,7 @@ php artisan migrate
 <a name="redis"></a>
 #### Redis
 
-LaravelでRedisセッションを使用する前に、PECLを介してPhpRedis PHP拡張機能をインストールするか、Composerを介して`predis/predis`パッケージ(〜1.0)をインストールする必要があります。Redisの設定の詳細は、Laravelの[Redisドキュメント](/docs/{{version}}/redis#configuration)を参照してください。
+LaravelでRedisセッションを使用する前に、PECLを介してPhpRedis PHP拡張機能をインストールするか、Composerを介して`predis/predis`パッケージをインストールする必要があります。Redisの設定の詳細は、Laravelの[Redisドキュメント](/docs/{{version}}/redis#configuration)を参照してください。
 
 > [!NOTE]
 > `SESSION_CONNECTION`環境変数または`session.php`設定ファイルの`connection`オプションを使用して、セッションの保存に使用する Redis接続を指定できます。

@@ -51,10 +51,10 @@ composer require intervention/image:^4.0
 <a name="configuration"></a>
 ### 設定
 
-Laravelの画像設定ファイルは、`config/image.php`にあります。アプリケーションに`image`設定ファイルがない場合は、`config:publish` Artisanコマンドを使用してリソース公開できます。
+Laravelの画像設定ファイルは、`config/images.php`にあります。アプリケーションに`images`設定ファイルがない場合は、`config:publish` Artisanコマンドを使用してリソース公開できます。
 
 ```shell
-php artisan config:publish image
+php artisan config:publish images
 ```
 
 画像設定ファイルで、アプリケーションのデフォルトの画像ドライバを指定できます。また、`IMAGE_DRIVER`環境変数を使用してデフォルトのドライバを指定することも可能です。サポートしているドライバは、`gd`と`imagick`です。
@@ -226,6 +226,10 @@ $image =$request->image('avatar')
 $image =$image->toWebp();
 $image =$image->toJpg();
 $image =$image->toJpeg();
+$image = $image->toPng();
+$image = $image->toGif();
+$image = $image->toAvif();
+$image = $image->toBmp();
 ```
 
 `quality`メソッドを使用して、出力品質を設定できます。品質は`1`から`100`の間に制限されます。
@@ -380,7 +384,7 @@ $image =$request->image('avatar')
     ->cover(400, 400);
 ```
 
-また、アプリケーションの`config/image.php`設定ファイルの`default`オプション、または`IMAGE_DRIVER`環境変数を使用して、カスタムドライバをアプリケーションのデフォルトの画像ドライバとして設定することもできます。
+また、アプリケーションの`config/images.php`設定ファイルの`default`オプション、または`IMAGE_DRIVER`環境変数を使用して、カスタムドライバをアプリケーションのデフォルトの画像ドライバとして設定することもできます。
 
 ```ini
 IMAGE_DRIVER=vips

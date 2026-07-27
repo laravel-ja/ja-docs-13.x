@@ -23,10 +23,14 @@
     - [匿名エージェント](#anonymous-agents)
     - [エージェント設定](#agent-configuration)
     - [プロバイダオプション](#provider-options)
+- [人間によるツールの承認](#human-tool-approval)
+    - [完全な承認フロー](#complete-approval-flow)
 - [画像](#images)
 - [音声 (TTS)](#audio)
 - [文字起こし (STT)](#transcription)
+- [テキスト要約](#text-summarization)
 - [埋め込み](#embeddings)
+    - [マルチモーダルの埋め込み](#multimodal-embeddings)
     - [埋め込みのクエリ](#querying-embeddings)
     - [埋め込みのキャッシュ](#caching-embeddings)
 - [リランク](#reranking)
@@ -303,7 +307,7 @@ $agent = SalesCoach::make(user: $user);
 $response = (new SalesCoach)->prompt(
     'このセールスの文字起こしを分析して...',
     provider: Lab::Anthropic,
-    model: 'claude-haiku-4-5-20251001',
+    model: 'claude-sonnet-5',
     timeout: 120,
 );
 ```
@@ -407,6 +411,48 @@ $response = (new SalesCoach)
 ```
 
 `RemembersConversations`トレイトを使用すると、プロンプト送信時に以前のメッセージを自動的にロードし、会話コンテキストに含めます。新しいメッセージ（ユーザーとアシスタントの両方）は、各やり取りの後に自動的に保存します。
+
+<a name="conversation-participants"></a>
+#### 会話の参加者
+
+通常、ユーザーが最も一般的な会話の参加者ですが、会話は任意のEloquentモデルに属することができます。別のタイプのモデルの会話を開始するには、`forParticipant`メソッドを使用します。
+
+```php
+$response = (new SalesCoach)
+    ->forParticipant($team)
+    ->prompt('Review our latest sales results.');
+```
+
+参加者のモーフクラスと主キーは会話と一緒に保存します。そのため、`User` ID `1` と `Team` ID `1` のように同じ主キーを持つ異なるタイプのモデルであっても、別々の会話履歴を保持します。`forUser`メソッドは `forParticipant` のエイリアスです。
+
+`continueLastConversation`メソッドを使用すると、参加者の直近の会話を継続できます。
+
+```php
+$response = (new SalesCoach)
+    ->continueLastConversation($team)
+    ->prompt('Tell me more about that.');
+```
+
+特定の会話を継続する場合は、`continue`メソッドに参加者を渡します。
+
+```php
+$response = (new SalesCoach)
+    ->continue($conversationId, as: $team)
+    ->prompt('Tell me more about that.');
+```
+
+`HasConversations`トレイトは、会話に参加する任意のEloquentモデルへ追加できます。結果として得られる`conversations`リレーションは、そのモデルのタイプと主キーでスコープしたポリモーフィックリレーションです。また、その逆のリレーションを通じて、会話を所有する参加者にアクセスすることもできます。
+
+```php
+$conversations = $team->conversations;
+
+$participant = $conversation->participant;
+```
+
+アプリケーションで複数の参加者モデルタイプを使用する場合は、保存する参加者タイプがモデルのクラス名と結合しないよう、[Eloquentモーフマップ](/docs/{{version}}/eloquent-relationships#custom-polymorphic-types)を定義することを検討すべきです。
+
+> [!WARNING]
+> `continue`メソッドは、指定した参加者が会話を所有しているかどうかを検証しません。アプリケーションは会話を継続する前に、会話へのアクセスを認可する必要があります。
 
 <a name="structured-output"></a>
 ### 構造化出力
@@ -1257,7 +1303,7 @@ use Laravel\Ai\Enums\Lab;
 use Laravel\Ai\Promptable;
 
 #[Provider(Lab::Anthropic)]
-#[Model('claude-haiku-4-5-20251001')]
+#[Model('claude-sonnet-5')]
 #[MaxSteps(10)]
 #[MaxTokens(4096)]
 #[Temperature(0.7)]
@@ -1344,6 +1390,221 @@ class SalesCoach implements Agent, HasProviderOptions
 `providerOptions`メソッドは、現在使用しているプロバイダ（`Lab`列挙型または文字列）を受け取るため、プロバイダごとに異なるオプションを返せます。これは[フェイルオーバ](#failover)を使用する場合、各フォールバックプロバイダが独自の構成を受け取れるため、特に便利です。
 
 上記のAnthropicの例では、`cache_control`を介して[プロンプトキャッシュ](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching)も有効にしています。
+
+<a name="human-tool-approval"></a>
+## 人間によるツールの承認
+
+> [!WARNING]
+> ツールの承認には、中断した呼び出しを再開できるように会話履歴を保存する`Conversational`エージェントが必要です。`RemembersConversations`トレイトが必要な永続性を提供しています。
+
+センシティブまたは不可逆的なアクションを実行するツールは、実行前に人間の承認を必要とするでしょう。ツールを承認可能にするには、`Approvable`コントラクトを実装し、`InteractsWithApprovals`トレイトを使用します。承認可能なツールはデフォルトで承認を必要とします。
+
+```php
+<?php
+
+namespace App\Ai\Tools;
+
+use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Illuminate\Support\Facades\Storage;
+use Laravel\Ai\Concerns\InteractsWithApprovals;
+use Laravel\Ai\Contracts\Approvable;
+use Laravel\Ai\Contracts\Tool;
+use Laravel\Ai\Tools\Request;
+use Stringable;
+
+class DeleteFile implements Approvable, Tool
+{
+    use InteractsWithApprovals;
+
+    /**
+     * ツールの目的の説明を取得
+     */
+    public function description(): Stringable|string
+    {
+        return 'Delete a file from storage.';
+    }
+
+    /**
+     * ツールを実行
+     */
+    public function handle(Request $request): Stringable|string
+    {
+        Storage::delete($request['path']);
+
+        return "Deleted [{$request['path']}].";
+    }
+
+    /**
+     * ツールのスキーマ定義を取得
+     */
+    public function schema(JsonSchema $schema): array
+    {
+        return [
+            'path' => $schema->string()->required(),
+        ];
+    }
+}
+```
+
+ツール呼び出しの引数に基づいて承認が必要かどうかを判定するには、ツール上に`needsApproval`メソッドを定義します。このメソッドはブール値、または承認リクエストの理由を含む`Approval`インスタンスを返すことができます。
+
+```php
+use Laravel\Ai\Approvals\Approval;
+
+/**
+ * 指定したリクエストに対してツールが承認を必要とするか判定
+ */
+protected function needsApproval(Request $request): Approval|bool
+{
+    return str_starts_with($request['path'], 'temporary/')
+        ? false
+        : Approval::required('This will permanently delete a file.');
+}
+```
+
+エージェントの`tools`メソッドからツールを返すときに、ツールの承認要件をオーバーライドできます。
+
+```php
+public function tools(): iterable
+{
+    return [
+        (new SendNotification)->withoutApproval(),
+        (new DeleteFile)->requireApproval('Deletion review required.'),
+    ];
+}
+```
+
+承認可能なツールを呼び出すと、エージェントはツールを実行する前に一時停止します。レスポンスの保留中の承認を調査できます。これには各ツール呼び出しのID、ツール名、引数、承認理由が含まれます。
+
+```php
+$response = (new FileAssistant)
+    ->forUser($user)
+    ->prompt('Delete the old invoice.');
+
+if ($response->hasPendingApprovals()) {
+    foreach ($response->pendingApprovals as $approval) {
+        // $approval->id
+        // $approval->tool
+        // $approval->arguments
+        // $approval->reason
+    }
+}
+```
+
+エージェントを再開するため、会話を継続し、保留中の各ツール呼び出しに対する決定を含む`Decisions`インスタンスを提供します。Dicisionsは、実行前に呼び出しを承認、拒否、または引数を編集できます。
+
+```php
+use Laravel\Ai\Approvals\Decision;
+use Laravel\Ai\Approvals\Decisions;
+
+$response = (new FileAssistant)
+    ->continue($conversationId, as: $user)
+    ->prompt(Decisions::from([
+        'call_abc' => Decision::approve(),
+        'call_ghi' => Decision::reject('The invoice must be retained.'),
+    ]));
+```
+
+ブール値の`true`と`false`を承認と拒否の省略形として使用できます。保留中のすべてのツール呼び出しは決定を受け取る必要があります。不明、不足、または以前に解決済みのツール呼び出しIDは、`ApprovalMismatchException`を投げます。`approveRemaining`または`rejectRemaining`メソッドを使用して、明示的な決定がない呼び出しのデフォルトを提供できます。
+
+```php
+$decisions = Decisions::from([
+    'call_abc' => true,
+])->rejectRemaining('Not approved.');
+
+$response = (new FileAssistant)
+    ->continue($conversationId, as: $user)
+    ->prompt($decisions);
+```
+
+`Decision::reject('Not approved.')`のように結果を伴う拒否はモデルに返され、モデルは応答を継続できます。結果を伴わない拒否は、拒否を記録した後に生成ループを停止します。
+
+ツールの承認は、`prompt`、`stream`、`queue`、`broadcast`、`broadcastNow`、`broadcastOnQueue`メソッドでサポートしています。
+
+ストリーミングおよびブロードキャスト中、一時停止は`tool_approval_request`イベントで表します。[Vercel AI SDKストリームプロトコル](#streaming-using-the-vercel-ai-sdk-protocol)を使用する場合、承認リクエストと結果はプロトコルのネイティブツール承認パーツを使用して送信します。
+
+キュー投入したエージェントの場合、結果のレスポンスを`then`コールバックに渡し、Laravelは`ToolApprovalRequested`イベントも発行します。
+
+Laravelはモデルに継続を要求する前に、承認されたツールの結果を保存します。その後生成に失敗した場合、その承認はすでに解決済みです。同じ承認決定を再度送信する代わりに、通常のテキストプロンプトで会話を継続してください。
+
+<a name="complete-approval-flow"></a>
+### 完全な承認フロー
+
+以下のルートは完全な承認フローを示しています。`GET`ルートはチャット画面を返し、`POST`ルートは新しいテキストプロンプトまたはチャット画面からの承認決定を受け入れます。この例では、アプリケーションの`User`モデルが`HasConversations`トレイトを使用していることを前提としています。
+
+```php
+use App\Ai\Agents\FileAssistant;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Validation\Rule;
+use Laravel\Ai\Approvals\Decision;
+use Laravel\Ai\Approvals\Decisions;
+use Laravel\Ai\Models\Conversation;
+
+Route::get('/chat/{conversation}', function (Request $request, Conversation $conversation) {
+    Gate::authorize('view', $conversation);
+
+    return view('chat', [
+        'conversation' => $conversation,
+    ]);
+})->middleware('auth');
+
+Route::post('/chat/{conversation}', function (Request $request, Conversation $conversation) {
+    Gate::authorize('view', $conversation);
+
+    $validated = $request->validate([
+        'message' => ['nullable', 'string', 'required_without:decisions', 'prohibited_with:decisions'],
+        'decisions' => ['nullable', 'array', 'required_without:message', 'prohibited_with:message'],
+        'decisions.*.action' => ['required_with:decisions', Rule::in(['approve', 'reject'])],
+        'decisions.*.result' => ['nullable', 'string'],
+    ]);
+
+    $prompt = isset($validated['decisions'])
+        ? Decisions::from($validated->collect('decisions')->map(
+            fn (array $decision) => match ($decision['action']) {
+                'approve' => Decision::approve(),
+                'reject' => Decision::reject($decision['result'] ?? null),
+            }
+        )->all())
+        : $validated['message'];
+
+    $response = (new FileAssistant)
+        ->continue($conversation->id, as: $request->user())
+        ->prompt($prompt);
+
+    return [
+        'conversation_id' => $response->conversationId,
+        'status' => $response->hasPendingApprovals() ? 'awaiting_approval' : 'complete',
+        'message' => $response->text,
+        'approvals' => $response->pendingApprovals,
+    ];
+})->middleware('auth');
+```
+
+レスポンスのステータスが`awaiting_approval`の場合、チャット画面は保留中の承認をレンダリングし、各決定のキーとしてツール呼び出しIDを使用してユーザーの選択を同じエンドポイントへ送信する必要があります。
+
+```json
+{
+    "decisions": {
+        "call_abc": {
+            "action": "approve"
+        },
+        "call_def": {
+            "action": "reject",
+            "result": "The invoice must be retained."
+        }
+    }
+}
+```
+
+通常のチャットメッセージの場合、画面は代わりに`message`値を送信できます。
+
+```json
+{
+    "message": "Delete the old invoice."
+}
+```
 
 <a name="images"></a>
 ## 画像
@@ -1518,6 +1779,32 @@ Transcription::fromStorage('audio.mp3')
     });
 ```
 
+<a name="text-summarization"></a>
+## テキスト要約
+
+Laravelの`Stringable`クラスで利用可能な`summarize`メソッドを使用して、テキストを要約できます。デフォルトでは、要約は3文以内で構成され、設定されているプロバイダの最も安価なテキストモデルを使用して生成します。
+
+```php
+use Illuminate\Support\Str;
+
+$summary = Str::of($article)->summarize();
+```
+
+要約の生成に使用する最大文数、プロバイダ、モデル、タイムアウトを指定できます。`Str`クラスもこのメソッドの静的バージョンを提供しています。
+
+```php
+use Laravel\Ai\Enums\Lab;
+
+$summary = Str::of($article)->summarize(
+    sentences: 4,
+    provider: Lab::Anthropic,
+    model: 'claude-sonnet-5',
+    timeout: 30,
+);
+
+$summary = Str::summarize($article, sentences: 4);
+```
+
 <a name="embeddings"></a>
 ## 埋め込み
 
@@ -1549,6 +1836,52 @@ $response = Embeddings::for(['ナパバレーには素晴らしいワインが�
     ->dimensions(1536)
     ->generate(Lab::OpenAI, 'text-embedding-3-small');
 ```
+
+<a name="multimodal-embeddings"></a>
+### マルチモーダル埋め込み
+
+`Embeddings::for`メソッドは文字列に加えて画像、音声、ドキュメント、動画入力を受け付け、テキスト以外のコンテンツに対しても埋め込みを生成できます。Geminiは画像、音声、ドキュメント、動画の埋め込みをサポートし、VoyageAIは画像と動画の埋め込みをサポートしています。
+
+```php
+use Laravel\Ai\Embeddings;
+use Laravel\Ai\Enums\Lab;
+use Laravel\Ai\Files\Image;
+use Laravel\Ai\Files\Video;
+
+$response = Embeddings::for([
+    'A vineyard at sunset.',
+    Image::fromStorage('vineyard.jpg'),
+    Video::fromPath('/home/laravel/tour.mp4'),
+])->generate(Lab::Gemini);
+```
+
+マルチモーダル入力は[添付ファイルに使用するファイルクラス](#attachments)と同じものを使用します。これらのファイルはローカルパス、ファイルシステムディスク、リモートURL、またはBase64エンコード済みコンテンツから作成できます。画像、ドキュメント、動画はアップロードしたファイルからも作成でき、ドキュメントは生の文字列コンテンツから作成することも可能です。
+
+```php
+use Laravel\Ai\Files\Audio;
+use Laravel\Ai\Files\Document;
+use Laravel\Ai\Files\Image;
+use Laravel\Ai\Files\Video;
+
+Image::fromPath('/home/laravel/photo.jpg');
+Image::fromStorage('photo.jpg');
+Image::fromUpload($request->file('photo'));
+
+Audio::fromPath('/home/laravel/clip.mp3');
+Audio::fromStorage('clip.mp3');
+Audio::fromUpload($request->file('clip.mp3'));
+
+Video::fromPath('/home/laravel/video.mp4');
+Video::fromStorage('video.mp4');
+Video::fromUpload($request->file('video'));
+
+Document::fromUrl('https://example.com/report.pdf');
+Document::fromString('Laravel is a PHP framework.', 'text/plain');
+Document::fromUpload($request->file('report'));
+```
+
+> [!NOTE]
+> VoyageAIはリモートURLメディアとBase64エンコード済みメディアを単一のリクエストで混在させることを許可していません。ローカルファイル、ストレージに保存したファイル、アップロードしたファイルはBase64エンコード済みコンテンツとして送信され、テキスト入力はいずれのメディアソースとも組み合わせられます。利用可能なマルチモーダルモデルと入力については、プロバイダのドキュメントを参照してください。
 
 <a name="querying-embeddings"></a>
 ### 埋め込みのクエリ
@@ -2027,6 +2360,28 @@ SalesCoach::fake([
 ]);
 ```
 
+ツールの承認を待機しているレスポンスをFakeすることもできます。
+
+```php
+use Laravel\Ai\Approvals\PendingApproval;
+use Laravel\Ai\Responses\AgentResponse;
+
+FileAssistant::fake([
+    AgentResponse::fakeWithPendingApprovals([
+        new PendingApproval(
+            id: 'call_abc',
+            tool: 'DeleteFile',
+            arguments: ['path' => 'invoice.pdf'],
+            reason: 'This will permanently delete a file.',
+        ),
+    ]),
+]);
+
+$response = (new FileAssistant)->prompt('Delete the invoice.');
+
+$response->hasPendingApprovals(); // true
+```
+
 > **注意：** 構造化出力を返すエージェントに対して`Agent::fake()`を呼び出し、かつ擬装出力を明示的に指定しなかった場合、Laravelはエージェントが定義している出力スキーマに一致する擬装データを自動的に生成します。
 
 エージェントにプロンプトを送った後、受け取ったプロンプトについてアサートできます。
@@ -2043,6 +2398,24 @@ SalesCoach::assertPrompted(function (AgentPrompt $prompt) {
 SalesCoach::assertNotPrompted('存在しないプロンプト');
 
 SalesCoach::assertNeverPrompted();
+```
+
+承認の継続をアサートする場合、プロンプトの承認決定を検査できます。
+
+```php
+use Laravel\Ai\Approvals\Decisions;
+use Laravel\Ai\Prompts\AgentPrompt;
+
+FileAssistant::fake();
+
+(new FileAssistant)->prompt(Decisions::from([
+    'call_abc' => true,
+]));
+
+FileAssistant::assertPrompted(function (AgentPrompt $prompt) {
+    return $prompt->hasApprovalDecisions()
+        && $prompt->approvalDecisions->get('call_abc')->isApproved();
+});
 ```
 
 キュー投入したエージェント呼び出しについては、キュー用のアサートメソッドを使用してください。
@@ -2475,6 +2848,8 @@ Laravel AI SDKは、以下を含むさまざまな[イベント](/docs/{{version
 - `StoreCreated`
 - `StoringFile`
 - `StreamingAgent`
+- `ToolApprovalRequested`
+- `ToolApprovalResolved`
 - `ToolInvoked`
 - `TranscriptionGenerated`
 

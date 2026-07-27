@@ -7,6 +7,7 @@
     - [最大ジョブ試行回数](#max-job-attempts)
     - [ジョブタイムアウト](#job-timeout)
     - [ジョブ待機時間](#job-backoff)
+    - [その他のワーカオプション](#other-worker-options)
     - [非表示のジョブ](#silenced-jobs)
 - [バランス戦略](#balancing-strategies)
     - [自動バランス](#auto-balancing)
@@ -58,6 +59,34 @@ Horizo​​nのアセットを公開すると、そのプライマリ設定フ�
 
 > [!WARNING]
 > Horizonは内部で`horizon`という名前のRedis接続を使用します。このRedis接続名は予約語であり、`database.php`設定ファイル中で他のRedis接続に割り当てたり、`horizon.php`設定ファイルの`use`オプションの値に使用したりしてはいけません。
+
+<a name="content-security-policy-csp-nonce"></a>
+#### コンテンツセキュリティポリシー（CSP）ナンス
+
+コンテンツセキュリティポリシー](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP)の一部として、Horizonのビューで使用するscriptタグやstyleタグに[nonce属性](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Global_attributes/nonce)を使用したい場合は、`Horizon::cspNonce`メソッドを使用して使用するナンスを指定できます。このメソッドは通常、リクエストごとに新しいナンスを割り当てるように、ミドルウェア内で呼び出す必要があります。
+
+```php
+use Closure;
+use Illuminate\Http\Request;
+use Laravel\Horizon\Horizon;
+use Symfony\Component\HttpFoundation\Response;
+
+public function handle(Request $request, Closure $next): Response
+{
+    Horizon::cspNonce('csp-nonce');
+
+    return $next($request);
+}
+```
+
+このミドルウェアをアプリケーションの`config/horizon.php`設定ファイルの`middleware`オプションへ追加してください。
+
+```php
+'middleware' => [
+    'web',
+    App\Http\Middleware\AddHorizonCspNonce::class,
+],
+```
 
 <a name="environments"></a>
 #### 環境
@@ -230,6 +259,38 @@ Laravelは、認証したユーザーをゲートクロージャへ自動的に�
     ],
 ],
 ```
+
+<a name="other-worker-options"></a>
+### その他のワーカオプション
+
+`tries`、`timeout`、`backoff`に加え、各スーパーバイザは、ワーカプロセスの動作や自動再起動のタイミングをコントロールするその他のオプションをいくつか引数に取ります。ワーカを定期的に再起動することは、メモリリークの防止に役立つため、長時間実行されるプロセスにとって優良な実践です。
+
+```php
+'environments' => [
+    'production' => [
+        'supervisor-1' => [
+            // ...
+            'memory' => 128,
+            'maxJobs' => 1000,
+            'maxTime' => 3600,
+            'sleep' => 3,
+            'rest' => 0,
+            'nice' => 0,
+        ],
+    ],
+],
+```
+
+<div class="content-list" markdown="1">
+
+- `memory`は、単一のワーカプロセスが再起動するまでに消費できる最大のメモリ量をメガバイト単位で定義します。デフォルト値は`128`です。
+- `maxJobs`は、ワーカが再起動するまでに処理するジョブの数を定義します。`0`値は、処理したジョブの数に基づいてワーカを再起動すべきではないことを示します。デフォルト値は`0`です。
+- `maxTime`は、ワーカが再起動するまでに実行する秒数を定義します。`0`値は、時間に基づいてワーカを再起動すべきではないことを示します。デフォルト値は`0`です。
+- `sleep`は、利用可能なジョブが存在しない場合に、新しいジョブについてキューを再度ポーリングするまでにワーカが待機する秒数を定義します。デフォルト値は`3`です。
+- `rest`は、各ジョブを処理する間に一時停止する秒数を定義します。デフォルト値は`0`です。
+- `nice`は、ワーカプロセスの「nice値」（スケジューリング優先度）を定義します。値が大きいほど、プロセスの優先度は低くなります。デフォルト値は`0`です。
+
+</div>
 
 <a name="silenced-jobs"></a>
 ### 非表示のジョブ
@@ -709,6 +770,17 @@ Horizonは、ジョブおよびキューの待ち時間とスループットに�
 use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('horizon:snapshot')->everyFiveMinutes();
+```
+
+Horizonがメトリクスグラフ用に保持するスナップショットの数は、アプリケーションの`config/horizon.php`設定ファイルにある`metrics.trim_snapshots`オプションを使って設定します。このオプションは保存期間ではなくスナップショットの数を制限するため、保持期間は`horizon:snapshot`コマンドを実行する頻度に依存します。
+
+```php
+'metrics' => [
+    'trim_snapshots' => [
+        'job' => 24,
+        'queue' => 24,
+    ],
+],
 ```
 
 メトリクスデータをすべて削除したい場合は、`horizon:clear-metrics` Artisanコマンドを呼び出します。

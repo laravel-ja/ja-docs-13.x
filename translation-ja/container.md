@@ -367,7 +367,7 @@ class PhotoController extends Controller
 }
 ```
 
-`Storage`属性の他に、`Auth`、`Cache`、`Config`、`Context`、`DB`、`Give`、`Log`、`RouteParameter`、[Tag](#tagging)属性をLaravelは用意しています。
+`Storage`属性に加え、Laravelは`Auth`、`Cache`、`Config`、`Context`、`DB`、`Give`、`Log`、`RequestAttribute`、`RouteParameter`、[Tag](#tagging)属性を提供しています。
 
 ```php
 <?php
@@ -375,6 +375,7 @@ class PhotoController extends Controller
 namespace App\Http\Controllers;
 
 use App\Contracts\UserRepository;
+use App\Models\Organization;
 use App\Models\Photo;
 use App\Repositories\DatabaseRepository;
 use Illuminate\Container\Attributes\Auth;
@@ -384,6 +385,7 @@ use Illuminate\Container\Attributes\Context;
 use Illuminate\Container\Attributes\DB;
 use Illuminate\Container\Attributes\Give;
 use Illuminate\Container\Attributes\Log;
+use Illuminate\Container\Attributes\RequestAttribute;
 use Illuminate\Container\Attributes\RouteParameter;
 use Illuminate\Container\Attributes\Tag;
 use Illuminate\Contracts\Auth\Guard;
@@ -402,6 +404,7 @@ class PhotoController extends Controller
         #[DB('mysql')] protected Connection $connection,
         #[Give(DatabaseRepository::class)] protected UserRepository $users,
         #[Log('daily')] protected LoggerInterface $log,
+        #[RequestAttribute('organization')] protected Organization $organization,
         #[RouteParameter] protected Photo $photo,
         #[Tag('reports')] protected iterable $reports,
     ) {
@@ -411,6 +414,8 @@ class PhotoController extends Controller
 ```
 
 `RouteParameter`属性は、変数名に一致するルートパラメータを解決します。必要に応じて、`#[RouteParameter('photo')]`のようにルートパラメータ名を明示的に指定することもできます。
+
+`RequestAttribute`属性は、現在のリクエストの[属性バッグ](https://symfony.com/doc/current/components/http_foundation.html#accessing-request-data)で指定キーのもとに保存している値を解決します：`#[RequestAttribute('organization')]`
 
 さらに、Laravelは現在認証済みのユーザーを特定のルートやクラスへ注入するための`CurrentUser`属性も提供しています。
 

@@ -634,15 +634,16 @@ Route::get('/posts/{post:slug}', function (Post $post) {
 });
 ```
 
-特定のモデルクラスを取得するときのモデル結合で、常に`id`以外のデータベースカラムを使用する場合は、Eloquentモデルの`getRouteKeyName`メソッドをオーバーライドできます。
+特定のモデルクラスを取得する際に、モデル結合で`id`以外のデータベースカラムを常に使用したい場合は、Eloquentモデルに`RouteKey`属性を適用してください。
 
 ```php
-/**
- * モデルのルートキーの取得
- */
-public function getRouteKeyName(): string
+use Illuminate\Database\Eloquent\Attributes\RouteKey;
+use Illuminate\Database\Eloquent\Model;
+
+#[RouteKey('slug')]
+class Post extends Model
 {
-    return 'slug';
+    // ...
 }
 ```
 

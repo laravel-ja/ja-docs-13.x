@@ -195,7 +195,7 @@ Amazon SQSは、キューに投入するメッセージペイロードの最大�
 
 - Amazon SQS: `aws/aws-sdk-php ~3.0`
 - Beanstalkd: `pda/pheanstalk ~5.0`
-- Redis: `predis/predis ~2.0` or phpredis PHP extension
+- Redis: `predis/predis ~3.0`またはphpredis PHP拡張機能
 - [MongoDB](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/queues/): `mongodb/laravel-mongodb`
 
 </div>

@@ -89,7 +89,7 @@ Memcachedドライバを使用するには、[Memcached PECLパッケージ](htt
 <a name="redis"></a>
 #### Redis
 
-LaravelでRedisキャッシュを使用する前に、PECL経由でPhpRedis PHP拡張をインストールするか、Composer経由で`predis/predis`パッケージ（~2.0）をインストールする必要があります。[Laravel Sail](/docs/{{version}}/sail)は、あらかじめこの拡張機能を用意してあります。また、[Laravel Cloud](https://cloud.laravel.com)や[Laravel Forge](https://forge.laravel.com)などの公式Laravelアプリケーションプラットフォームでは、デフォルトでPhpRedis拡張をインストールしています。
+LaravelでRedisキャッシュを使用する前に、PECL経由でPhpRedis PHP拡張をインストールするか、Composer経由で`predis/predis`パッケージをインストールする必要があります。[Laravel Sail](/docs/{{version}}/sail)は、あらかじめこの拡張機能を用意してあります。また、[Laravel Cloud](https://cloud.laravel.com)や[Laravel Forge](https://forge.laravel.com)などの公式Laravelアプリケーションプラットフォームでは、デフォルトでPhpRedis拡張をインストールしています。
 
 Redisの設定の詳細については、[Laravelドキュメントページ](/docs/{{version}}/redis#configuration)を参照してください。
 
