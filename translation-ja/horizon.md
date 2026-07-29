@@ -221,7 +221,7 @@ Laravelは、認証したユーザーをゲートクロージャへ自動的に�
 'environments' => [
     'production' => [
         'supervisor-1' => [
-            // ...¨
+            // ...
             'timeout' => 60,
         ],ｑ
     ],

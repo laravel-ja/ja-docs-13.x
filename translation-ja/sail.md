@@ -27,8 +27,8 @@
 - [Nodeバージョン](#sail-node-versions)
 - [サイトの共有](#sharing-your-site)
 - [Xdebugによるデバッグ](#debugging-with-xdebug)
-  - [Xdebug CLI使用法](#xdebug-cli-usage)
-  - [Xdebug ブラウザ使用法](#xdebug-browser-usage)
+    - [Xdebug CLI使用法](#xdebug-cli-usage)
+    - [Xdebug ブラウザ使用法](#xdebug-browser-usage)
 - [カスタマイズ](#sail-customization)
 
 <a name="introduction"></a>
