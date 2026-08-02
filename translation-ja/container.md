@@ -317,6 +317,23 @@ interface EventPusher
 }
 ```
 
+任意の条件に依存する結合には、`BindWhen`属性を使用します。クロージャはコンテナを引数に取り、結合を適用すべき場合に`true`を返す必要があります。`Bind`属性と`BindWhen`属性は、宣言した順番に評価します。
+
+```php
+use App\Services\BetaEventPusher;
+use Illuminate\Container\Attributes\BindWhen;
+use Laravel\Pennant\Feature;
+
+#[BindWhen(BetaEventPusher::class, static fn () => Feature::active('beta-events'))]
+interface EventPusher
+{
+    // ...
+}
+```
+
+> [!NOTE]
+> `BindWhen`属性にはPHP 8.5以上が必要です。
+
 <a name="contextual-binding"></a>
 ### コンテキストによる結合
 

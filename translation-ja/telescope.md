@@ -109,6 +109,35 @@ Telescopeのアセットをリソース公開すると、そのプライマリ�
 'enabled' => env('TELESCOPE_ENABLED', true),
 ```
 
+<a name="content-security-policy-csp-nonce"></a>
+#### Content Security Policy （CSP）ナンス
+
+[Content Security Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP)（CSP）の一環として、Telescopeビューで使用するscriptタグおよびstyleタグで[ナンス属性](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Global_attributes/nonce)を使用したい場合は、`Telescope::cspNonce`メソッドを使用して使用するナンスを指定します。通常、リクエストごとに新しいナンスを割り当てるため、このメソッドはミドルウェア内で呼び出す必要があります。
+
+```php
+use Closure;
+use Illuminate\Http\Request;
+use Laravel\Telescope\Telescope;
+use Symfony\Component\HttpFoundation\Response;
+
+public function handle(Request $request, Closure $next): Response
+{
+    Telescope::cspNonce('csp-nonce');
+
+    return $next($request);
+}
+```
+
+このミドルウェアは、アプリケーションの`config/telescope.php`設定ファイルの`middleware`オプションへ追加します。
+
+```php
+'middleware' => [
+    'web',
+    App\Http\Middleware\AddTelescopeCspNonce::class,
+    Authorize::class,
+],
+```
+
 <a name="data-pruning"></a>
 ### データの整理
 

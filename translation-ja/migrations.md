@@ -1244,6 +1244,7 @@ Schema::table('users', function (Blueprint $table) {
 | `->nullable($value = true)`         | NULL値をカラムに保存可能に設定                                                            |
 | `->storedAs($expression)`           | storedカラムを生成（MariaDB／MySQL／PostgreSQL／SQLite）                                           |
 | `->unsigned()`                      | INTEGERカラムをUNSIGNEDとして設定（MariaDB／MySQL）                                                |
+| `->using($expression)`              | カラムタイプを変更するときにキャスト式を指定（PostgreSQL）                       |
 | `->useCurrent()`                    | CURRENT_TIMESTAMPをデフォルト値として使用するようにTIMESTAMPカラムを設定                  |
 | `->useCurrentOnUpdate()`            | レコードが更新されたときにCURRENT_TIMESTAMPを使用するようにTIMESTAMPカラムを設定（MariaDB／MySQL） |
 | `->virtualAs($expression)`          | 仮想カラムを生成（MariaDB／MySQL／SQLite）                                                         |
@@ -1354,6 +1355,17 @@ $table->bigIncrements('id')->primary()->change();
 
 // インデックス削除
 $table->char('postal_code', 10)->unique(false)->change();
+```
+
+<a name="postgresql-column-modifications"></a>
+#### PostgreSQLのカラム変更
+
+PostgreSQLでカラムのタイプを変更する場合、`using`修飾子を使用して、既存の値をキャストするために使用する式を指定できます。
+
+```php
+Schema::table('users', function (Blueprint $table) {
+    $table->date('birthday')->using('birthday::date')->change();
+});
 ```
 
 <a name="renaming-columns"></a>

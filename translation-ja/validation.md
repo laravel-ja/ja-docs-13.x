@@ -1121,6 +1121,7 @@ The credit card number field is required when payment type is credit card.
 <div class="collection-method-list" markdown="1">
 
 [配列](#rule-array)
+[配列キー](#rule-array-keys)
 [範囲](#rule-between)
 [内包](#rule-contains)
 [非内包](#rule-doesnt-contain)
@@ -1234,6 +1235,14 @@ The credit card number field is required when payment type is credit card.
 #### active_url
 
 フィールドが、`dns_get_record` PHP関数により、有効なAかAAAAレコードであることをバリデートします。`dns_get_record`へ渡す前に、`parse_url` PHP関数により指定したURLのホスト名を切り出します。
+
+`active_url`や`email:dns`など、DNSルックアップを実行するバリデーションルールをテストする場合は、`Validator::fakeDnsLookups`メソッドを使用します。これにより、ルールの他のバリデーション動作を維持しながら、DNSルックアップをFakeします。
+
+```php
+use Illuminate\Support\Facades\Validator;
+
+Validator::fakeDnsLookups();
+```
 
 <a name="rule-after"></a>
 #### after:_日付_
@@ -1360,6 +1369,21 @@ Validator::make($input, [
 ```
 
 一般に、配列に存在を許すキーは、常に指定する必要があります。
+
+<a name="rule-array-keys"></a>
+#### array_keys:_foo_,_bar_,...
+
+フィールドが、指定したリストにキーをすべて含むPHPの`array`であることをバリデートします。少なくとも1つのキーを指定する必要があります。
+
+```php
+'user' => ['array_keys:name,username'],
+```
+
+使いやすい`Rule::arrayKeys`メソッドも使用できます。
+
+```php
+'user' => [Rule::arrayKeys('name', 'username')],
+```
 
 <a name="rule-ascii"></a>
 #### ascii

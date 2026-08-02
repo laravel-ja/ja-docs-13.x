@@ -224,6 +224,19 @@ public function headers(): Headers
 }
 ```
 
+SES[テナント](https://docs.aws.amazon.com/ses/latest/dg/tenants.html)経由でメールを送信するには、`headers`メソッドから`X-Ses-Tenant-Name`ヘッダを返します。メッセージ送信時、Laravelはこのヘッダ値を`TenantName`オプションとしてSESへ渡します。
+
+```php
+public function headers(): Headers
+{
+    return new Headers(
+        text: [
+            'X-Ses-Tenant-Name' => 'tenant-id',
+        ],
+    );
+}
+```
+
 Laravelがメール送信時に、AWS SDKの`SendEmail`メソッドへ渡す、[追加オプション](https://docs.aws.amazon.com/aws-sdk-php/v3/api/api-sesv2-2019-09-27.html#sendemail)を定義したい場合は、`ses`設定に`options`配列を定義します。
 
 ```php

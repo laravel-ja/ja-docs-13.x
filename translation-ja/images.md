@@ -179,7 +179,10 @@ $image =$image->cover(400, 400);
 ```php
 $image =$image->contain(400, 400);
 $image =$image->contain(400, 400, '#ffffff');
+$image = $image->contain(400, 400, 'dominant');
 ```
+
+画像の支配色で余白を埋めるには、背景色として`dominant`を指定します。
 
 `crop`メソッドを使用して画像をクロップできます。最初の２つの引数は希望する幅と高さで、オプションの第３引数と第４引数でクロップの`x`座標と`y`座標を指定します。
 
@@ -197,6 +200,7 @@ Laravelは、他にもさまざまな画像変換メソッドを提供してい�
 $image =$image->orient();
 $image =$image->rotate(90);
 $image =$image->rotate(90, '#ffffff');
+$image = $image->rotate(90, 'dominant');
 $image =$image->blur(5);
 $image =$image->grayscale();
 $image =$image->sharpen(10);
@@ -300,7 +304,7 @@ $path =$request->image('avatar')
 <a name="inspecting-images"></a>
 ## 画像の調査
 
-以下のメソッドを使用して、画像のMIMEタイプ、拡張子、サイズ、幅、および高さを取得できます。
+以下のメソッドを使用して、画像のMIMEタイプ、拡張子、サイズ、幅、高さ、支配色を取得できます。
 
 ```php
 $mimeType =$image->mimeType();
@@ -309,6 +313,8 @@ $extension =$image->extension();
 [$width, $height] =$image->dimensions();
 $width =$image->width();
 $height =$image->height();
+
+$dominantColor = $image->dominantColor();
 ```
 
 これらのメソッドは、処理済みの画像に対して動作します。たとえば、`cover(400, 400)`の後に`width`を呼び出すと、`400`を返します。

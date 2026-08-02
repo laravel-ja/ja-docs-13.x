@@ -63,7 +63,7 @@ Horizo​​nのアセットを公開すると、そのプライマリ設定フ�
 <a name="content-security-policy-csp-nonce"></a>
 #### コンテンツセキュリティポリシー（CSP）ナンス
 
-コンテンツセキュリティポリシー](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP)の一部として、Horizonのビューで使用するscriptタグやstyleタグに[nonce属性](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Global_attributes/nonce)を使用したい場合は、`Horizon::cspNonce`メソッドを使用して使用するナンスを指定できます。このメソッドは通常、リクエストごとに新しいナンスを割り当てるように、ミドルウェア内で呼び出す必要があります。
+コンテンツセキュリティポリシー](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP)の一部として、Horizonのビューで使用するscriptタグやstyleタグに[nonce属性](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Global_attributes/nonce)を使うのが好みな場合は、`Horizon::cspNonce`メソッドを使用して使用するナンスを指定できます。このメソッドは通常、リクエストごとに新しいナンスを割り当てるように、ミドルウェア内で呼び出す必要があります。
 
 ```php
 use Closure;
