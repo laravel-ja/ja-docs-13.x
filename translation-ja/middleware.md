@@ -396,6 +396,24 @@ Route::get('/profile', function () {
 })
 ```
 
+既存の優先順位リストを置き換えずにミドルウェアを追加したい場合は、`prependToPriorityList`メソッドまたは`appendToPriorityList`メソッドを使用します。`prependToPriorityList`メソッドは指定したミドルウェアを別のミドルウェアの前に挿入し、`appendToPriorityList`メソッドは別のミドルウェアの後ろに挿入します。
+
+```php
+->withMiddleware(function (Middleware $middleware): void {
+    $middleware->prependToPriorityList(
+        before: \Illuminate\Routing\Middleware\SubstituteBindings::class,
+        prepend: \App\Http\Middleware\EnsureTokenIsValid::class,
+    );
+
+    $middleware->appendToPriorityList(
+        after: \Illuminate\Routing\Middleware\SubstituteBindings::class,
+        append: \App\Http\Middleware\EnsureUserIsSubscribed::class,
+    );
+})
+```
+
+`before`と`after`引数には、ミドルウェアクラスの配列も指定できます。
+
 <a name="middleware-parameters"></a>
 ## ミドルウェアのパラメータ
 

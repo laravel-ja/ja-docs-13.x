@@ -2249,9 +2249,6 @@ $activities = ActivityFeed::with('parentable')
 <a name="automatic-eager-loading"></a>
 ### 自動Eagerロード
 
-> [!WARNING]
-> この機能はコミュニティからのフィードバックを集めているため、現在ベータ版です。この機能の動作や機能は、パッチリリースでも変更する可能性があります。
-
 多くの場合Laravelは、あなたがアクセスしたリレーションを自動的にEagerロードできます。自動的なEagerロードを有効にするには、アプリケーションの`AppServiceProvider`の`boot`メソッド内で`Model::automaticallyEagerLoadRelationships`メソッドを呼び出す必要があります。
 
 ```php

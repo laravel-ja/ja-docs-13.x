@@ -631,7 +631,7 @@ $counted->all();
 <a name="method-crossjoin"></a>
 #### `crossJoin()` {.collection-method}
 
-`crossJoin`メソッドはコレクションの値と、指定した配列かコレクション間の値を交差接続し、可能性のある全順列の直積を返します。
+`crossJoin`メソッドはコレクションの値を指定した配列またはコレクション間で交差接続し、考えられるすべての組み合わせの直積を返します。
 
 ```php
 $collection = collect([1, 2]);

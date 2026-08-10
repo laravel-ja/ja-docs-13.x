@@ -164,7 +164,39 @@ agent()->prompt('What is Laravel?', provider: 'local', model: 'local-model');
 ],
 ```
 
-OpenAI互換プロバイダは、テキスト生成、ストリーミング、ツール、構造化出力、および画像添付をサポートしています。エンドポイントが追加のリクエストボディフィールドを必要とする場合は、[プロバイダオプション](#provider-options)を使用して指定してください。
+設定内で`headers`配列を定義し、プロバイダ宛ての送信リクエストすべてにカスタムHTTPヘッダを追加できます。これは、Bearerトークンに加え、識別用や認証用のヘッダをエンドポイントが必要とする場合に役立ちます。
+
+```php
+'local' => [
+    'driver' => 'openai-compatible',
+    'url' => env('LOCAL_AI_URL'),
+    'key' => env('LOCAL_AI_API_KEY'),
+    'headers' => [
+        'X-Tenant-Id' => env('LOCAL_AI_TENANT_ID'),
+    ],
+],
+```
+
+OpenAI互換プロバイダは、テキスト生成、ストリーミング、ツール、構造化出力、画像添付、埋め込みをサポートしています。エンドポイントが追加のリクエストボディフィールドを必要とする場合は、[プロバイダオプション](#provider-options)を使用して渡してください。
+
+<a name="openai-compatible-embeddings"></a>
+#### OpenAI互換の埋め込み
+
+任意のエンドポイントには既知のモデルがないため、OpenAI互換プロバイダで`embeddings()`を使うには、デフォルトの埋め込みモデルを設定する必要があります。固定の次元値を設定することもできます。省略した場合、`dimensions`パラメータなしでリクエストを送信し、モデル固有の次元を使用します。
+
+```php
+'local' => [
+    'driver' => 'openai-compatible',
+    'url' => env('LOCAL_AI_URL'),
+    'key' => env('LOCAL_AI_API_KEY'),
+    'models' => [
+        'embeddings' => [
+            'default' => 'text-embedding-qwen3-embedding-0.6b',
+            'dimensions' => 1024, // optional
+        ],
+    ],
+],
+```
 
 <a name="provider-support"></a>
 ### プロバイダのサポート
@@ -175,13 +207,13 @@ AI SDKは、その機能全体でさまざまなプロバイダをサポート�
 
 | 機能 | プロバイダ |
 |---|---|
-| Text | OpenAI, OpenAI Compatible, Anthropic, Gemini, Azure, Bedrock, Groq, xAI, DeepSeek, Mistral, Ollama, OpenRouter |
+| テキスト | OpenAI, OpenAI Compatible, Anthropic, Gemini, Azure, Bedrock, Groq, xAI, DeepSeek, Mistral, Ollama, OpenRouter |
 | 画像 | OpenAI, Gemini, xAI, Azure, Bedrock, OpenRouter |
 | TTS | OpenAI, ElevenLabs, Gemini |
 | STT | OpenAI, ElevenLabs, Mistral, Gemini |
-| 埋め込み | OpenAI, Gemini, Azure, Bedrock, Cohere, Mistral, Jina, VoyageAI, Ollama, OpenRouter |
+| 埋め込み | OpenAI, OpenAI-Compatible, Gemini, Azure, Bedrock, Cohere, Mistral, Jina, VoyageAI, Ollama, OpenRouter |
 | リランク | Cohere, Jina, VoyageAI |
-| Files | OpenAI, Anthropic, Gemini, Azure |
+| ファイル | OpenAI, Anthropic, Gemini, Azure |
 
 </div>
 
@@ -311,6 +343,30 @@ $response = (new SalesCoach)->prompt(
     timeout: 120,
 );
 ```
+
+<a name="raw-http-responses"></a>
+#### 生HTTPレスポンス
+
+テキスト生成エージェントから返すレスポンスはすべて、`raw`プロパティを介して元となるプロバイダAPI呼び出しからの生HTTPレスポンスを公開します。これにより、レート制限ヘッダやリクエストID、その他の正確なペイロードフィールドなど、AI SDKの汎用レスポンスには含まれていないプロバイダ固有の情報へアクセスできます。
+
+```php
+$response = (new SalesCoach)->prompt('Analyze this sales transcript...');
+
+$response->raw; // Illuminate\Http\Client\Response|null
+
+$response->raw->header('X-RateLimit-Remaining-Requests');
+$response->raw->json('id');
+```
+
+ツール呼び出しループ内では、各ステップが自身のリクエストの生レスポンスを保持します。
+
+```php
+foreach ($response->steps as $step) {
+    $step->raw?->header('X-RateLimit-Remaining-Requests');
+}
+```
+
+> **注意：** レスポンスのストリーミング時、（HTTPクライアントの代わりに、AWS SDK経由でAPI呼び出しを実行する）Bedrockプロバイダを使用する場合、および`withRawResponse`で明示的に提示しない限りフェイクレスポンスでは、`raw`プロパティは`null`になります。
 
 <a name="conversation-context"></a>
 ### 会話コンテキスト
@@ -583,11 +639,11 @@ use App\Ai\Agents\SalesCoach;
 use Laravel\Ai\Files;
 
 $response = (new SalesCoach)->prompt(
-    '添付されたセールスの文字起こしを分析して...',
+    '添付したセールスの文字起こしを分析して...',
     attachments: [
-        Files\Document::fromStorage('transcript.pdf') // ファイルシステムディスクからドキュメントを添付
-        Files\Document::fromPath('/home/laravel/transcript.md') // ローカルパスからドキュメントを添付
-        $request->file('transcript'), // アップロードされたファイルを添付
+        Files\Document::fromStorage('transcript.pdf'), // ファイルシステムディスクからドキュメントを添付
+        Files\Document::fromPath('/home/laravel/transcript.md'), // ローカルパスからドキュメントを添付
+        $request->file('transcript'), // アップロードしたファイルを添付
     ]
 );
 ```
@@ -601,9 +657,9 @@ use Laravel\Ai\Files;
 $response = (new ImageAnalyzer)->prompt(
     'この画像には何が写っていますか？',
     attachments: [
-        Files\Image::fromStorage('photo.jpg') // ファイルシステムディスクから画像を添付
-        Files\Image::fromPath('/home/laravel/photo.jpg') // ローカルパスから画像を添付
-        $request->file('photo'), // アップロードされたファイルを添付
+        Files\Image::fromStorage('photo.jpg'), // ファイルシステムディスクから画像を添付
+        Files\Image::fromPath('/home/laravel/photo.jpg'), // ローカルパスから画像を添付
+        $request->file('photo'), // アップロードしたファイルを添付
     ]
 );
 ```
@@ -968,7 +1024,7 @@ public function tools(): iterable
 
 `WebSearch`プロバイダツールを使用すると、エージェントはWebを検索してリアルタイムの情報を取得できます。これは、時事問題、最近のデータ、またはモデルのトレーニングカットオフ以降に変更された可能性のあるトピックに関する質問に答えるのに役立ちます。
 
-**サポートしているプロバイダ：** Anthropic, OpenAI, Gemini
+**サポートしているプロバイダ：** Anthropic、OpenAI、Azure、Gemini、OpenRouter
 
 ```php
 use Laravel\Ai\Providers\Tools\WebSearch;

@@ -18,6 +18,10 @@
     - [スキルのオーバーライド](#overriding-skills)
     - [サードパーティパッケージのスキル](#third-party-package-skills)
 - [ガイドライン対スキル](#guidelines-vs-skills)
+- [プロジェクトルール](#project-rules)
+    - [ルールの記録](#recording-rules)
+    - [アプリケーション規則の推測](#inferring-your-applications-conventions)
+    - [プロジェクトルールの無効化](#disabling-project-rules)
 - [ドキュメントAPI](#documentation-api)
 - [Boostの拡張](#extending-boost)
     - [他のIDE／AIエージェントへのサポート追加](#adding-support-for-other-ides-ai-agents)
@@ -139,6 +143,7 @@ Laravel Boostは、AIエージェントがLaravelアプリケーションとや�
 | Get Absolute URL           | 相対パスのURIを絶対パスに変換し、エージェントが有効なURLを生成できるようにする              |
 | Last Error                 | アプリケーションのログファイルから最後のエラーを読み取る |
 | Read Log Entries           | 直近N個のログエントリを読み取る |
+| Record Rule          | 将来のエージェントが継承するように、永続的な[プロジェクトルール](#project-rules)を`.ai/rules`に記録する                |
 | Search Docs                | インストール済みパッケージに基づいてドキュメントを取得するために、LaravelがホストするドキュメントAPIサービスを照会する |
 
 </div>
@@ -244,9 +249,9 @@ $result = PackageName::featureTwo($param1, $param2);
 <a name="agent-skills"></a>
 ## エージェントスキル
 
-[エージェントスキル](https://agentskills.io/home)は、エージェントが特定のドメインで作業する際に、オンデマンドでアクティブ化できる軽量で焦点を絞った知識モジュールです。事前にロードされるガイドラインとは異なり、スキルを使用すると、関連する場合にのみ詳細なパターンやベストプラクティスをロードできるため、コンテキストの肥大化を抑え、AIが生成するコードの関連性を向上させることができます。
+[エージェントスキル](https://agentskills.io/home)は、エージェントが特定のドメインで作業する際に、オンデマンドでアクティブ化できる軽量で焦点を絞った知識モジュールです。事前にロードするガイドラインとは異なり、スキルを使用すると、関連する場合にのみ詳細なパターンやベストプラクティスをロードできるため、コンテキストの肥大化を抑え、AIが生成するコードの関連性を向上させることができます。
 
-`boost:install`を実行して機能としてスキルを選択すると、`composer.json`で検出されたパッケージに基づいてスキルが自動的にインストールされます。例えば、プロジェクトに`livewire/livewire`が含まれている場合、`livewire-development`スキルが自動的にインストールされます。
+`boost:install`を実行して機能としてスキルを選択すると、`composer.json`で検出したパッケージに基づいてスキルを自動的にインストールします。例えば、プロジェクトに`livewire/livewire`が含まれている場合、`livewire-development`スキルを自動的にインストールします。`infer-conventions`など、Boostに含まれているスキルは、インストール済みパッケージに関係なくインストールします。
 
 <a name="available-skills"></a>
 ### 利用可能なスキル
@@ -257,6 +262,7 @@ $result = PackageName::featureTwo($param1, $param2);
 | -------------------------- | -------------- |
 | fluxui-development         | Flux UI        |
 | folio-routing              | Folio          |
+| infer-conventions          | Boost          |
 | inertia-react-development  | Inertia React  |
 | inertia-svelte-development | Inertia Svelte |
 | inertia-vue-development    | Inertia Vue    |
@@ -336,6 +342,91 @@ Laravel Boostは、アプリケーションに関するコンテキストをAI�
 | **目的** | コアとなる規約とベストプラクティス | 詳細な実装パターン |
 
 </div>
+
+ガイドラインとスキル、両方ともLaravelエコシステムについて説明します。独自のアプリケーションの規則を取り込むには、[プロジェクトルール](#project-rules)を使用する必要があります。
+
+<a name="project-rules"></a>
+## プロジェクトルール
+
+ガイドラインとスキルはエージェントにLaravelの記述方法を教えますが、一方でプロジェクトルールはアプリケーションの記述方法を教えます。ルールとは、新しいセッションごとに毎回説明し直す必要のあるすべての事項です。
+
+<div class="content-list" markdown="1">
+
+- あなた、エージェント、またはチームメイトがこれまでに行った決定。
+- エージェントに守らせることが難しいスタイルガイドラインや好み。
+- 周囲のコードから推測できない落とし穴や制約。
+
+</div>
+
+ルールは、アプリケーションの`.ai/rules`ディレクトリにMarkdownファイルとして保存し、ソース管理にコミットする必要があります。個人的でセッションにスコープが限定されているエージェント固有メモリとは異なり、ルールはチームやアプリケーションで作業するすべてのエージェントと共有します。
+
+各ルールファイルは冒頭のメタデータとして、適用対象をファイルグロブで宣言します。
+
+```markdown
+---
+paths:
+  - app/Http/Controllers/**
+---
+
+# Http Controllers
+
+## Extend BaseController for tenant scoping
+
+All controllers must extend `App\Http\Controllers\BaseController`, which applies the
+current tenant's query scope. Extending Laravel's base controller directly will leak
+data across tenants.
+```
+
+さらに、Boostはグロブをルールファイルにマッピングする`.ai/rules/index.md`ファイルを維持します。エージェントは計画またはファイル編集する前にこのインデックスを参照するよう指示されているため、関連する場合にのみルールを読み込みます。
+
+```markdown
+# Project Rules Index
+
+Before planning or editing, find the row whose globs match the file's path and read that rule file.
+
+| Applies to | Rule file |
+| --- | --- |
+| app/Http/Controllers/** | .ai/rules/controllers.md |
+| app/Models/** | .ai/rules/models.md |
+```
+
+> [!NOTE]
+> `.mcp.json`や生成したガイドラインファイルとは異なり、チームとルールを共有できるように、`.ai/rules`ディレクトリをソース管理にコミットする必要があります。
+
+<a name="recording-rules"></a>
+### ルールの記録
+
+ルールを記録するには、エージェントにそれを覚えるように依頼するだけです。
+
+```text
+Remember that all money values are stored as integer cents, never as floats.
+```
+
+エージェントは、`glob`、短い`title`、および`note`を指定して、Boostの`record-rule` MCPツールを呼び出します。次に、Boostは一致する領域の下にルールを分類し、必要に応じてルールファイルを作成して、インデックスを更新します。
+
+手作業でルールファイルを作成せず、常に`record-rule`ツールを使用してルールを記録する必要があります。Boostはルールの記録の一部として`.ai/rules/index.md`を再生成し、エージェントはそのインデックスに依存して作業中のファイルに適用するルールを発見します。手作業で追加したルールファイルは、次にインデックスを再生成するまで発見されません。
+
+<a name="inferring-your-applications-conventions"></a>
+### アプリケーション規則の推測
+
+ルールを1つずつ記録することは、今後の進行においてうまく機能します。しかし、既存のアプリケーションにはすでに長年の規則が含まれています。`infer-conventions`スキルは、すでに作成したコードからルールを初期設定します。始めるには、エージェントにスキルを使用するように頼んでください。
+
+```text
+Use the infer-conventions skill
+```
+
+このスキルは、バリデーション、コントローラ、認可、モデル、アーキテクチャ、テスト、フロントエンド、データベース、コンソールを含むLaravelの規則の次元のチェックリストに基づいてアプリケーションを一括調査し、続いてベースクラス、共有トレイト、モジュールレイアウトなどのパターンに対して制限なく調査を行います。
+
+このスキルは、コードが「行うべきこと」ではなく「実際に行っていること」をドキュメント化します。十分に裏付けのあるデフォルト以外の規則のみを記録し、フレームワークのデフォルトやPint、Rectorがすでに適用しているものをスキップして、完全に混在しているパターンは記録せずに報告します。ルールを書き込む前に、このスキルは発見した各規則とそれを裏付ける証拠を提示し、承認を求めます。確認なしで発見したすべての規則をスキルに記録させたい場合は、「yolo」と指示してください。
+
+<a name="disabling-project-rules"></a>
+### プロジェクトルールの無効化
+
+プロジェクトルールはデフォルトで有効になっています。完全に無効にするには、以下の環境変数を定義します。これにより`record-rule` MCPツールを削除し、Boostによる`.ai/rules`ディレクトリの管理を停止します。
+
+```ini
+BOOST_RULES_ENABLED=false
+```
 
 <a name="documentation-api"></a>
 ## ドキュメントAPI

@@ -45,6 +45,7 @@ Laravelはメッセージをログに記録するときに、デフォルトで`
 | ------------ | ---------------------------------------------------------------------- |
 | `custom`     | 指定ファクトリを呼び出してチャンネルを作成するドライバ                 |
 | `daily`      | 日毎にファイルを切り替える`RotatingFileHandler`ベースのMonologドライバ |
+| `monthly`    | 月毎にファイルを切り替える`RotatingFileHandler`ベースの Monologドライバ  |
 | `errorlog`   | `ErrorLogHandler`ベースのMonologドライバ                               |
 | `monolog`    | Monologがサポートしているハンドラを使用するMonologファクトリドライバ   |
 | `papertrail` | `SyslogUdpHandler`ベースのMonologドライバ                              |
@@ -75,9 +76,9 @@ Monologはデフォルトで、現在の環境にマッチする「チャンネ�
 ### チャンネルの事前設定
 
 <a name="configuring-the-single-and-daily-channels"></a>
-#### singleチャンネルとdailyチャンネルの設定
+#### singleチャンネル、daily、monthlyチャンネルの設定
 
-`single`チャンネルと`daily`チャンネルは、`bubble`、`permission`、`locking`の３オプションの設定オプションがあります。
+`single`、`daily`、`monthly`チャンネルは、`bubble`、`permission`、`locking`の３オプションの設定オプションがあります。
 
 <div class="overflow-auto">
 
@@ -89,15 +90,7 @@ Monologはデフォルトで、現在の環境にマッチする「チャンネ�
 
 </div>
 
-さらに、`LOG_DAILY_DAYS`環境変数、または`days`設定オプションを設定することで、`daily`チャンネルの保持ポリシーを設定できます。
-
-<div class="overflow-auto">
-
-| 名前   | 説明                               | デフォルト |
-| ------ | ---------------------------------- | ---------- |
-| `days` | デイリーログファイルを保持する日数 | `14`        |
-
-</div>
+さらに、`daily`および`monthly`チャンネルの保持期間は、`max_files`設定オプションで設定できます。`LOG_DAILY_DAYS`環境変数を使用して、`daily`チャンネルの保持期間を設定することもできます。
 
 <a name="configuring-the-papertrail-channel"></a>
 #### Papertrailチャンネルの設定

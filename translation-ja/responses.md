@@ -162,10 +162,16 @@ return response('Hello World')->cookie($cookie);
 <a name="expiring-cookies-early"></a>
 #### クッキーの早期期限切れ
 
-送信レスポンスの`withoutCookie`メソッドを介してクッキーを期限切れにすることにより、そのクッキーを削除できます。
+送信レスポンスの`withoutCookie`または`withoutCookies`メソッドを使用して有効期限を切らすことで、クッキーを削除できます。
 
 ```php
 return response('Hello World')->withoutCookie('name');
+
+return response('Hello World')->withoutCookies([
+    'name',
+    'email',
+    'preferences',
+]);
 ```
 
 送信レスポンスのインスタンスがまだない場合は、`Cookie`ファサードの`expire`メソッドを使用してCookieを期限切れにすることができます。

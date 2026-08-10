@@ -55,6 +55,12 @@ Pintを並列モード（試験中）で実行してパフォーマンスを向�
 ./vendor/bin/pint app/Models/User.php
 ```
 
+Pintはデフォルトで、Bladeテンプレートをフォーマットしません。`.blade.php`ファイルも同様にフォーマットしたい場合は、`--blade`オプションを使用できます。これにより、`pint.json`ファイルを変更することなく、現在の実行に対して[`Pint/laravel_blade`](#laravel-blade)ルールを有効にします。
+
+```shell
+./vendor/bin/pint --blade
+```
+
 Pintは更新した全ファイルの完全なリストを表示します。Pintを起動する際に、`-v`オプションを指定すれば、Pintが行う変更についてさらに詳しく確認できます。
 
 ```shell
@@ -148,6 +154,37 @@ Pintは[PHP CS Fixer](https://github.com/FriendsOfPHP/PHP-CS-Fixer)上に構築�
 #### カスタムルール
 
 PHP CS Fixerのルールに加えて、Pintは`Pint/`というプレフィックスが付いたカスタムルールを提供しています。これらのルールはデフォルトでは有効になっていませんが、`pint.json`ファイルで有効にできます。
+
+<a name="laravel-blade"></a>
+##### `Pint/laravel_blade`
+
+このルールは、`.blade.php`ファイルに一貫したインデント、スペース、属性のフォーマットを適用し、Bladeテンプレートをフォーマットします。デフォルトでは、PintはBladeファイルをフォーマットしないため、有効にするには`pint.json`ファイルでこのルールを有効にする必要があります。
+
+```json
+{
+    "preset": "laravel",
+    "rules": {
+        "Pint/laravel_blade": true
+    }
+}
+```
+
+有効にすると、Pintは実行時にPHPファイルに加えてBladeテンプレートもフォーマットします。
+
+```shell
+./vendor/bin/pint
+```
+
+あるいは、`pint.json`ファイルを変更せずに実行１回のみこのルールを有効にしたい場合は、`--blade`オプションを使用します。
+
+```shell
+./vendor/bin/pint --blade
+```
+
+内部的には、このルールは[Prettier](https://prettier.io)ならびに`prettier-plugin-blade`および`prettier-plugin-tailwindcss`プラグインを使用しているため、マシンに[Node.js](https://nodejs.org)がインストールされている必要があります。このルールを有効にしてPintを初めて実行するときに、Pintは不足しているPrettier依存関係を検出し、それらをインストールするように促します。
+
+> [!NOTE]
+> このルールは、[Laravel Boost](https://github.com/laravel/boost)ガイドラインや、`resources/views/emails`および`resources/views/mail`ディレクトリにある電子メールビューなど、通常独自のフォーマットに依存しているファイルを自動的にスキップします。
 
 <a name="phpdoc-type-annotations-only"></a>
 ##### `Pint/phpdoc_type_annotations_only`

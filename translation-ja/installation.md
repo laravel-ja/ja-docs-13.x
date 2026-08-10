@@ -231,7 +231,15 @@ Herdの詳細は、[Windows向けHerdドキュメント](https://herd.laravel.co
 <a name="ide-support"></a>
 ## IDEサポート
 
-Laravelアプリケーションを開発する際に、どのコードエディタを使用するかは自由です。軽量で拡張性の高いエディタをお探しの場合、[VS Code](https://code.visualstudio.com)や[Cursor](https://cursor.com)と公式の[Laravel VS Code Extension](https://marketplace.visualstudio.com/items?itemName=laravel.vscode-laravel)を組み合わせで、シンタックスハイライト、スニペット、Artisanコマンドの統合、Eloquentモデル、ルート、ミドルウェア、アセット、設定、Inertia.jsのスマートオートコンプリートなどの機能により、優れたLaravelサポートを提供しています。
+Laravelアプリケーションの開発では、どのようなコードエディタでも自由に使用できます。[Laravel LSP](https://github.com/laravel/lsp)は、LaravelおよびBladeコードのためのコード補完、ホバー情報、診断、ドキュメントリンク、定義への移動、クイックフィックスなど、フレームワークを認識するエディタサポートを提供します。
+
+Laravel LSPをインストールするには、Composer経由でグローバルにインストールします。Composerのグローバルvendor binディレクトリが`PATH`に追加されていることを確認してください。
+
+```shell
+composer global require laravel/lsp
+```
+
+軽量で拡張可能なエディタをお探しの場合は、[VS Code](https://code.visualstudio.com)または[Cursor](https://cursor.com)を公式の[Laravel VS Code Extension](https://marketplace.visualstudio.com/items?itemName=laravel.vscode-laravel)と組み合わせることで、シンタックスハイライト、スニペット、Artisanコマンドの統合、および自動Laravel LSPサポートを提供します。公式のLaravel拡張機能は、[Sublime Text](https://github.com/laravel/sublime-extension)および[Zed](https://github.com/laravel/zed-extension)用にも利用できます。NeovimやOpenCodeを含む、その他のランゲージサーバ互換エディタのセットアップ手順については、[Laravel LSPリポジトリ](https://github.com/laravel/lsp)を参照してください。
 
 Laravelの包括的かつ堅牢なサポートを求めている方は、JetBrainsのIDEである[PhpStorm](https://www.jetbrains.com/phpstorm/laravel/?utm_source=laravel.com&utm_medium=link&utm_campaign=laravel-2025&utm_content=partner&ref=laravel-2025)をご覧ください。PhpStormの組み込みLaravelフレームワークサポートには、Bladeテンプレート、Eloquentモデル・ルート・ビュー・翻訳・コンポーネント向けのスマートな自動補完、強力なコード生成、並びにLaravelプロジェクト全体でのナビゲーションが含まれます。
 
