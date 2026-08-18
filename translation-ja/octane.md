@@ -23,6 +23,7 @@
 - [現在のタスク](#concurrent-tasks)
 - [Tickと間隔](#ticks-and-intervals)
 - [Octaneのキャッシュ](#the-octane-cache)
+    - [キャッシュ間隔](#cache-intervals)
 - [テーブル](#tables)
 
 <a name="introduction"></a>

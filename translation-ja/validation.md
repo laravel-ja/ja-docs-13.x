@@ -2878,16 +2878,19 @@ $validator = Validator::make($request->all(), [
 // 最低８文字必要
 Password::min(8)
 
+// 最長２５６文字を指定
+Password::min(16)->max(256)
+
 // 最低１文字の文字が必要
 Password::min(8)->letters()
 
 // 最低大文字小文字が１文字ずつ必要
 Password::min(8)->mixedCase()
 
-// 最低一文字の数字が必要
+// 最低１文字の数字が必要
 Password::min(8)->numbers()
 
-// 最低一文字の記号が必要
+// 最低１文字の記号が必要
 Password::min(8)->symbols()
 ```
 
@@ -2910,6 +2913,7 @@ Password::min(8)->uncompromised(3);
 
 ```php
 Password::min(8)
+    ->max(256)
     ->letters()
     ->mixedCase()
     ->numbers()

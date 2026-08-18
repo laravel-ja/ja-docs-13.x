@@ -31,6 +31,7 @@
     - [パスワードバリデーションのカスタマイズ](#customizing-the-password-validation)
 - [暗黙的グラント](#implicit-grant)
 - [クライアント認証グラント](#client-credentials-grant)
+    - [トークンの取得](#retrieving-tokens)
 - [パーソナルアクセストークン](#personal-access-tokens)
     - [パーソナルアクセスクライアントの作成](#creating-a-personal-access-client)
     - [ユーザープロバイダのカスタマイズ](#customizing-the-user-provider-for-pat)

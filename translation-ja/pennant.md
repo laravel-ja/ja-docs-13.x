@@ -14,6 +14,7 @@
     - [メモリ内キャッシュ](#in-memory-cache)
 - [スコープ](#scope)
     - [スコープの指定](#specifying-the-scope)
+    - [グローバルスコープ](#global-scope)
     - [デフォルトスコープ](#default-scope)
     - [NULL許可のスコープ](#nullable-scope)
     - [スコープの識別子](#identifying-scope)
@@ -544,6 +545,17 @@ if (Feature::for($user->team)->active('billing-v2')) {
 }
 
 // ...
+```
+
+<a name="global-scope"></a>
+### グローバルスコープ
+
+設定したデフォルトスコープリゾルバに関係なく、グローバルスコープを使用して機能を確認または操作するには、`globally`メソッドを使用します。これは、一時的にメンテナンス動作を有効にしたり、すべてのユーザーへ機能をロールアウトしたりするなど、アプリケーション全体の機能フラグに役立ちます。
+
+```php
+Feature::globally()->active('new-api');
+
+Feature::globally()->activate('new-api');
 ```
 
 <a name="default-scope"></a>

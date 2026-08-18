@@ -258,10 +258,10 @@ $base64 =$image->toBase64();
 $dataUri =$image->toDataUri();
 ```
 
-画像インスタンスを文字列にキャストして、処理済みのバイトを取得することもできます。
+画像インスタンスを文字列にキャストして、データURIを取得することもできます。
 
 ```php
-$bytes = (string)$image;
+$dataUri = (string) $image;
 ```
 
 <a name="storing-images"></a>

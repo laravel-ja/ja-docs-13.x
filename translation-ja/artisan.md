@@ -923,7 +923,10 @@ $this->trap([SIGTERM, SIGQUIT], function (int $signal) {
 php artisan dev
 ```
 
-裏では、`dev`コマンドが`concurrently` npmパッケージを使用してプロセスを管理します。各プロセスにはターミナル出力でラベルと色分けが適用されるため、簡単に区別できます。いずれかのプロセスが失敗した場合、他のすべてのプロセスは自動的に停止します。
+裏で`dev`コマンドは、`@laravel/multiplex` npmパッケージを使用してプロセスを管理し、検索やスクロールが可能な出力を備えた専用のタブを各プロセスに割り当てます。各プロセスにはラベルと色分けが適用されているため、簡単に区別できます。プロセスがクラッシュした場合は自動的に再起動し、終了時にはすべての出力をターミナルへ書き戻すため、何も失われません。
+
+> [!NOTE]
+> `dev`コマンドはNode22.13以降が必要です。Windowsでは、`concurrently` npmパッケージへフォールバックし、タブ付きインターフェイスは利用できません。
 
 デフォルトのプロセスは以下の通りです。
 
@@ -986,6 +989,23 @@ DevCommands::register('my-command', 'my-process')->color('#ff6347');
 
 ```shell
 php artisan dev:list
+```
+
+<a name="restarting-failed-processes"></a>
+#### 失敗したプロセスの再起動
+
+プロセスがクラッシュした場合、Laravelは少し遅延を挟んでから最大５回まで再起動し、その後失敗としてマークします。起動から１秒以内に終了したプロセスは、そもそも正常に起動できなかった可能性が高いため再起動しません。`r`を使って手作業でプロセスを再起動すると、カウンタをリセットします。
+
+`--no-restart`オプションを使用して、実行で一回だけこの動作を無効にできます。
+
+```shell
+php artisan dev --no-restart
+```
+
+もしくは、`disableAutoRestart`メソッドを使用して、アプリケーション全体で無効にすることもできます。
+
+```php
+DevCommands::disableAutoRestart();
 ```
 
 <a name="filtering-dev-processes"></a>
