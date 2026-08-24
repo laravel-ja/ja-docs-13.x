@@ -218,7 +218,11 @@ use Laravel\Socialite\Socialite;
 $user = Socialite::driver('github')->userFromToken($token);
 ```
 
-iOSアプリケーションでFacebook限定ログインを使用している場合、Facebookはアクセストークンの代わりにOIDCトークンを返します。アクセストークンと同様に、OIDCトークンも`userFromToken`メソッドへ渡し、ユーザーの詳細情報を取得できます。
+iOSアプリケーション経由でFacebook Limited Loginを使用している場合、Facebookはアクセストークンの代わりにOIDCトークンを返します。OIDCトークンからユーザーの詳細を取得するには、ログイン開始に使用したノンスを`userFromToken`メソッドへ指定します。
+
+```php
+$user = Socialite::driver('facebook')->userFromToken($token, $nonce);
+```
 
 <a name="stateless-authentication"></a>
 #### ステートレス認証

@@ -230,6 +230,15 @@ Predisを使用する場合、Laravelはクライアントサイドシャーデ�
 ],
 ```
 
+一時的な接続障害の後、Laravelは安全な読み取りコマンドを自動的に1回再試行します。すべてのRedisコマンドに対する再試行回数を設定するには、`command_retries`オプションを使用します。
+
+```php
+'default' => [
+    // ...
+    'command_retries' => env('REDIS_COMMAND_RETRIES', 0),
+],
+```
+
 Predis3.4.0以降は、`Retry`クラスによる組み込みの再試行とバックオフの設定をサポートしています。`max_retries`オプションを使用して再試行を設定し、`retry`オプションを使用してバックオフ戦略を設定できます。`retry`オプションには、`NoBackoff`、`EqualBackoff`、`ExponentialBackoff`の戦略クラスのいずれかをキーとする配列を指定する必要があります。
 
 ```php

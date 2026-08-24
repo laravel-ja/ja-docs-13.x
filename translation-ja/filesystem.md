@@ -5,7 +5,7 @@
     - [ローカルドライバ](#the-local-driver)
     - [公開ディスク](#the-public-disk)
     - [ドライバの動作要件](#driver-prerequisites)
-    - [スコープ付きと読み取り専用ファイルシステム](#scoped-and-read-only-filesystems)
+    - [スコープ付き、読み取り専用、リードスルーファイルシステム](#scoped-and-read-only-filesystems)
     - [Amazon S3互換ファイルシステム](#amazon-s3-compatible-filesystems)
 - [ディスクインスタンスの取得](#obtaining-disk-instances)
     - [オンデマンドディスク](#on-demand-disks)
@@ -177,7 +177,7 @@ LaravelのFlysystemの統合は、SFTPでもうまく動作しますが、フレ
 ```
 
 <a name="scoped-and-read-only-filesystems"></a>
-### スコープ付きと読み取り専用ファイルシステム
+### スコープ付き、読み取り専用、リードスルーファイルシステム
 
 スコープ付きディスクを使用すると、すべてのパスに自動的に指定したパスプレフィックスが付くファイルシステムを定義できます。スコープ付きファイルシステムディスクを作成する前に、Composerパッケージマネージャを使用して、Flysystemパッケージを追加でインストールする必要があります。
 
@@ -210,6 +210,18 @@ composer require league/flysystem-read-only "^3.0"
     'read-only' => true,
 ],
 ```
+
+リードスルーディスクを使用すると、ダウンタイムなしでディスク間でファイルをマイグレートできます。ファイルを読み取るとき、Laravelは最初にプライマリディスクをチェックします。ファイルがフォールバックディスクにのみ存在する場合、Laravelはフォールバックディスクからファイルを読み取り、将来のリクエストのためにプライマリディスクへコピーします。
+
+```php
+'assets' => [
+    'driver' => 'read-through',
+    'primary' => 's3',
+    'fallback' => 'legacy-s3',
+],
+```
+
+書き込みとディレクトリ一覧の取得はプライマリディスクを対象とします。ファイルの存在確認とメタデータのチェックでは、ファイルをプライマリディスクへコピーせず、いずれかのディスクを使用します。フォールバックファイルのプライマリディスクへのコピーに失敗した場合でも、デフォルトでは読み取りは成功します。代わりに例外を投げるには、`throw_on_promotion_failure`設定オプションを`true`に設定してください。
 
 <a name="amazon-s3-compatible-filesystems"></a>
 ### Amazon S3互換ファイルシステム

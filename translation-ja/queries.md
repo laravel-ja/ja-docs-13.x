@@ -363,7 +363,7 @@ $orders = DB::table('orders')
 ```
 
 <a name="groupbyraw"></a>
-### `groupByRaw`
+#### `groupByRaw`
 
 `groupByRaw`メソッドを使用して、`groupby`句の値として素の文字列を指定できます。
 

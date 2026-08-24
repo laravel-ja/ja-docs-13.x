@@ -1691,6 +1691,22 @@ $request->validate([
 ]);
 ```
 
+`dns`バリデータは、実際のDNSルックアップを実行して、アドレスのドメインに有効なMXレコードが存在することを確認します。個別のメールボックスが存在するかどうかまでは判定しません。
+
+テストはライブのDNSルックアップに依存すべきではないため、`rfc`など他の指定したバリデーションの実行を継続したまま、[DNSルックアップをFake](#rule-active-url)するには、`Validator::fakeDnsLookups`メソッドを使用してください。
+
+```php
+use Illuminate\Support\Facades\Validator;
+
+Validator::fakeDnsLookups();
+```
+
+これにより、テスト中もアプリケーションの既存のバリデーションルールをそのまま使い続けられます。
+
+```php
+'email' => ['required', 'email:rfc,dns'],
+```
+
 > [!WARNING]
 > `dns`および`spoof`バリデータには、PHPの`intl`拡張が必要です。
 

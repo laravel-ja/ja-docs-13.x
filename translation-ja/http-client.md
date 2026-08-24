@@ -11,7 +11,7 @@
     - [Guzzleミドルウェア](#guzzle-middleware)
     - [Guzzleオプション](#guzzle-options)
 - [同時リクエスト](#concurrent-requests)
-    - [リクエストのポーリング](#request-pooling)
+    - [リクエストのプーリング](#request-pooling)
     - [リクエストのバッチ](#request-batching)
 - [マクロ](#macros)
 - [テスト](#testing)
@@ -509,7 +509,7 @@ public function boot(): void
 複数のHTTPリクエストを同時に実行したい場合があります。言い換えれば、複数のリクエストを順番に発行するのではなく、同時にディスパッチしたい状況です。これにより、低速なHTTP APIを操作する際のパフォーマンスが大幅に向上します。
 
 <a name="request-pooling"></a>
-### リクエストのポーリング
+### リクエストのプーリング
 
 さいわいに、`pool`メソッドを使い、これを実現できます。`pool`メソッドは、`Illuminate\Http\Client\Pool`インスタンスを受け取るクロージャを引数に取り、簡単にリクエストプールにリクエストを追加してディスパッチできます。
 
@@ -549,6 +549,18 @@ return $responses['first']->ok();
 $responses = Http::pool(fn (Pool $pool) => [
     // ...
 ], concurrency: 5);
+```
+
+プールしたリクエストが接続レベルで失敗した場合（例えば、タイムアウトやDNSの失敗など）、`$responses`配列内の対応するエントリは、`Response`インスタンスの代わりに`Illuminate\Http\Client\ConnectionException`インスタンスになります。
+
+```php
+foreach ($responses as $response) {
+    if ($response instanceof Throwable) {
+        // リクエストの接続に失敗…
+    } elseif ($response->failed()) {
+        // リクエストは接続したが、エラーレスポンスを受信…
+    }
+}
 ```
 
 <a name="customizing-concurrent-requests"></a>

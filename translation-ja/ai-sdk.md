@@ -15,6 +15,7 @@
     - [ブロードキャスト](#broadcasting)
     - [キューイング](#queueing)
     - [ツール](#tools)
+    - [遅延ツールロード](#deferred-tool-loading)
     - [ファイル保存域ツール](#file-storage-tools)
     - [MCPツール](#mcp-tools)
     - [プロバイダツール](#provider-tools)
@@ -177,7 +178,7 @@ agent()->prompt('What is Laravel?', provider: 'local', model: 'local-model');
 ],
 ```
 
-OpenAI互換プロバイダは、テキスト生成、ストリーミング、ツール、構造化出力、画像添付、埋め込みをサポートしています。エンドポイントが追加のリクエストボディフィールドを必要とする場合は、[プロバイダオプション](#provider-options)を使用して渡してください。
+OpenAI互換プロバイダは、テキスト生成、ストリーミング、ツール、構造化出力、画像添付、埋め込み、文字起こしをサポートしています。エンドポイントが追加のリクエストボディフィールドを必要とする場合は、[プロバイダオプション](#provider-options)を使用して渡してください。
 
 <a name="openai-compatible-embeddings"></a>
 #### OpenAI互換の埋め込み
@@ -198,6 +199,27 @@ OpenAI互換プロバイダは、テキスト生成、ストリーミング、�
 ],
 ```
 
+<a name="openai-compatible-transcriptions"></a>
+#### OpenAI互換の文字起こし
+
+同様に、OpenAI互換プロバイダで`Transcription`を使用するには、デフォルトの文字起こしモデルを設定する必要があります。音声は標準のマルチパートリクエストとしてエンドポイントの`/audio/transcriptions`ルートへアップロードします。
+
+```php
+'local' => [
+    'driver' => 'openai-compatible',
+    'url' => env('LOCAL_AI_URL'),
+    'key' => env('LOCAL_AI_API_KEY'),
+    'models' => [
+        'transcription' => [
+            'default' => 'whisper-1',
+        ],
+    ],
+],
+```
+
+> [!NOTE]
+> OpenAI互換プロバイダとGroqプロバイダは、話者分離(diarization)をサポートしていません。これらのプロバイダを使用時に`diarize`メソッドを呼び出すと、例外を投げます。
+
 <a name="provider-support"></a>
 ### プロバイダのサポート
 
@@ -210,8 +232,8 @@ AI SDKは、その機能全体でさまざまなプロバイダをサポート�
 | テキスト | OpenAI, OpenAI Compatible, Anthropic, Gemini, Azure, Bedrock, Groq, xAI, DeepSeek, Mistral, Ollama, OpenRouter |
 | 画像 | OpenAI, Gemini, xAI, Azure, Bedrock, OpenRouter |
 | TTS | OpenAI, ElevenLabs, Gemini |
-| STT | OpenAI, ElevenLabs, Mistral, Gemini |
-| 埋め込み | OpenAI, OpenAI-Compatible, Gemini, Azure, Bedrock, Cohere, Mistral, Jina, VoyageAI, Ollama, OpenRouter |
+| STT | OpenAI, OpenAI Compatible, ElevenLabs, Groq, Mistral, Gemini |
+| 埋め込み | OpenAI, OpenAI Compatible, Gemini, Azure, Bedrock, Cohere, Mistral, Jina, VoyageAI, Ollama, OpenRouter |
 | リランク | Cohere, Jina, VoyageAI |
 | ファイル | OpenAI, Anthropic, Gemini, Azure |
 
@@ -864,6 +886,28 @@ public function tools(): iterable
 }
 ```
 
+<a name="repairing-tool-calls"></a>
+#### ツール呼び出しの修復
+
+モデルが不明なローカルツールを呼び出したときに、エージェントを復旧させるには、`RepairToolCalls`属性を使用します。Laravelは失敗した呼び出しを利用可能なローカルツール名とともにモデルへ返し、呼び出しを修正できるようにします。
+
+```php
+use Laravel\Ai\Attributes\RepairToolCalls;
+use Laravel\Ai\Contracts\Agent;
+use Laravel\Ai\Contracts\HasTools;
+use Laravel\Ai\Promptable;
+
+#[RepairToolCalls]
+class SupportAgent implements Agent, HasTools
+{
+    use Promptable;
+
+    // ...
+}
+```
+
+Laravelが自動的に最大ステップ数を算出する場合、この属性は修復した呼び出しのためにステップを１つ追加します。明示的な`MaxSteps`の制限は変更しません。
+
 <a name="similarity-search"></a>
 #### 類似性検索
 
@@ -923,6 +967,47 @@ public function tools(): iterable
 SimilaritySearch::usingModel(Document::class, 'embedding')
     ->withDescription('関連する記事をナレッジベースで検索します。'),
 ```
+
+<a name="deferred-tool-loading"></a>
+### 遅延ツールロード
+
+エージェントが公開するすべてのツールをデフォルトでは、リクエストごとにプロバイダへ送信します。エージェントが多数のツールを提供する場合、これはトークンを消費し、モデルのツール選択の精度を低下させる可能性があります。OpenAIまたはAnthropicで`ToolSearch`プロバイダツールを使用すると、ツールの定義を遅延させ、プロバイダが必要なときにのみ読み込むようにできます。
+
+```php
+use App\Ai\Tools\RefundOrder;
+use App\Ai\Tools\SearchInvoices;
+use App\Ai\Tools\Weather;
+use Laravel\Ai\Providers\Tools\ToolSearch;
+
+public function tools(): iterable
+{
+    return [
+        new Weather,
+        new ToolSearch(tools: [
+            new SearchInvoices,
+            new RefundOrder,
+        ]),
+    ];
+}
+```
+
+ラップしたツールを変更する必要はありません。プロバイダは、それらがプロンプトに関連する場合に検索して読み込み、その後エージェントは他のツールと同様にそれらを呼び出せます。
+
+Anthropicを使用する場合、プロバイダが遅延ツールをどのように検索するかを決定するために`strategy`引数を使用できます。サポートしているストラテジーは`regex`（デフォルト）と`bm25`です。
+
+```php
+new ToolSearch(tools: [new SearchInvoices], strategy: 'bm25'),
+```
+
+Anthropicを使用する場合、`withProviderOptions`メソッドを使用して、追加のプロバイダ固有のオプションを検索ツールへ渡してください。
+
+```php
+(new ToolSearch(tools: [new SearchInvoices]))
+    ->withProviderOptions(['cache_control' => ['type' => 'ephemeral']]),
+```
+
+> [!WARNING]
+> ツール検索をサポートしていないプロバイダは、遅延ツールを暗黙的に破棄するのではなく、例外を投げます。さらに、Anthropicでは`ToolSearch`ラッパーの外側に少なくとも１つのツールを提供する必要があります。
 
 <a name="file-storage-tools"></a>
 ### ファイル保存域ツール
@@ -1024,7 +1109,7 @@ public function tools(): iterable
 
 `WebSearch`プロバイダツールを使用すると、エージェントはWebを検索してリアルタイムの情報を取得できます。これは、時事問題、最近のデータ、またはモデルのトレーニングカットオフ以降に変更された可能性のあるトピックに関する質問に答えるのに役立ちます。
 
-**サポートしているプロバイダ：** Anthropic、OpenAI、Azure、Gemini、OpenRouter
+**サポートしているプロバイダ：** Anthropic、OpenAI、Azure、Gemini、xAI、OpenRouter
 
 ```php
 use Laravel\Ai\Providers\Tools\WebSearch;
@@ -1058,7 +1143,7 @@ Web検索ツールを設定して、検索数を制限したり、結果を特�
 
 `WebFetch`プロバイダツールを使用すると、エージェントはWebページの内容を取得して読み取ることができます。これは、エージェントに特定のURLを分析させたり、既知のWebページから詳細な情報を取得させたりする必要がある場合に便利です。
 
-**サポートしているプロバイダ：** Anthropic, Gemini
+**サポートしているプロバイダ：** Anthropic、Gemini、OpenRouter
 
 ```php
 use Laravel\Ai\Providers\Tools\WebFetch;
@@ -1082,7 +1167,7 @@ Webフェッチツールを設定して、フェッチ数を制限したり、�
 
 `FileSearch`プロバイダツールを使用すると、エージェントは[ベクトルストア](#vector-stores)に保存されている[ファイル](#files)内を検索できます。これにより、エージェントがアップロード済みのドキュメントから関連情報を検索できるようになり、検索拡張生成（RAG）が可能になります。
 
-**サポートしているプロバイダ：** OpenAI, Gemini
+**サポートしているプロバイダ：** OpenAI、Gemini、xAI
 
 ```php
 use Laravel\Ai\Providers\Tools\FileSearch;
@@ -2384,6 +2469,8 @@ $response = (new SalesCoach)->prompt(
 <a name="testing"></a>
 ## テスト
 
+キュー投入済みの画像、音声、文字起こし、埋め込み生成をフェイクする場合、そのキュー投入済み生成に登録した`then`コールバックは、フェイクしたレスポンスで呼び出すため、コールバックが含むロジックをテストできます。これらのコールバックを呼び出したくない場合は、同様に`Queue::fake()`を使用してキューをフェイクできます。
+
 <a name="testing-agents"></a>
 ### エージェント
 
@@ -2450,6 +2537,8 @@ SalesCoach::assertPrompted('これを分析して...');
 SalesCoach::assertPrompted(function (AgentPrompt $prompt) {
     return $prompt->contains('分析');
 });
+
+SalesCoach::assertPromptedTimes(3);
 
 SalesCoach::assertNotPrompted('存在しないプロンプト');
 
@@ -2882,6 +2971,8 @@ $store->assertAdded(fn (StorableFile $file) => $file->content() === 'Hello, Worl
 Laravel AI SDKは、以下を含むさまざまな[イベント](/docs/{{version}}/events)をディスパッチします。
 
 - `AddingFileToStore`
+- `AgentFailed`
+- `AgentFailedOver`
 - `AgentPrompted`
 - `AgentStreamed`
 - `AudioGenerated`
@@ -2898,14 +2989,20 @@ Laravel AI SDKは、以下を含むさまざまな[イベント](/docs/{{version
 - `ImageGenerated`
 - `InvokingTool`
 - `PromptingAgent`
+- `ProviderFailedOver`
 - `RemovingFileFromStore`
 - `Reranked`
 - `Reranking`
+- `StartingStep`
+- `StepCompleted`
+- `StepFailed`
 - `StoreCreated`
+- `StoreDeleted`
 - `StoringFile`
 - `StreamingAgent`
 - `ToolApprovalRequested`
 - `ToolApprovalResolved`
+- `ToolFailed`
 - `ToolInvoked`
 - `TranscriptionGenerated`
 

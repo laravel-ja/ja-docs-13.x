@@ -593,6 +593,14 @@ use Illuminate\Support\Facades\Process;
 Process::assertRan('ls -la');
 ```
 
+引数の配列でプロセスを呼び出した場合は、アサートに同じ配列を渡してください。
+
+```php
+Process::assertRan(['php', 'artisan', 'migrate']);
+```
+
+`assertRanTimes`メソッドと`assertDidntRun`メソッドも、配列コマンドを受け取ります。
+
 `assertRan`メソッドは、クロージャを引数に取り、プロセスのインスタンスとプロセス結果を受け取りますので、プロセスの設定オプションを調べられます。このクロージャが、`true`を返した場合、アサートは「パス」となります。
 
 ```php
@@ -642,6 +650,20 @@ Process::assertRanTimes(function (PendingProcess $process, ProcessResult $result
     return $process->command === 'ls -la';
 }, times: 3);
 ```
+
+<a name="assert-processes-ran-in-order"></a>
+#### assertRanInOrder
+
+指定した順序でプロセスを呼び出したことをアサートします。
+
+```php
+Process::assertRanInOrder([
+    'git fetch',
+    'composer install',
+]);
+```
+
+`assertRanInOrder`メソッドは、他のプロセスアサートと同様に、コマンド文字列、コマンド引数の配列、またはクロージャを受け入れます。
 
 <a name="preventing-stray-processes"></a>
 ### 未指定プロセスの防止

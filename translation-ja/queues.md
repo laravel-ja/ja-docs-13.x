@@ -1532,6 +1532,25 @@ Queue::route([
 > [!NOTE]
 > キューのルート指定は、ジョブごとにジョブ側で上書き可能です。
 
+`forward`メソッドを使用して、ジョブをあるキューから別のキュー、または接続（あるいはその両方）へ転送できます。これは、個々のジョブやディスパッチ場所を変更せずにキューインフラを変更する必要がある場合に役立ちます。
+
+```php
+Queue::forward('reports', 'reports.fifo', 'sqs');
+Queue::forward('payments', connection: 'sqs');
+Queue::forward('updates', 'notifications');
+```
+
+配列を渡して、一度に複数のキューを転送することもできます。
+
+```php
+Queue::forward([
+    'reports' => 'reports.fifo',
+    'emails' => 'emails.fifo',
+], connection: 'sqs');
+```
+
+ジョブに明示的に設定した接続は、転送する接続よりも優先します。
+
 <a name="max-job-attempts-and-timeout"></a>
 ### 最大試行回数／タイムアウト値の指定
 

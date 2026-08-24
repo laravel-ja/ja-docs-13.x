@@ -27,6 +27,7 @@ LaravelのソースコードはGitHubで管理され、各Laravelプロジェク
 
 <div class="content-list" markdown="1">
 
+- [Laravel AI SDK](https://github.com/laravel/ai)
 - [Laravelアプリケーション](https://github.com/laravel/laravel)
 - [Laravelアートワーク](https://github.com/laravel/art)
 - [Laravel Boost](https://github.com/laravel/boost)

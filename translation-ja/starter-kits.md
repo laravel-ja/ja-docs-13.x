@@ -19,6 +19,7 @@
     - [レート制限](#rate-limiting)
 - [チーム](#teams)
 - [WorkOS AuthKit認証](#workos)
+    - [WorkOSスターターキットの設定](#configuring-your-workos-starter-kit)
 - [Inertia SSR](#inertia-ssr)
 - [コミュニティが保守するスターターキット](#community-maintained-starter-kits)
 - [良くある質問](#faqs)
@@ -488,6 +489,7 @@ React、Svelte、Vue、Livewireのスターターキットは、チームサポ�
 
 アプリケーションの認証プロバイダとしてWorkOS AuthKitを使用するには、`laravel new`経由で新しいスターターキット搭載アプリケーションを作成する際に、WorkOSオプションを選択します。
 
+<a name="configuring-your-workos-starter-kit"></a>
 ### WorkOSスターターキットの設定
 
 WorkOSを使用するスターターキットで新しいアプリケーションを作成したら、アプリケーションの`.env`ファイルへ、`WORKOS_CLIENT_ID`、`WORKOS_API_KEY`、`WORKOS_REDIRECT_URL` 環境変数を設定する必要があります。これらの変数はあなたのアプリケーション用に、WorkOSダッシュボードが提供した値と一致させる必要があります。
@@ -584,7 +586,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 デフォルトのメールテンプレートをカスタマイズして、アプリケーションのブランディングに合わせたい場合もあると思います。このテンプレートを変更するには、次のコマンドを使用してアプリケーションへメールビューをリソース公開する必要があります。
 
-```
+```shell
 php artisan vendor:publish --tag=laravel-mail
 ```
 

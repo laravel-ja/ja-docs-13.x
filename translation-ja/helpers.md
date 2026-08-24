@@ -283,7 +283,7 @@ $array = Arr::add(['name' => 'Desk', 'price' => null], 'price', 100);
 
 `Arr::array`メソッドは[Arr::get()](#method-array-get)と同様に、深くネストした配列から「ドット」記法で値を取得します。ただし、要求した値が`array`でなかった場合は、`InvalidArgumentException`を投げます。
 
-```
+```php
 use Illuminate\Support\Arr;
 
 $array = ['name' => 'Joe', 'languages' => ['PHP', 'Ruby']];
@@ -302,7 +302,7 @@ $value = Arr::array($array, 'name');
 
 `Arr::boolean`メソッドは[Arr::get()](#method-array-get)と同様に、深くネストした配列から「ドット」記法で値を取得します。ただし、要求した値が`boolean`でなかった場合は、`InvalidArgumentException`を投げます。
 
-```
+```php
 use Illuminate\Support\Arr;
 
 $array = ['name' => 'Joe', 'available' => true];
@@ -520,7 +520,7 @@ $flattened = Arr::flatten($array);
 
 `Arr::float`メソッドは[Arr::get()](#method-array-get)と同様に、深くネストした配列から「ドット」記法で値を取得します。ただし、要求された値が`float`でない場合は、`InvalidArgumentException`を投げます。
 
-```
+```php
 use Illuminate\Support\Arr;
 
 $array = ['name' => 'Joe', 'balance' => 123.45];
@@ -657,7 +657,7 @@ $contains = Arr::hasAny($array, ['category', 'product.discount']);
 
 `Arr::integer`メソッドは[Arr::get()](#method-array-get)と同様に、深くネストした配列から「ドット」記法で値を取得します。ただし、要求した値が`int`でない場合は、`InvalidArgumentException`を投げます。
 
-```
+```php
 use Illuminate\Support\Arr;
 
 $array = ['name' => 'Joe', 'age' => 42];
@@ -1286,7 +1286,7 @@ $sorted = Arr::sortRecursiveDesc($array);
 
 `Arr::string`メソッドは[Arr::get()](#method-array-get)と同様に、深くネストした配列から「ドット」記法で値を取得します。しかし、要求した値が`string`でない場合は、`InvalidArgumentException`を投げます。
 
-```
+```php
 use Illuminate\Support\Arr;
 
 $array = ['name' => 'Joe', 'languages' => ['PHP', 'Ruby']];

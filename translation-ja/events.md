@@ -16,6 +16,7 @@
     - [ユニークイベントリスナ](#unique-event-listeners)
         - [処理を開始するまでリスナをユニークに保つ](#keeping-listeners-unique-until-processing-begins)
         - [一意のリスナロック](#unique-listener-locks)
+    - [デバウンスイベントリスナ](#debounced-event-listeners)
     - [失敗したジョブの処理](#handling-failed-jobs)
 - [イベント発行](#dispatching-events)
     - [データベーストランザクション後のイベント発行](#dispatching-events-after-database-transactions)
@@ -25,7 +26,7 @@
     - [イベントサブスクライバの登録](#registering-event-subscribers)
 - [テスト](#testing)
     - [イベントサブセットのFake](#faking-a-subset-of-events)
-    - [イベントFakeのスコープ](#scoped-event-fakes)
+    - [スコープ付きイベントFake](#scoped-event-fakes)
 
 <a name="introduction"></a>
 ## イントロダクション
@@ -650,6 +651,70 @@ class AcquireProductKey implements ShouldQueue, ShouldBeUnique
 > [!NOTE]
 > リスナの並行処理のみを制限する必要がある場合は、代わりに[WithoutOverlapping](/docs/{{version}}/queues#preventing-job-overlaps)ジョブミドルウェアを使用してください。
 
+<a name="debounced-event-listeners"></a>
+### デバウンスイベントリスナ
+
+短期間に繰り返しディスパッチするイベントの最新インスタンスのみを処理したい場合が起こるでしょう。キュー投入するリスナへ、`DebounceFor`属性を追加することで、これを実現できます。
+
+```php
+<?php
+
+namespace App\Listeners;
+
+use App\Events\ProductUpdated;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\Attributes\DebounceFor;
+
+#[DebounceFor(30)]
+class UpdateProductSearchIndex implements ShouldQueue
+{
+    /**
+     * イベントの処理
+     */
+    public function handle(ProductUpdated $event): void
+    {
+        // 製品の検索インデックスを更新…
+    }
+
+    /**
+     * リスナのデバウンスIDを取得
+     */
+    public function debounceId(ProductUpdated $event): string
+    {
+        return (string) $event->product->getKey();
+    }
+}
+```
+
+上記の例では、同じ製品に対して`30`秒以内に`ProductUpdated`イベントを繰り返しディスパッチすると、リスナをデバウンスして最新のイベントのみを処理します。異なるデバウンスIDは個別に処理します。
+
+頻繁にディスパッチされるイベントが、リスナをどれだけ遅延させられるかに上限を設けたい場合は、`DebounceFor`属性に`maxWait`引数を指定できます。
+
+```php
+#[DebounceFor(30, maxWait: 120)]
+class UpdateProductSearchIndex implements ShouldQueue
+{
+    // ...
+}
+```
+
+リスナに`debounceVia`メソッドを定義して、デバウンスの追跡に使用するキャッシュストアをカスタマイズできます。このメソッドはイベントインスタンスを受け取り、キャッシュリポジトリを返す必要があります。
+
+```php
+use Illuminate\Contracts\Cache\Repository;
+use Illuminate\Support\Facades\Cache;
+
+public function debounceVia(ProductUpdated $event): Repository
+{
+    return Cache::driver('redis');
+}
+```
+
+デバウンスリスナとユニークリスナは相互排他的です。`DebounceFor`属性を使用するリスナは、`ShouldBeUnique`を実装してはいけません。
+
+> [!WARNING]
+> アプリケーションが複数のWebサーバやコンテナからイベントをディスパッチする場合は、確実にすべてのサーバを同じ中央キャッシュサーバと通信させてください。
+
 <a name="handling-failed-jobs"></a>
 ### 失敗したジョブの処理
 
@@ -1214,7 +1279,7 @@ Event::fake()->except([
 ```
 
 <a name="scoped-event-fakes"></a>
-### イベントFakeのスコープ
+### スコープ付きイベントFake
 
 テストの一部分だけでイベントリスナをFakeしたい場合は、`fakeFor`メソッドを使用します。
 
