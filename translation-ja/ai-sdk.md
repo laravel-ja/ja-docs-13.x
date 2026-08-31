@@ -2027,7 +2027,7 @@ Document::fromUpload($request->file('report'));
 <a name="querying-embeddings"></a>
 ### 埋め込みのクエリ
 
-埋め込みを生成したら、通常は後でクエリするためにデータベースの`vector`カラムに保存します。Laravelは、`pgvector`拡張機能を介してPostgreSQLのベクトルカラムをネイティブにサポートしています。開始するには、マイグレーションで`vector`カラムを定義し、次元数を指定します。
+埋め込みを生成したら、通常は後でクエリするためにデータベースの`vector`カラムに保存します。Laravelは、`pgvector`拡張機能を介してPostgreSQLのベクトルカラムとMariaDBをネイティブにサポートしています。開始するには、マイグレーションで`vector`カラムを定義し、次元数を指定します。
 
 ```php
 Schema::ensureVectorExtensionExists();
@@ -2047,13 +2047,15 @@ Schema::create('documents', function (Blueprint $table) {
 $table->vector('embedding', dimensions: 1536)->index();
 ```
 
-Eloquentモデルでは、ベクトルカラムを`array`にキャストしてください。
+Eloquentモデルでは、ベクトルカラムを`AsVector`を使用し、キャストしてください。
 
 ```php
+use Illuminate\Database\Eloquent\Casts\AsVector;
+
 protected function casts(): array
 {
     return [
-        'embedding' => 'array',
+        'embedding' => AsVector::class,
     ];
 }
 ```
@@ -2093,7 +2095,7 @@ $documents = Document::query()
 エージェントにツールとして類似性検索を実行する能力を与えたい場合は、[類似性検索](#similarity-search)ツールのドキュメントを確認してください。
 
 > [!NOTE]
-> ベクトルクエリは現在、`pgvector`拡張機能を使用しているPostgreSQL接続でのみサポートしています。
+> ベクトルクエリは現在、`pgvector`拡張機能を使用しているPostgreSQL接続とMariaDB11.7以降をサポートしています。
 
 <a name="caching-embeddings"></a>
 ### 埋め込みのキャッシュ

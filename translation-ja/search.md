@@ -33,7 +33,7 @@
 <a name="introduction-semantic-vector-search"></a>
 #### セマンティック／ベクトル検索
 
-正確なキーワードではなく、*意味*によって結果を一致させるAI駆動のセマンティック検索の場合、`whereVectorSimilarTo`クエリビルダメソッドが、`pgvector`拡張機能を使用してPostgreSQLに保存したベクトル埋め込みを使用します。たとえば、「best wineries in Napa Valley（ナパバレーの最高のワイナリー）」を検索すると、単語が重なっていなくても「Top Vineyards to Visit（訪れるべきトップブドウ園）」というタイトルの記事を表示できます。ベクトル検索には、`pgvector`拡張機能を含むPostgreSQLと[Laravel AI SDK](/docs/{{version}}/ai-sdk)が必要です。
+正確なキーワードではなく、*意味*によって結果を一致させるAI駆動のセマンティック検索の場合、`whereVectorSimilarTo`クエリビルダメソッドが、`pgvector`拡張機能を使用してPostgreSQLに保存したベクトル埋め込みを使用します。たとえば、「best wineries in Napa Valley（ナパバレーの最高のワイナリー）」を検索すると、単語が重なっていなくても「Top Vineyards to Visit（訪れるべきトップブドウ園）」というタイトルの記事を表示できます。ベクトル検索には、`pgvector`拡張機能を含むPostgreSQLかMariaDB11.7以降と、[Laravel AI SDK](/docs/{{version}}/ai-sdk)が必要です。
 
 <a name="introduction-reranking"></a>
 #### リランキング
@@ -43,7 +43,7 @@ Laravelの[AI SDK](/docs/{{version}}/ai-sdk)は、AIモデルを使用して、�
 <a name="introduction-scout-search-engines"></a>
 #### Laravel Scout検索
 
-検索インデックスを自動的にEloquentモデルと同期させる`Searchable`トレイトを必要とするアプリケーションのために、[Laravel Scout](/docs/{{version}}/scout)は組み込みのデータベースエンジンと、Algolia、Meilisearch、Typesenseなどのサードパーティサービス用のドライバの両方を提供しています。
+検索インデックスを自動的にEloquentモデルと同期させる`Searchable`トレイトを必要とするアプリケーションのために、[Laravel Scout](/docs/{{version}}/scout)は組み込みのデータベースエンジンと、Algolia、Meilisearch、Typesense、Turbopufferなどのサードパーティサービス用のドライバの両方を提供しています。
 
 <a name="full-text-search"></a>
 ## 全文検索
@@ -108,7 +108,7 @@ $articles = Article::whereFullText(
 ベクトル検索の基本的なワークフローは、コンテンツの各断片に対してエンベディング（数値配列）を生成してデータと共に保存し、検索時にユーザーのクエリに対してエンベディングを生成し、ベクトル空間でそれに最も近い保存済みエンベディングを見つけることです。
 
 > [!NOTE]
-> ベクトル検索は[Laravel AI SDK](/docs/{{version}}/ai-sdk)が必要であり、PostgreSQL（`pgvector`拡張機能が必要）とMongoDB（[Laravel MongoDBパッケージ](https://laravel.com/docs/13.x/mongodb)が必要）をサポートしています。[Laravel Cloud](https://laravel.com/cloud)上のすべてのPostgresデータベースには、あらかじめ`pgvector`をインストールしています。
+> ベクトル検索は[Laravel AI SDK](/docs/{{version}}/ai-sdk)が必要であり、PostgreSQL（`pgvector`拡張機能が必要）、MariaDB11.7以上、MongoDB（[Laravel MongoDBパッケージ](https://laravel.com/docs/13.x/mongodb)が必要）をサポートしています。[Laravel Cloud](https://laravel.com/cloud)上のすべてのPostgresデータベースには、あらかじめ`pgvector`をインストールしています。
 
 <a name="generating-embeddings"></a>
 ### エンベディングの生成
@@ -155,13 +155,15 @@ Schema::create('documents', function (Blueprint $table) {
 
 `Schema::ensureVectorExtensionExists`メソッドは、テーブルを作成する前にPostgreSQLデータベースで`pgvector`拡張機能が有効になっていることを確実にします。
 
-Eloquentモデルでは、LaravelがPHP配列とデータベースのベクトル形式の間の変換を自動的に処理するように、ベクトル列を`array`にキャストしてください。
+LaravelがPHP配列とデータベースのベクトル形式間の変換を自動的に処理できるように、Eloquentモデルで`AsVector`キャストを使用します。
 
 ```php
+use Illuminate\Database\Eloquent\Casts\AsVector;
+
 protected function casts(): array
 {
     return [
-        'embedding' => 'array',
+        'embedding' => AsVector::class,
     ];
 }
 ```

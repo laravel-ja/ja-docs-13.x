@@ -6,6 +6,7 @@
     - [ミューテタの定義](#defining-a-mutator)
 - [属性のキャスト](#attribute-casting)
     - [配列とJSONのキャスト](#array-and-json-casting)
+    - [ベクトルキャスト](#vector-casting)
     - [バイナリキャスト](#binary-casting)
     - [日付のキャスト](#date-casting)
     - [Enumキャスト](#enum-casting)
@@ -218,6 +219,7 @@ protected function address(): Attribute
 - `AsFluent::class`
 - `AsStringable::class`
 - `AsUri::class`
+- `AsVector::class`
 - `boolean`
 - `collection`
 - `date`
@@ -523,6 +525,29 @@ class Option implements Arrayable, JsonSerializable
     }
 }
 ```
+
+<a name="vector-casting"></a>
+### ベクトルキャスト
+
+PHP配列とデータベースのベクトルカラム間のキャストには、`Illuminate\Database\Eloquent\Casts\AsVector`キャストクラスを使用します。
+
+```php
+use Illuminate\Database\Eloquent\Casts\AsVector;
+
+/**
+ * キャストする属性の取得
+ *
+ * @return array<string, string>
+ */
+protected function casts(): array
+{
+    return [
+        'embedding' => AsVector::class,
+    ];
+}
+```
+
+属性を設定する際、キャストはPHP配列またはLaravelコレクションなどの`Arrayable`インスタンスを引数に取ります。属性を取得する際、キャストは浮動小数点数の配列を返します。
 
 <a name="binary-casting"></a>
 ### バイナリキャスト

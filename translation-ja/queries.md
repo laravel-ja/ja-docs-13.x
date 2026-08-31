@@ -1164,7 +1164,7 @@ $users = DB::table('users')
 ### ベクトル類似性句
 
 > [!NOTE]
-> ベクトル類似性句は、現在`pgvector`拡張機能を使用しているPostgreSQL接続でのみサポートしています。ベクトルカラムとインデックスの定義に関する情報は、[マイグレーションドキュメント](/docs/{{version}}/migrations#available-column-types)を参照してください。
+> ベクトル類似性句は、現在`pgvector`拡張機能を使用しているPostgreSQL接続とMariaDB11.7以上をサポートしています。ベクトルカラムとインデックスの定義に関する情報は、[マイグレーションドキュメント](/docs/{{version}}/migrations#available-column-types)を参照してください。
 
 `whereVectorSimilarTo`メソッドは、指定したベクトルとのコサイン類似度で結果をフィルタリングし、関連性の高い順に結果を並べ替えます。`minSimilarity`（最小類似度）のしきい値には、`0.0`から`1.0`の値を指定してください。`1.0`が同一であることを表します。
 

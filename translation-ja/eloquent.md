@@ -494,6 +494,16 @@ $flight->refresh();
 $flight->number; // "FR 900"
 ```
 
+トランザクション内でモデルをリフレッシュし、悲観的ロックを取得する必要がある場合は、`refreshForUpdate`メソッドを使用します。このメソッドは、`FOR UPDATE`ロックを使用してモデルを再ロードします。
+
+```php
+DB::transaction(function () use ($flight) {
+    $flight->refreshForUpdate();
+
+    // ロックしたモデルを更新…
+});
+```
+
 <a name="collections"></a>
 ### コレクション
 

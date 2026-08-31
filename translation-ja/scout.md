@@ -7,6 +7,7 @@
     - [Algolia](#algolia)
     - [Meilisearch](#meilisearch)
     - [Typesense](#typesense)
+    - [Turbopuffer](#turbopuffer)
 - [設定](#configuration)
     - [検索可能データの設定](#configuring-searchable-data)
 - [データベース／コレクションエンジン](#database-and-collection-engines)
@@ -17,6 +18,7 @@
     - [Algolia](#algolia-configuration)
     - [Meilisearch](#meilisearch-configuration)
     - [Typesense](#typesense-configuration)
+    - [Turbopuffer](#turbopuffer-configuration)
 - [サードパーティエンジンインデックス](#indexing)
     - [バッチ取り込み](#batch-import)
     - [レコード追加](#adding-records)
@@ -26,6 +28,7 @@
     - [条件付き検索可能モデルインスタンス](#conditionally-searchable-model-instances)
 - [検索](#searching)
     - [Where節](#where-clauses)
+    - [Semantic Search](#semantic-search)
     - [ペジネーション](#pagination)
     - [ソフトデリート](#soft-deleting)
     - [エンジンの検索のカスタマイズ](#customizing-engine-searches)
@@ -38,7 +41,7 @@
 
 coutは組み込みの`database`エンジンを搭載しており、MySQL／PostgreSQLのフルテキストインデックスと`LIKE`句を使用して既存のデータベースを検索するため、外部サービスは必要ありません。ほとんどのアプリケーションでは、これで十分です。Laravelで使用できるすべての検索オプションの概要は、[検索ドキュメント](/docs/{{version}}/search)を参照してください。
 
-Scoutには、タイポトレランス（打ち間違い許容）、ファセットフィルタリング、大規模なジオサーチなどの機能が必要な場合のために、[Algolia](https://www.algolia.com/)、[Meilisearch](https://www.meilisearch.com)、[Typesense](https://typesense.org)のドライバも用意しています。ローカル開発用の"collection"ドライバも利用でき、[カスタムエンジン](#custom-engines)を自由に作成することさえも可能です。
+Scoutには、タイポトレランス（打ち間違い許容）、ファセットフィルタリング、大規模なジオサーチなどの機能が必要な場合のために、[Algolia](https://www.algolia.com/)、[Meilisearch](https://www.meilisearch.com)、[Typesense](https://typesense.org)、[Turbopuffer](https://turbopuffer.com)のドライバも用意しています。ローカル開発用の"collection"ドライバも利用でき、[カスタムエンジン](#custom-engines)を自由に作成することさえも可能です。
 
 <a name="installation"></a>
 ## インストール
@@ -184,6 +187,19 @@ TYPESENSE_PROTOCOL=http
 
 Typesenseコレクションの追加設定とスキーマ定義は、アプリケーションの`config/scout.php`設定ファイルにあります。Typesenseに関するより詳しい情報は、[Typesenseドキュメント](https://typesense.org/docs/guide/#quick-start)を参照してください。
 
+<a name="turbopuffer"></a>
+### Turbopuffer
+
+[Turbopuffer](https://turbopuffer.com)は、フルテキスト検索、セマンティック検索、ハイブリッド検索をサポートする検索エンジンです。Turbopufferドライバを使用するには、`SCOUT_DRIVER`環境変数を設定し、Turbopuffer APIキーを指定します。
+
+```ini
+SCOUT_DRIVER=turbopuffer
+TURBOPUFFER_API_KEY=tpuf_...
+TURBOPUFFER_REGION=gcp-us-central1
+```
+
+`TURBOPUFFER_REGION`環境変数はオプションで、デフォルトは`gcp-us-central1`です。
+
 <a name="configuration"></a>
 ## 設定
 
@@ -267,6 +283,25 @@ SCOUT_DRIVER=database
 ```
 
 設定を完了したら、[Searchableなデータを定義](#configuring-searchable-data)し、モデルに対して[検索クエリの実行](#searching)を使用開始できます。サードパーティのエンジンとは異なり、データベースエンジンは個別のインデックス作成ステップを必要とせず、データベーステーブルを直接検索します。
+
+<a name="database-semantic-and-hybrid-search"></a>
+#### セマンティックとハイブリッド検索
+
+`pgvector`拡張機能を備えたPostgreSQLを使用する場合、データベースエンジンはセマンティック検索とハイブリッド検索をサポートします。使い始めるには、モデルのテーブルにNULLを許容するベクトルカラムとフルテキストインデックスを追加します。Scoutはモデルを永続化した後に埋め込みを保存するため、ベクトルカラムはNULL許容でなければなりません。
+
+```php
+Schema::ensureVectorExtensionExists();
+
+Schema::table('articles', function (Blueprint $table) {
+    // ...
+
+    $table->vector('embedding', dimensions: 1536)->nullable();
+    $table->vectorIndex('embedding');
+    $table->fullText(['title', 'body']);
+});
+```
+
+次に、モデルに`toSearchableEmbedding`メソッドを定義します。このメソッドは、Scoutが埋め込む必要のあるソーステキスト、または事前に計算済みの埋め込み配列を返します。Scoutはデフォルトで埋め込みを`embedding`カラムに保存します。別のカラムを使用するには、モデルで`searchableEmbeddingColumn`メソッドを定義します。
 
 #### データベース検索戦略のカスタマイズ
 
@@ -491,6 +526,37 @@ use App\Models\Flight;
 php artisan scout:sync-index-settings
 ```
 
+<a name="meilisearch-semantic-and-hybrid-search"></a>
+#### セマンティック検索とハイブリッド検索
+
+Meilisearchでセマンティック検索またはハイブリッド検索を使用するには、インデックス設定でエンベッダを設定し、各検索可能モデルの埋め込み設定を行ってください。
+
+```php
+'meilisearch' => [
+    // ...
+    'index-settings' => [
+        Article::class => [
+            'embedders' => [
+                'default' => [
+                    'source' => 'userProvided',
+                    'dimensions' => 1536,
+                ],
+            ],
+        ],
+    ],
+    'model-settings' => [
+        Article::class => [
+            'embedding' => [
+                'embedder' => 'default',
+                'dimensions' => 1536,
+            ],
+        ],
+    ],
+],
+```
+
+モデルの`toSearchableEmbedding`メソッドは、Scoutが[Laravel AI SDK](/docs/{{version}}/ai-sdk)を使用して埋め込むソーステキスト、または事前に計算した埋め込み配列を返します。設定を更新した後は、`scout:sync-index-settings`コマンドを実行してください。
+
 <a name="meilisearch-data-types"></a>
 #### Searchableデータタイプ
 
@@ -564,11 +630,89 @@ Todo::search('Groceries')->options([
 ])->get();
 ```
 
+<a name="turbopuffer-configuration"></a>
+### Turbopuffer
+
+Turbopufferは、各モデルのスキーマとSearchable属性を必要とします。`scout`設定ファイル内の`turbopuffer`設定の`model-settings`配列でこれらを定義してください。
+
+```php
+use App\Models\Article;
+
+'turbopuffer' => [
+    // ...
+    'model-settings' => [
+        Article::class => [
+            'searchable-attributes' => [
+                'title' => 3,
+                'body' => 1,
+            ],
+            'schema' => [
+                'title' => ['type' => 'string', 'full_text_search' => true],
+                'body' => ['type' => 'string', 'full_text_search' => true],
+                'status' => ['type' => 'string'],
+            ],
+        ],
+    ],
+],
+```
+
+`searchable-attributes`に割り当てた数値は、相対的なBM25の重みです。上記の例では、記事タイトルのマッチは、本文のマッチの3倍のスコアを付与します。
+
+セマンティック検索とハイブリッド検索を有効にするには、モデルの設定に`embedding`設定とベクトルスキーマを追加します。
+
+```php
+'turbopuffer' => [
+    // ...
+    'model-settings' => [
+        Article::class => [
+            'searchable-attributes' => [
+                'title' => 3,
+                'body' => 1,
+            ],
+            'embedding' => [
+                'attribute' => 'embedding',
+                'dimensions' => 1536,
+            ],
+            'schema' => [
+                'title' => ['type' => 'string', 'full_text_search' => true],
+                'body' => ['type' => 'string', 'full_text_search' => true],
+                'embedding' => ['type' => '[1536]f32', 'ann' => true],
+            ],
+        ],
+    ],
+],
+```
+
+モデルの`toSearchableEmbedding`メソッドは、Scoutが埋め込むソーステキスト、または事前に計算した埋め込み配列を返す必要があります。Scoutは[Laravel AI SDK](/docs/{{version}}/ai-sdk)を使用してソーステキストの埋め込みを生成します。
+
+または、Laravel AI SDKをインストールしたり、`toSearchableEmbedding`メソッドを定義したりせずに、Turbopufferネイティブの埋め込みを使用することもできます。埋め込みドライバを`turbopuffer`に設定し、検索可能なソース属性で`embed`スキーマを設定します。
+
+```php
+'embedding' => [
+    'driver' => 'turbopuffer',
+    'attribute' => 'embedding_text',
+],
+
+'schema' => [
+    // ...
+    'embedding_text' => [
+        'type' => 'string',
+        'embed' => [
+            'model' => 'voyage/voyage-4',
+            'dimensions' => 1024,
+            'attribute' => 'embedding',
+        ],
+    ],
+],
+```
+
+ソース属性は、モデルの`toSearchableArray`出力に含める必要があります。
+
 <a name="indexing"></a>
 ## サードパーティエンジンインデックス
 
 > [!NOTE]
-> このセクションで説明するインデックス機能は、主にサードパーティエンジン（Algolia、Meilisearch、またはTypesense）を使用する場合に関連します。データベースエンジンはデータベーステーブルを直接検索するため、手作業でのインデックス管理は不要です。
+> このセクションで説明するインデックス機能は、主にサードパーティエンジン（Algolia、Meilisearch、Typesense、Turbopuffer）を使用する場合に関連します。データベースエンジンはデータベーステーブルを直接検索するため、手作業でのインデックス管理は不要です。
 
 <a name="batch-import"></a>
 ### バッチ取り込み
@@ -813,6 +957,35 @@ Eloquentモデルへ変換する前に素の検索結果を取得したい場合
 
 ```php
 $orders = Order::search('Star Trek')->raw();
+```
+
+<a name="semantic-search"></a>
+### セマンティック検索
+
+データベース、Meilisearch、Turbopufferエンジンは、クエリの意味に基づいてレコードを照合するセマンティック検索をサポートしています。Scoutが埋め込みを生成する場合、セマンティック検索とハイブリッド検索には[Laravel AI SDK](/docs/{{version}}/ai-sdk)が必要です。Turbopufferの[ネイティブ埋め込み](#turbopuffer-configuration)と事前に計算したクエリベクトルは、Laravel AI SDKを必要としません。
+
+選択したエンジンの埋め込みを設定した後、検索クエリで`semantic`メソッドを呼び出します。
+
+```php
+$articles = Article::search('staying cool in the summer')
+    ->semantic()
+    ->get();
+```
+
+選択したエンジンでサポートしている場合は、最小類似度のしきい値を指定できます。
+
+```php
+$articles = Article::search('renewable energy storage')
+    ->semantic(minSimilarity: 0.6)
+    ->get();
+```
+
+フルテキスト検索とセマンティック検索を組み合わせるには、`hybrid`メソッドを使用します。最初の２つの引数は、テキストとセマンティックの結果の相対的な重みを制御します。
+
+```php
+$articles = Article::search('renewable energy storage')
+    ->hybrid(textWeight: 1, semanticWeight: 2)
+    ->get();
 ```
 
 <a name="custom-indexes"></a>
