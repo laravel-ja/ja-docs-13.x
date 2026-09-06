@@ -112,6 +112,7 @@ $translated = $collection->toLocale('es');
 [avg](#method-avg)
 [before](#method-before)
 [chunk](#method-chunk)
+[chunkBy](#method-chunkby)
 [chunkWhile](#method-chunkwhile)
 [collapse](#method-collapse)
 [collapseWithKeys](#method-collapsewithkeys)
@@ -401,6 +402,27 @@ $chunks->all();
         @endforeach
     </div>
 @endforeach
+```
+
+<a name="method-chunkby"></a>
+#### `chunkBy()` {.collection-method}
+
+`chunkBy`メソッドは、指定したキーまたはコールバックに対して同じ値を持つ隣接アイテムをグループ化し、コレクションを複数の小さなコレクションへ分割します。たとえば、同じ親を持つ隣接する製品をグループ化できます。
+
+```php
+$chunks = $products->chunkBy('parent');
+```
+
+`groupBy`メソッドとは異なり、隣接していない同じ値を持つアイテムは別々のチャンクへ配置します。
+
+```php
+$collection = collect([1, 1, 2, 2, 1]);
+
+$chunks = $collection->chunkBy(fn (int $value) => $value);
+
+$chunks->all();
+
+// [[1, 1], [2, 2], [1]]
 ```
 
 <a name="method-chunkwhile"></a>
@@ -4201,6 +4223,7 @@ LazyCollection::make(function () {
 [average](#method-average)
 [avg](#method-avg)
 [chunk](#method-chunk)
+[chunkBy](#method-chunkby)
 [chunkWhile](#method-chunkwhile)
 [collapse](#method-collapse)
 [collect](#method-collect)

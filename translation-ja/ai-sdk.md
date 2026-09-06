@@ -24,6 +24,7 @@
     - [匿名エージェント](#anonymous-agents)
     - [エージェント設定](#agent-configuration)
     - [プロバイダオプション](#provider-options)
+    - [プロンプトキャッシュ](#prompt-caching)
 - [人間によるツールの承認](#human-tool-approval)
     - [完全な承認フロー](#complete-approval-flow)
 - [画像](#images)
@@ -231,10 +232,10 @@ AI SDKは、その機能全体でさまざまなプロバイダをサポート�
 |---|---|
 | テキスト | OpenAI, OpenAI Compatible, Anthropic, Gemini, Azure, Bedrock, Groq, xAI, DeepSeek, Mistral, Ollama, OpenRouter |
 | 画像 | OpenAI, Gemini, xAI, Azure, Bedrock, OpenRouter |
-| TTS | OpenAI, ElevenLabs, Gemini |
+| TTS | OpenAI, ElevenLabs, Gemini, Mistral |
 | STT | OpenAI, OpenAI Compatible, ElevenLabs, Groq, Mistral, Gemini |
 | 埋め込み | OpenAI, OpenAI Compatible, Gemini, Azure, Bedrock, Cohere, Mistral, Jina, VoyageAI, Ollama, OpenRouter |
-| リランク | Cohere, Jina, VoyageAI |
+| リランク | Cohere, Jina, VoyageAI, Bedrock |
 | ファイル | OpenAI, Anthropic, Gemini, Azure |
 
 </div>
@@ -886,6 +887,25 @@ public function tools(): iterable
 }
 ```
 
+<a name="validating-tool-arguments"></a>
+#### ツール引数のバリデーション
+
+ツールのスキーマによりモデルが提供できる引数は制限されますが、リクエストの`validate`メソッドを使用して受け取る引数をバリデートできます。
+
+```php
+public function handle(Request $request): Stringable|string
+{
+    $validated = $request->validate([
+        'city' => 'required|string',
+        'days' => 'required|integer|max:7',
+    ]);
+
+    return $this->forecast($validated['city'], $validated['days']);
+}
+```
+
+バリデーションに失敗すると、モデルにツールの結果としてバリデーションメッセージを返すため、モデルは引数を修正してツールを再呼び出しできます。
+
 <a name="repairing-tool-calls"></a>
 #### ツール呼び出しの修復
 
@@ -1530,7 +1550,49 @@ class SalesCoach implements Agent, HasProviderOptions
 
 `providerOptions`メソッドは、現在使用しているプロバイダ（`Lab`列挙型または文字列）を受け取るため、プロバイダごとに異なるオプションを返せます。これは[フェイルオーバ](#failover)を使用する場合、各フォールバックプロバイダが独自の構成を受け取れるため、特に便利です。
 
-上記のAnthropicの例では、`cache_control`を介して[プロンプトキャッシュ](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching)も有効にしています。
+上記のAnthropicの例でも、`cache_control`を介して[プロンプトキャッシュ](#prompt-caching)を有効にしています。
+
+<a name="prompt-caching"></a>
+### プロンプトキャッシュ
+
+ほとんどのプロバイダは、繰り返されるプロンプトプレフィックスを自動的にキャッシュし、キャッシュされた部分を割引価格で請求します。OpenAI、Gemini、Groq、DeepSeek、xAIは設定を必要とせず、レスポンスのusageを介して節約状況を確認できます。
+
+```php
+$response->usage->cacheReadInputTokens;
+$response->usage->cacheWriteInputTokens;
+```
+
+`anthropic`および`bedrock`プロバイダは、要求された場合のみキャッシュします。`CacheInstructions`と`CacheToolDefinitions`属性は、エージェントの指示とツール定義の末尾にキャッシュブレークポイントを配置するため、すべての会話は再度書き込む代わりに、キャッシュからそのプレフィックスを読み取ります。
+
+```php
+use Laravel\Ai\Attributes\CacheInstructions;
+use Laravel\Ai\Attributes\CacheToolDefinitions;
+
+#[CacheInstructions]
+#[CacheToolDefinitions]
+class SalesCoach implements Agent
+{
+    use Promptable;
+
+    // ...
+}
+```
+
+現在の日付を埋め込む場合など、リクエストごとに指示が変わる場合は、`CacheToolDefinitions`のみを使用してください。リクエストごとに変化するプレフィックスをキャッシュすると、毎回新しいキャッシュエントリが作成されるため、再利用することなくキャッシュへの書き込み費用を支払うことになります。
+
+これらの属性をサポートしていないプロバイダは属性を無視するため、エージェントは[フェイルオーバ](#failover)を使用しながらでも安全に属性を宣言できます。
+
+キャッシュしたプレフィックスは、デフォルトで5分間保持されます。属性にTTLを渡すと、Anthropicは1時間保持できます。
+
+```php
+#[CacheInstructions('1h')]
+#[CacheToolDefinitions('1h')]
+```
+
+あるいは、トップレベルの`cache_control` [プロバイダオプション](#provider-options)を介して、Anthropicの自動キャッシュを有効にできます。これにより、リクエストの最後のブロックの後に単一のブレークポイントが配置されるため、会話が進むにつれてブレークポイントも前進し、各ターンは前のターンをキャッシュから読み取ります。両方のメカニズムを組み合わせることも可能です。
+
+> [!WARNING]
+> プロバイダはツール、指示、メッセージの順にプロンプトを構築するため、指示を1時間キャッシュするには、ツール定義も1時間キャッシュする必要があります。両者を混在させると、`InvalidArgumentException`を投げます。
 
 <a name="human-tool-approval"></a>
 ## 人間によるツールの承認
@@ -1695,14 +1757,14 @@ Route::post('/chat/{conversation}', function (Request $request, Conversation $co
     Gate::authorize('view', $conversation);
 
     $validated = $request->validate([
-        'message' => ['nullable', 'string', 'required_without:decisions', 'prohibited_with:decisions'],
-        'decisions' => ['nullable', 'array', 'required_without:message', 'prohibited_with:message'],
+        'message' => ['nullable', 'string', 'required_without:decisions', 'prohibits:decisions'],
+        'decisions' => ['nullable', 'array', 'required_without:message', 'prohibits:message'],
         'decisions.*.action' => ['required_with:decisions', Rule::in(['approve', 'reject'])],
         'decisions.*.result' => ['nullable', 'string'],
     ]);
 
     $prompt = isset($validated['decisions'])
-        ? Decisions::from($validated->collect('decisions')->map(
+        ? Decisions::from(collect($validated['decisions'])->map(
             fn (array $decision) => match ($decision['action']) {
                 'approve' => Decision::approve(),
                 'reject' => Decision::reject($decision['result'] ?? null),
@@ -2107,12 +2169,15 @@ $documents = Document::query()
     'embeddings' => [
         'cache' => true,
         'store' => env('CACHE_STORE', 'database'),
+        'individually' => true,
         // ...
     ],
 ],
 ```
 
 キャッシュが有効な場合、埋め込みを３０日間キャッシュします。キャッシュキーは、プロバイダ、モデル、次元数、および入力内容に基づいており、同一のリクエストはキャッシュされた結果を返し、異なる設定の場合は新しい埋め込みを生成することを保証します。
+
+デフォルトでは、各入力の埋め込みを独自のキーでキャッシュするため、入力のセットや順序が変更された場合でも、後続リクエストは以前に検出した入力のキャッシュにヒットします。代わりに、入力セット全体を単一のキーでキャッシュするには、`ai.caching.embeddings.individually`設定オプションを`false`に設定してください。
 
 グローバルキャッシュが無効な場合でも、`cache`メソッドを使用して特定のリクエストに対してキャッシュを有効にできます。
 

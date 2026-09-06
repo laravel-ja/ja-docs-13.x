@@ -20,7 +20,7 @@
     - [クライアント生成](#creating-a-auth-pkce-grant-client)
     - [トークンのリクエスト](#requesting-auth-pkce-grant-tokens)
 - [デバイス認証グラント](#device-authorization-grant)
-    - [デバイスコードグラント認証クライアントの作成](#creating-a-device-authorization-grant-client)
+    - [デバイス認証グラントクライアントの作成](#creating-a-device-authorization-grant-client)
     - [トークンのリクエスト](#requesting-device-authorization-grant-tokens)
 - [パスワードグラント](#password-grant)
     - [パスワードグラントクライアントの作成](#creating-a-password-grant-client)
