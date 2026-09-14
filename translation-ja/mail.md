@@ -1324,6 +1324,9 @@ test('orders can be shipped', function () {
     // Mailableを２回送信したことをアサート
     Mail::assertSentTimes(OrderShipped::class, 2);
 
+    // Mailableをぴったり１回送信したことをアサート
+    Mail::assertSentOnce(OrderShipped::class);
+
     // Mailableを合計３回送信することをアサート
     Mail::assertSentCount(3);
 });
@@ -1367,6 +1370,9 @@ class ExampleTest extends TestCase
         // Mailableを２回送信したことをアサート
         Mail::assertSentTimes(OrderShipped::class, 2);
 
+        // Mailableをぴったり１回送信したことをアサート
+        Mail::assertSentOnce(OrderShipped::class);
+
         // Mailableを合計３回送信することをアサート
         Mail::assertSentCount(3);
     }
@@ -1377,6 +1383,7 @@ class ExampleTest extends TestCase
 
 ```php
 Mail::assertQueued(OrderShipped::class);
+Mail::assertQueuedOnce(OrderShipped::class);
 Mail::assertNotQueued(OrderShipped::class);
 Mail::assertNothingQueued();
 Mail::assertQueuedCount(3);

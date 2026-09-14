@@ -617,6 +617,40 @@ User::class => [
 ],
 ```
 
+<a name="typesense-embeddings"></a>
+#### 埋め込み
+
+セマンティック検索とハイブリッド検索を有効にするには、モデルのTypesense設定で`embedding`設定とベクトルフィールドを定義します。デフォルトでScoutは、埋め込みの生成に[Laravel AI SDK](/docs/{{version}}/ai-sdk)を使用します。
+
+```php
+use App\Models\Article;
+
+'model-settings' => [
+    Article::class => [
+        'collection-schema' => [
+            'fields' => [
+                ['name' => 'title', 'type' => 'string'],
+                ['name' => 'embedding', 'type' => 'float[]', 'num_dim' => 1536],
+            ],
+        ],
+        'search-parameters' => ['query_by' => 'title'],
+        'embedding' => [
+            'attribute' => 'embedding',
+            'dimensions' => 1536,
+        ],
+    ],
+],
+```
+
+モデルの`toSearchableEmbedding`メソッドは、Scoutが埋め込むソーステキスト、または事前に計算した埋め込み配列を返す必要があります。
+
+```php
+public function toSearchableEmbedding(): string|array
+{
+    return $this->title.' '.$this->body;
+}
+```
+
 <a name="typesense-dynamic-search-parameters"></a>
 #### 動的検索パラメータ
 
@@ -962,7 +996,7 @@ $orders = Order::search('Star Trek')->raw();
 <a name="semantic-search"></a>
 ### セマンティック検索
 
-データベース、Meilisearch、Turbopufferエンジンは、クエリの意味に基づいてレコードを照合するセマンティック検索をサポートしています。Scoutが埋め込みを生成する場合、セマンティック検索とハイブリッド検索には[Laravel AI SDK](/docs/{{version}}/ai-sdk)が必要です。Turbopufferの[ネイティブ埋め込み](#turbopuffer-configuration)と事前に計算したクエリベクトルは、Laravel AI SDKを必要としません。
+データベース、Meilisearch、Typesense、Turbopufferエンジンは、クエリの意味に基づいてレコードを照合するセマンティック検索をサポートしています。Scoutが埋め込みを生成する場合、セマンティック検索とハイブリッド検索には[Laravel AI SDK](/docs/{{version}}/ai-sdk)が必要です。[Typesenseのネイティブ埋め込み](#typesense-embeddings)、[Turbopufferのネイティブ埋め込み](#turbopuffer-configuration)と事前に計算したクエリベクトルは、Laravel AI SDKを必要としません。
 
 選択したエンジンの埋め込みを設定した後、検索クエリで`semantic`メソッドを呼び出します。
 

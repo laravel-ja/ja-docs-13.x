@@ -33,6 +33,12 @@ MongoDBデータベースに接続するには、`mongodb` PHP拡張が必要で
 pecl install mongodb
 ```
 
+あるいは、公式PHP拡張インストーラである[PIE](https://github.com/php/pie)を使い、拡張をインストールすることもできます。
+
+```shell
+pie install mongodb/mongodb-extension
+```
+
 MongoDB PHP拡張モジュールのインストールの詳細は、[MongoDB PHP拡張モジュールのインストール手順](https://www.php.net/manual/ja/mongodb.installation.php) を参照ください。
 
 <a name="starting-a-mongodb-server"></a>

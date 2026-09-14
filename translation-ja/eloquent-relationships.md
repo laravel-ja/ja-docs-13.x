@@ -14,6 +14,7 @@
     - [中間テーブルのカラムを使った関係のフィルタリング](#filtering-queries-via-intermediate-table-columns)
     - [中間テーブルカラムによるクエリの並び替え](#ordering-queries-via-intermediate-table-columns)
     - [カスタム中間テーブルモデルの定義](#defining-custom-intermediate-table-models)
+    - [ピボットリレーションの自動ハイドレート](#automatically-hydrating-pivot-relationships)
 - [ポリモーフィックリレーション](#polymorphic-relationships)
     - [１対１](#one-to-one-polymorphic-relations)
     - [１対多](#one-to-many-polymorphic-relations)
@@ -1012,6 +1013,49 @@ class RoleUser extends Pivot
 {
     // ...
 }
+```
+
+<a name="automatically-hydrating-pivot-relationships"></a>
+#### ピボットリレーションの自動ハイドレート
+
+カスタムピボットモデルが宣言側モデルと関連モデルに対する`belongsTo`リレーションを定義している場合、`chaperone`を呼び出し各ピボットモデル上でそうしたリレーションを自動的にハイドレートできます。これにより、ピボットを介してモデルへアクセスする際の追加クエリを回避できます。
+
+```php
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\Pivot;
+
+class RoleUser extends Pivot
+{
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+}
+
+class Role extends Model
+{
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class)
+            ->using(RoleUser::class)
+            ->chaperone();
+    }
+}
+```
+
+Eloquentはピボットリレーション名の推測を試みます。ピボットモデルで非標準の名前を使用している場合は、宣言側と関連のリレーション名を`chaperone`へ渡してください。
+
+```php
+return $this->belongsToMany(User::class)
+    ->using(RoleUser::class)
+    ->chaperone(declaring: 'role', related: 'user');
 ```
 
 <a name="polymorphic-relationships"></a>

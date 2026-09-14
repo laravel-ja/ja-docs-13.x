@@ -1790,6 +1790,9 @@ test('orders can be shipped', function () {
     // 一つの通知を２回送信することをアサート
     Notification::assertSentTimes(WeeklyReminder::class, 2);
 
+    // 通知をユーザーへぴったり１回送信したことをアサート
+    Notification::assertSentToOnce($user, OrderShipped::class);
+
     // 指定した数の通知を送信することをアサート
     Notification::assertCount(3);
 });
@@ -1828,6 +1831,9 @@ class ExampleTest extends TestCase
         // 一つの通知を２回送信することをアサート
         Notification::assertSentTimes(WeeklyReminder::class, 2);
 
+        // 通知をユーザーへぴったり１回送信したことをアサート
+        Notification::assertSentToOnce($user, OrderShipped::class);
+
         // 指定した数の通知を送信することをアサート
         Notification::assertCount(3);
     }
@@ -1852,6 +1858,7 @@ Notification::assertSentTo(
 
 ```php
 Notification::assertSentOnDemand(OrderShipped::class);
+Notification::assertSentOnDemandOnce(OrderShipped::class);
 ```
 
 `assertSentOnDemand`メソッドの第２引数にクロージャを渡すことで、オンデマンド通知が正しい「ルート」アドレスに送信されたかを判断できます。
