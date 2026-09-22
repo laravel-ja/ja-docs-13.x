@@ -389,6 +389,8 @@ public function withDelay(OrderShipped $event): int
 }
 ```
 
+各リスナクラスをカスタマイズせずに、すべてのキュー投入リスナで同じキューを使用したい場合は、代わりに[`ShouldQueue`インターフェイスをキューへルーティング](/docs/{{version}}/queues#queue-routing)できます。
+
 <a name="conditionally-queueing-listeners"></a>
 #### 条件付き投入リスナ
 

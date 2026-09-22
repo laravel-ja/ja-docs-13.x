@@ -362,12 +362,13 @@ class ProcessPodcast implements ShouldQueue, Silenced
 ],
 ```
 
-`autoScalingStrategy`設定オプションは、Horizonがキューに追加のワーカプロセスを割り当てる方法を決定します。２つの戦略から選択できます。
+`autoScalingStrategy`設定オプションは、Horizonがキューに追加のワーカプロセスを割り当てる方法を決定します。３つの戦略から選択できます。
 
 <div class="content-list" markdown="1">
 
 - `time`戦略は、キューをクリアするのにかかる総推定時間に基づいてワーカを割り当てます。
 - `size`戦略は、キュー内のジョブ総数に基づいてワーカを割り当てます。
+- `log`戦略は、キュー内のジョブ数の対数に基づいてワーカを割り当てます。これにより、著しく大きなキューが不釣り合いに多くのワーカを受け取るのを防ぎます。
 
 </div>
 

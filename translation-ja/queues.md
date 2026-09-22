@@ -1502,6 +1502,7 @@ class ProcessPodcast implements ShouldQueue
 use App\Concerns\RequiresVideo;
 use App\Jobs\ProcessPodcast;
 use App\Jobs\ProcessVideo;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Support\Facades\Queue;
 
 /**
@@ -1511,6 +1512,7 @@ public function boot(): void
 {
     Queue::route(ProcessPodcast::class, connection: 'redis', queue: 'podcasts');
     Queue::route(RequiresVideo::class, queue: 'video');
+    Queue::route(ShouldBroadcast::class, queue: 'events');
 }
 ```
 
@@ -1774,6 +1776,8 @@ ProcessOrder::dispatch($order)
     ->onGroup("customer-{$order->customer_id}");
 ```
 
+メッセージグループを指定せずにSQS FIFOキューへジョブをディスパッチした場合、Laravelはキュー名をメッセージグループIDとして使用します。
+
 SQS FIFOキューはメッセージの重複排除をサポートし、正確に1回処理を保証します。カスタム重複排除IDを提供するには、ジョブクラスに`deduplicationId`メソッドを実装してください。
 
 ```php
@@ -1916,7 +1920,7 @@ QUEUE_CONNECTION=failover
 
 次に、フェイスセーフ接続リスト内の各接続に対して、少なくとも1つのワーカを開始します。
 
-```bash
+```shell
 php artisan queue:work redis
 php artisan queue:work database
 ```

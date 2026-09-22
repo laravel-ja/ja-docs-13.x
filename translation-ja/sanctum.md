@@ -201,7 +201,7 @@ Route::get('/orders', function () {
 
 ```php
 return $request->user()->id === $server->user_id &&
-       $request->user()->tokenCan('server:update')
+       $request->user()->tokenCan('server:update');
 ```
 
 最初は、`tokenCan`メソッドを呼び出して、ファーストパーティのUIが開始したリクエストに対して常に`true`を返すことは、奇妙に思えるかもしれません。ただ、APIトークンが利用可能であり、`tokenCan`メソッドにより検査できると常に想定できるため便利です。このアプローチを採用することで、リクエストがアプリケーションのUIからトリガーされたのか、APIのサードパーティコンシューマーの1つによって開始されたのかを気にすることなく、アプリケーションの認可ポリシー内で常に`tokenCan`メソッドを呼び出すことができます。
@@ -380,6 +380,7 @@ return Application::configure(basePath: dirname(__DIR__))
         __DIR__.'/../routes/channels.php',
         ['prefix' => 'api', 'middleware' => ['api', 'auth:sanctum']],
     )
+    ->create();
 ```
 
 次に、Pusherの許可リクエストを成功させるために、[Laravel Echo](/docs/{{version}}/Broadcasting#client-side-installation)を初期化するときにカスタムPusher `authorizer`を提供する必要があります。これにより、アプリケーションは、[クロスドメインリクエスト用に適切に設定した](#cors-and-cookies)`axios`インスタンスを使用するようにPusherを構成できます。

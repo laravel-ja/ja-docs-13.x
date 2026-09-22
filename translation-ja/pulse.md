@@ -247,7 +247,7 @@ Pulseがユーザー情報を取得・表示する方法をカスタマイズす
 
 ほとんどのPulseレコーダは、Laravelが発行するフレームワークイベントに基づき、自動的にエントリーをキャプチャします。しかし、[サーバレコーダ](#servers-recorder)やいくつかのサードパーティカードは、定期的に情報をポーリングする必要があります。これらのカードを使用するには、個々のアプリケーションサーバ上で`pulse:check`デーモンを実行する必要があります：
 
-```php
+```shell
 php artisan pulse:check
 ```
 
@@ -491,7 +491,7 @@ PULSE_REDIS_CONNECTION=pulse
 
 Redisインジェストを使用する場合は、`pulse:work`コマンドを実行する必要があります。ストリームを監視し、RedisからPulseのデータベーステーブルへエントリを移動させるためにです。
 
-```php
+```shell
 php artisan pulse:work
 ```
 

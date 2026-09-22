@@ -6,10 +6,12 @@
     - [Reverb](#reverb)
     - [Pusherチャンネル](#pusher-channels)
     - [Ably](#ably)
+    - [Mercure](#mercure)
 - [クライアント側インストール](#client-side-installation)
     - [Reverb](#client-reverb)
     - [Pusherチャンネル](#client-pusher-channels)
     - [Ably](#client-ably)
+    - [Mercure](#client-mercure)
 - [概論](#concept-overview)
     - [サンプルアプリケーションの使用](#using-example-application)
 - [ブロードキャストイベントの定義](#defining-broadcast-events)
@@ -55,7 +57,7 @@
 <a name="supported-drivers"></a>
 #### サポートしているドライバ
 
-Laravelはデフォルトで、３つのサーバサイド・ブロードキャストドライバを用意しています。[Laravel Reverb](https://reverb.laravel.com)、[Pusher Channels](https://pusher.com/channels)、[Ably](https://ably.com)です。
+Laravelはデフォルトで、４つのサーバサイド・ブロードキャストドライバを用意しています。[Laravel Reverb](https://reverb.laravel.com)、[Pusher Channels](https://pusher.com/channels)、[Ably](https://ably.com)、[Mercure](https://mercure.rocks)です。
 
 > [!NOTE]
 > イベントブロードキャストに取り掛かる前に、[イベントとリスナ](/docs/{{version}}/events)に関するLaravelのドキュメントをしっかりと読んでください。
@@ -71,7 +73,7 @@ php artisan install:broadcasting
 
 `install:broadcasting`コマンドは、使用したいイベントブロードキャストサービスを選択するように促します。さらに、`config/broadcasting.php`設定ファイルと`routes/channels.php`ファイルを作成します。これらのファイルでアプリケーションのブロードキャスト認可ルートとコールバックを登録してください。
 
-Laravelはいくつかのブロードキャストドライバをあらかじめサポートしています。 [Laravel Reverb](/docs/{{version}}/reverb)、[Pusher Channels](https://pusher.com/channels)、[Ably](https://ably.com)、ローカル開発とデバッグ用の`log` ドライバです。さらに、テスト中にブロードキャストを完全に 無効にできる、`null`ドライバも用意しています。これらの各ドライバの設定例は、`config/broadcasting.php`設定ファイルにあります。
+Laravelはいくつかのブロードキャストドライバをあらかじめサポートしています。 [Laravel Reverb](/docs/{{version}}/reverb)、[Pusher Channels](https://pusher.com/channels)、[Ably](https://ably.com)、[Mercure](https://mercure.rocks)、ローカル開発とデバッグ用の`log` ドライバです。さらに、テスト中にブロードキャストを完全に 無効にできる、`null`ドライバも用意しています。これらの各ドライバの設定例は、`config/broadcasting.php`設定ファイルにあります。
 
 アプリケーションのイベントブロードキャスト設定はすべて、`install:broadcasting` Artisanコマンドを実行すると作成される`config/broadcasting.php`設定ファイルへ保存します。
 
@@ -192,6 +194,27 @@ BROADCAST_CONNECTION=ably
 ```
 
 これで、クライアント側でブロードキャストイベントを受信する[Laravel Echo](#client-side-installation)をインストールして設定する準備が整いました。
+
+<a name="mercure"></a>
+### Mercure
+
+[Mercure](https://mercure.rocks)は、Server-Sentイベントを使用するリアルタイムプロトコルです。Mercureハブを介してイベントをブロードキャストするには、アプリケーションの`.env`ファイルで`mercure`接続を設定します。
+
+```ini
+BROADCAST_CONNECTION=mercure
+
+MERCURE_URL=https://mercure.example.com/.well-known/mercure
+MERCURE_PUBLIC_URL=https://mercure.example.com/.well-known/mercure
+MERCURE_JWT_SECRET=<your-mercure-jwt-secret>
+```
+
+`MERCURE_URL`の値はLaravelが更新を公開するために使用するURLであり、`MERCURE_PUBLIC_URL`はブラウザクライアントが購読するために使用するURLです。Mercureハブには、同じJWTシークレットを設定する必要があります。
+
+エンドツーエンドで暗号化したプライベートチャンネルを使用するには、32バイトの`MERCURE_ENCRYPTION_KEY`環境変数を設定します。
+
+```ini
+MERCURE_ENCRYPTION_KEY=<your-32-byte-encryption-key>
+```
 
 <a name="client-side-installation"></a>
 ## クライアント側インストール
@@ -496,10 +519,60 @@ npm run dev
 > [!NOTE]
 > アプリケーションで使用しているJavaScriptリソースのコンパイルについて詳しく知りたい場合は、[Vite](/docs/{{version}}/vite)ドキュメントを参照してください。
 
+<a name="client-mercure"></a>
+### Mercure
+
+Laravel EchoでMercureを使用するには、`laravel-echo`パッケージをインストールします。
+
+```shell
+npm install --save-dev laravel-echo
+```
+
+次に、`mercure`ブロードキャスタを使用してEchoインスタンスを作成します。`host`オプションのデフォルトは、現在のオリジン上の`/.well-known/mercure`です。
+
+```js tab=JavaScript
+import Echo from 'laravel-echo';
+
+window.Echo = new Echo({
+    broadcaster: 'mercure',
+    host: import.meta.env.VITE_MERCURE_HUB_URL,
+});
+```
+
+```js tab=React
+import { configureEcho } from "@laravel/echo-react";
+
+configureEcho({
+    broadcaster: "mercure",
+});
+```
+
+```js tab=Vue
+import { configureEcho } from "@laravel/echo-vue";
+
+configureEcho({
+    broadcaster: "mercure",
+});
+```
+
+```js tab=Svelte
+import { configureEcho } from "@laravel/echo-svelte";
+
+configureEcho({
+    broadcaster: "mercure",
+});
+```
+
+`.env`ファイルにハブURLを定義します。
+
+```ini
+VITE_MERCURE_HUB_URL="${MERCURE_PUBLIC_URL}"
+```
+
 <a name="concept-overview"></a>
 ## 概論
 
-Laravelのイベントブロードキャストを使用すると、WebSocketに対するドライバベースのアプローチを使用して、サーバ側のLaravelイベントをクライアント側のJavaScriptアプリケーションへブロードキャストできます。現在、Laravelは[Laravel Reverb](https://reverb.laravel.com)、[Pusherチャンネル](https://pusher.com/channels)、[Ably](https://ably.com)ドライバを用意しています。イベントは、[Laravel Echo](#client-side-installation) JavaScriptパッケージを用い、クライアント側で簡単に利用できます。
+Laravelのイベントブロードキャストを使用すると、ドライバベースのアプローチを使用して、サーバ側のLaravelイベントをクライアント側のJavaScriptアプリケーションへブロードキャストできます。現在、Laravelは[Laravel Reverb](https://reverb.laravel.com)、[Pusherチャンネル](https://pusher.com/channels)、[Ably](https://ably.com)、[Mercure](https://mercure.rocks)ドライバを用意しています。イベントは、[Laravel Echo](#client-side-installation) JavaScriptパッケージを用い、クライアント側で簡単に利用できます。
 
 イベントは「チャンネル」を介してブロードキャストされます。チャンネルは、パブリックまたはプライベートとして指定できます。アプリケーションへの訪問者は全員、認証や認可なしにパブリックチャンネルをサブスクライブできます。ただし、プライベートチャンネルをサブスクライブするには、ユーザーが認証され、そのチャンネルをリッスンする認可を持っている必要があります。
 
@@ -705,7 +778,7 @@ public function broadcastAs(): string
 
 `broadcastAs`メソッドを使用してブロードキャスト名をカスタマイズする場合は、リスナを先頭の`.`文字で登録する必要があります。これにより、アプリケーションの名前空間をイベントの先頭に追加しないようにEchoに指示します。
 
-```javascript
+```js
 .listen('.server.created', function (e) {
     // …
 });
@@ -768,6 +841,8 @@ public function broadcastQueue(): string
     return 'default';
 }
 ```
+
+各イベントクラスをカスタマイズせず、すべてのブロードキャストイベントで同じキューを使用したい場合は、代わりに[`ShouldBroadcast`インターフェイスをキューへルーティング](/docs/{{version}}/queues#queue-routing)できます。
 
 デフォルトのキュードライバではなく、`sync`キューを使用してイベントをブロードキャストしたい場合は、`ShouldBroadcast`の代わりに`ShouldBroadcastNow`インターフェイスを実装します。
 

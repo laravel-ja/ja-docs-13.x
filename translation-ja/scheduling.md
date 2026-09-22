@@ -310,7 +310,7 @@ use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('report:generate')
     ->timezone('America/New_York')
-    ->at('2:00')
+    ->at('2:00');
 ```
 
 すべてのスケジュールタスクに同じタイムゾーンを繰り返し割り当てている場合は、アプリケーションの`app`設定ファイルで`schedule_timezone`オプションを定義すれば、すべてのスケジュールに割り当てるタイムゾーンを指定できます。

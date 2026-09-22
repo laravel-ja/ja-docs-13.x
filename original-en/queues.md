@@ -1502,6 +1502,7 @@ Typically, you should call the `route` method from the `boot` method of a servic
 use App\Concerns\RequiresVideo;
 use App\Jobs\ProcessPodcast;
 use App\Jobs\ProcessVideo;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Support\Facades\Queue;
 
 /**
@@ -1511,6 +1512,7 @@ public function boot(): void
 {
     Queue::route(ProcessPodcast::class, connection: 'redis', queue: 'podcasts');
     Queue::route(RequiresVideo::class, queue: 'video');
+    Queue::route(ShouldBroadcast::class, queue: 'events');
 }
 ```
 
@@ -1774,6 +1776,8 @@ ProcessOrder::dispatch($order)
     ->onGroup("customer-{$order->customer_id}");
 ```
 
+If you dispatch a job to an SQS FIFO queue without specifying a message group, Laravel will use the queue name as the message group ID.
+
 SQS FIFO queues support message deduplication to ensure exactly-once processing. Implement a `deduplicationId` method in your job class to provide a custom deduplication ID:
 
 ```php
@@ -1916,7 +1920,7 @@ QUEUE_CONNECTION=failover
 
 Next, start at least one worker for each connection in your failover connection list:
 
-```bash
+```shell
 php artisan queue:work redis
 php artisan queue:work database
 ```

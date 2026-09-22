@@ -7,8 +7,10 @@
     - [サーバの登録](#server-registration)
     - [Webサーバ](#web-servers)
     - [ローカルサーバ](#local-servers)
+    - [キャッシュヒント](#cache-hints)
 - [ツール](#tools)
     - [ツールの作成](#creating-tools)
+    - [検索可能なツールカタログ](#searchable-tool-catalogs)
     - [ツールの入力スキーマ](#tool-input-schemas)
     - [ツールの出力スキーマ](#tool-output-schemas)
     - [ツール引数のバリデーション](#validating-tool-arguments)
@@ -173,6 +175,48 @@ Mcp::local('weather', WeatherServer::class);
 
 登録後は、通常、`mcp:start` Artisanコマンドを手作業で実行する必要はありません。代わりに、MCPクライアント(AIエージェント)を設定してサーバを起動するか、[MCPインスペクタ](#mcp-inspector)を使用してください。
 
+<a name="cache-hints"></a>
+### キャッシュヒント
+
+Laravel MCPは、サーバ検出、プリミティブの一覧表示、リソースの読み取りなど、キャッシュ可能なレスポンスにキャッシュヒントを含めます。デフォルトでは、これらのレスポンスはプライベートとしてマークし、有効期間は0ミリ秒です。
+
+`Cacheable`属性を使用して、サーバのデフォルトキャッシュヒントをカスタマイズできます。
+
+```php
+use Laravel\Mcp\Enums\CacheScope;
+use Laravel\Mcp\Server\Attributes\Cacheable;
+
+#[Cacheable(ttlMs: 60_000, scope: CacheScope::Public)]
+class WeatherServer extends Server
+{
+    /**
+     * 個々のMCPメソッドのキャッシュヒントを取得
+     *
+     * @return array<string, \Laravel\Mcp\Server\Attributes\Cacheable>
+     */
+    protected function cacheHints(): array
+    {
+        return [
+            'tools/list' => new Cacheable(ttlMs: 30_000, scope: CacheScope::Public),
+        ];
+    }
+}
+```
+
+`CacheScope::Private`スコープはキャッシュしたレスポンスを同じ認証コンテキストへ制限しますが、`CacheScope::Public`はレスポンスをユーザー間で共有できるようにします。キャッシュヒントは推奨事項であり、実際にレスポンスをキャッシュするかどうかはMCPクライアントまたはホストが決定します。`cacheHints`が返すメソッド固有のヒントは、サーバの`Cacheable`属性より優先します。
+
+リソースクラスに`Cacheable`属性を適用することで、個々のリソースに対するサーバのキャッシュヒントをオーバーライドできます。
+
+```php
+#[Cacheable(ttlMs: 300_000, scope: CacheScope::Public)]
+class WeatherGuidelinesResource extends Resource
+{
+    // ...
+}
+```
+
+リソースの`Cacheable`属性は、メソッド固有のヒントとサーバのデフォルトヒントの両方より優先します。
+
 <a name="tools"></a>
 ## ツール
 
@@ -252,6 +296,46 @@ class WeatherServer extends Server
 }
 ```
 
+<a name="searchable-tool-catalogs"></a>
+### 検索可能なツールカタログ
+
+多数のツールを備えたサーバは、すべてのツールをAIクライアントに通知する代わりに、一部のツールを検索可能なカタログへ配置できます。検索可能なカタログは2つのツールを公開します。ツール名、説明、入力スキーマでカタログを検索する`search_tools`と、検索によって返された1つ以上のツールを呼び出す`execute_tools`です。
+
+検索可能なカタログを作成するには、サーバの`$tools`プロパティ内で配列キーとして`ToolSearch`クラスを使用します。
+
+```php
+<?php
+
+namespace App\Mcp\Servers;
+
+use App\Mcp\Tools\CurrentWeatherTool;
+use App\Mcp\Tools\HistoricalWeatherTool;
+use App\Mcp\Tools\WeatherAlertsTool;
+use Laravel\Mcp\Server;
+use Laravel\Mcp\Server\Tools\ToolSearch;
+
+class WeatherServer extends Server
+{
+    /**
+     * このMCPサーバへ登録したツール
+     *
+     * @var array<int|string, \Laravel\Mcp\Server\Tool|class-string<\Laravel\Mcp\Server\Tool>|array<int, \Laravel\Mcp\Server\Tool|class-string<\Laravel\Mcp\Server\Tool>>>
+     */
+    protected array $tools = [
+        CurrentWeatherTool::class,
+
+        ToolSearch::class => [
+            HistoricalWeatherTool::class,
+            WeatherAlertsTool::class,
+        ],
+    ];
+}
+```
+
+この例では、`CurrentWeatherTool`を直接通知し、過去の天気ツールと気象警報ツールは検索可能なカタログ経由で利用できます。カタログツールを検索または実行する場合でも、条件付きツール登録は有効です。
+
+１回の`execute_tools`呼び出しで実行できるツールの最大数と最大レスポンスサイズは、`mcp.tool_search.max_tool_calls`と`mcp.tool_search.max_output_bytes`の設定値で制御します。
+
 <a name="tool-name-title-description"></a>
 #### ツール名、タイトル、説明
 
@@ -323,7 +407,7 @@ class CurrentWeatherTool extends Tool
 <a name="tool-output-schemas"></a>
 ### ツールの出力スキーマ
 
-ツールは[出力スキーマ](https://modelcontextprotocol.io/specification/2025-06-18/server/tools#output-schema)を定義して、レスポンスの構造を指定できます。これにより、解析可能なツール結果を必要とするAIクライアントとの連携が向上します。`outputSchema`メソッドを使用してツールの出力構造を定義してください：
+ツールは[出力スキーマ](https://modelcontextprotocol.io/specification/2026-07-28/server/tools#output-schema)を定義して、レスポンスの構造を指定できます。これにより、解析可能なツール結果を必要とするAIクライアントとの連携が向上します。`outputSchema`メソッドを使用してツールの出力構造を定義してください：
 
 ```php
 <?php
@@ -461,7 +545,7 @@ class CurrentWeatherTool extends Tool
 <a name="tool-annotations"></a>
 ### ツールアノテーション
 
-[アノテーション](https://modelcontextprotocol.io/specification/2025-06-18/schema#toolannotations)を使用してツールを拡張し、AIクライアントに追加のメタデータを提供できます。これらのアノテーションは、AIモデルがツールの動作と能力を理解するのに役立ちます。アノテーションはアトリビュートを介してツールに追加されます。
+[アノテーション](https://modelcontextprotocol.io/specification/2026-07-28/schema#toolannotations)を使用してツールを拡張し、AIクライアントに追加のメタデータを提供できます。これらのアノテーションは、AIモデルがツールの動作と能力を理解するのに役立ちます。アノテーションはアトリビュートを介してツールに追加されます。
 
 ```php
 <?php
@@ -617,7 +701,7 @@ public function handle(Request $request): array
 <a name="structured-responses"></a>
 #### 構造化レスポンス
 
-ツールは`structured`メソッドを使用して、[構造化コンテンツ](https://modelcontextprotocol.io/specification/2025-06-18/server/tools#structured-content)を返すことができます。これにより、AIクライアント向けの解析可能なデータを提供しつつ、JSONエンコードされたテキスト表現との下位互換性を維持します。
+ツールは`structured`メソッドを使用して、[構造化コンテンツ](https://modelcontextprotocol.io/specification/2026-07-28/server/tools#structured-content)を返すことができます。これにより、AIクライアント向けの解析可能なデータを提供しつつ、JSONエンコードされたテキスト表現との下位互換性を維持します。
 
 ```php
 return Response::structured([
@@ -682,7 +766,7 @@ Webベースのサーバを使用する場合、ストリーミングレスポ�
 <a name="prompts"></a>
 ## プロンプト
 
-[プロンプト](https://modelcontextprotocol.io/specification/2025-06-18/server/prompts)を使用すると、AIクライアントが言語モデルと対話するために使用できる、再利用可能なプロンプトテンプレートをサーバで共有できます。これらは、一般的なクエリやインタラクションを構造化するための標準化された方法を提供します。
+[プロンプト](https://modelcontextprotocol.io/specification/2026-07-28/server/prompts)を使用すると、AIクライアントが言語モデルと対話するために使用できる、再利用可能なプロンプトテンプレートをサーバで共有できます。これらは、一般的なクエリやインタラクションを構造化するための標準化された方法を提供します。
 
 <a name="creating-prompts"></a>
 ### プロンプトの作成
@@ -946,7 +1030,7 @@ class DescribeWeatherPrompt extends Prompt
 <a name="resources"></a>
 ## リソース
 
-[リソース](https://modelcontextprotocol.io/specification/2025-06-18/server/resources)を使用すると、AIクライアントが読み取り、言語モデルと対話する際のコンテキストとして使用できるデータやコンテンツをサーバが公開できます。リソースは、ドキュメント、設定、またはAIの応答を形成するのに役立つデータなどの静的または動的な情報を共有する方法を提供します。
+[リソース](https://modelcontextprotocol.io/specification/2026-07-28/server/resources)を使用すると、AIクライアントが読み取り、言語モデルと対話する際のコンテキストとして使用できるデータやコンテンツをサーバが公開できます。リソースは、ドキュメント、設定、またはAIの応答を形成するのに役立つデータなどの静的または動的な情報を共有する方法を提供します。
 
 <a name="creating-resources"></a>
 ## リソースの作成
@@ -1015,7 +1099,7 @@ class WeatherGuidelinesResource extends Resource
 <a name="resource-templates"></a>
 ### リソーステンプレート
 
-[リソーステンプレート](https://modelcontextprotocol.io/specification/2025-06-18/server/resources#resource-templates)を使用すると、変数を含むURIパターンにマッチする動的なリソースをサーバで公開できます。各リソースに対して静的なURIを定義する代わりに、テンプレートパターンに基づいて複数のURIを処理する単一のリソースを作成できます。
+[リソーステンプレート](https://modelcontextprotocol.io/specification/2026-07-28/server/resources#resource-templates)を使用すると、変数を含むURIパターンにマッチする動的なリソースをサーバで公開できます。各リソースに対して静的なURIを定義する代わりに、テンプレートパターンに基づいて複数のURIを処理する単一のリソースを作成できます。
 
 <a name="creating-resource-templates"></a>
 #### リソーステンプレートの作成
@@ -1223,7 +1307,7 @@ class WeatherGuidelinesResource extends Resource
 <a name="resource-annotations"></a>
 ### リソースアノテーション
 
-リソースに[アノテーション](https://modelcontextprotocol.io/specification/2025-06-18/schema#resourceannotations)を追加することで、AIクライアントに追加のメタデータを提供できます。アノテーションは属性を使用してリソースへ追加します。
+リソースに[アノテーション](https://modelcontextprotocol.io/specification/2026-07-28/schema#resourceannotations)を追加することで、AIクライアントに追加のメタデータを提供できます。アノテーションは属性を使用してリソースへ追加します。
 
 ```php
 <?php
@@ -1463,7 +1547,7 @@ class ShowWeatherDashboard extends Tool
 }
 ```
 
-Laravel MCPは、`AppResource`を登録するたび自動的に、`io.modelcontextprotocol/ui`機能を通知するため、追加のサーバ設定は不要です。
+いずれかの`AppResource`を登録すると、Laravel MCPはサーバの`extensions`機能内で`io.modelcontextprotocol/ui`拡張機能を自動的に通知するため、追加のサーバ設定は不要です。
 
 <a name="app-tool-visibility"></a>
 ### アプリツールの可視性
@@ -1518,7 +1602,7 @@ Laravel MCPには、MCPアプリを構築するための専用の[Boost](/docs/{
 <a name="metadata"></a>
 ## メタデータ
 
-Laravel MCPは、特定のMCPクライアントや統合で必要となる[MCP仕様](https://modelcontextprotocol.io/specification/2025-06-18/basic#meta)で定義されている`_meta`フィールドもサポートしています。メタデータは、ツール、リソース、プロンプトといった全てのMCPプリミティブ、およびそれらのレスポンスに適用できます。
+Laravel MCPは、特定のMCPクライアントや統合で必要となる[MCP仕様](https://modelcontextprotocol.io/specification/2026-07-28/basic#_meta)で定義されている`_meta`フィールドもサポートしています。メタデータは、ツール、リソース、プロンプトといった全てのMCPプリミティブ、およびそれらのレスポンスに適用できます。
 
 個々のレスポンスコンテンツにメタデータを添付するには、`withMeta`メソッドを使用します。
 
@@ -1754,15 +1838,14 @@ use Laravel\Mcp\Client;
 $client = Client::local('php', ['artisan', 'mcp:start']);
 ```
 
-ツールを初めて一覧表示するか呼び出すときに、クライアントと遅延接続し、自動的に接続を確立します。接続を手作業で管理する必要がある場合は、`connect`、`connected`、`ping`、`disconnect`メソッドを使用します。
+ツールを初めて一覧表示するか呼び出すときに、クライアントと遅延接続し、自動的に接続を確立します。接続を手作業で管理する必要がある場合は、`connect`、`connected`、`disconnect`メソッドを使用します。
 
 ```php
 $client->connect();
 
-$client->ping();
-
 if ($client->connected()) {
-    // ...
+    $capabilities = $client->capabilities();
+    $server = $client->serverInfo();
 }
 
 $client->disconnect();
@@ -1825,7 +1908,9 @@ Mcp::registerClient('github', fn () => Client::web('https://mcp.example.com')->w
 ```
 
 > [!NOTE]
-> MCPサーバが[動的クライアント登録](https://datatracker.ietf.org/doc/html/rfc7591)をサポートしている場合、`clientId`と`clientSecret`引数は省略できます。その場合、クライアントは自身を自動的に登録します。
+> `clientId`引数と`clientSecret`引数は省略できます。認可サーバがサポートしている場合、Laravelは[クライアントIDメタデータドキュメント](https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization/client-registration#client-id-metadata-documents)を使用し、レガシーサーバ向けには[動的クライアント登録](https://datatracker.ietf.org/doc/html/rfc7591)へフォールバックします。
+
+認可サーバは、認可サーバメタデータ内で`S256`PKCEコードチャレンジメソッドのサポートを通知しなければなりません。PKCEサポートを通知していない場合、Laravelは認可の試行を拒否します。
 
 次に、`oAuthRoutesFor`メソッドを使用して、`routes/ai.php`ファイルに名前付きクライアント用のOAuthルートを登録します。指定するクロージャは、認可コードをアクセストークンと交換した後に、クライアント名と結果の`TokenSet`を受け取ります。
 
@@ -1843,7 +1928,28 @@ Mcp::oAuthRoutesFor('github', function (string $client, TokenSet $token) {
 });
 ```
 
-これにより、２つの名前付きルートを登録します。ユーザーを認可サーバへリダイレクトする接続ルート（`mcp.oauth.{client}.connect`）と、認可コードを交換してハンドラを呼び出すコールバックルート（`mcp.oauth.{client}.callback`）です。両方のルートはデフォルトで、`web`ミドルウェアグループを使用しますが、`middleware`引数を使用してオーバーライドできます。
+これにより、３つの名前付きルートを登録します。ユーザーを認可サーバへリダイレクトする接続ルート（`mcp.oauth.{client}.connect`）、認可コードを交換してハンドラを呼び出すコールバックルート（`mcp.oauth.{client}.callback`）、公開クライアントIDメタデータドキュメントルート（`mcp.oauth.{client}.client-metadata`）です。接続ルートとコールバックルートはデフォルトで`web`ミドルウェアグループを使用しますが、これは`middleware`引数を使用してオーバーライドできます。認可サーバがメタデータドキュメントを取得できる必要があるため、メタデータルートはこのミドルウェアを使用しません。
+
+メタデータドキュメントはアプリケーションをパブリックOAuthクライアントとして記述し、アプリケーションの`APP_URL`を使用してクライアントIDとコールバックURLを生成します。したがって、本番環境では`APP_URL`環境変数を正しく設定してください。`clientMetadataUri`引数と`clientMetadata`引数を使用して、メタデータルートをカスタマイズし、追加のメタデータを提供できます。
+
+```php
+use Laravel\Mcp\Client\OAuth\TokenSet;
+use Laravel\Mcp\Facades\Mcp;
+
+Mcp::oAuthRoutesFor(
+    'github',
+    function (string $client, TokenSet $token) {
+        // トークンの保存処理…
+
+        return redirect('/dashboard');
+    },
+    clientMetadataUri: 'oauth/github/client.json',
+    clientMetadata: [
+        'client_name' => 'Acme Weather Dashboard',
+        'logo_uri' => 'https://acme.com/logo.png',
+    ],
+);
+```
 
 認可フローを開始するには、ユーザーを接続ルートへリダイレクトします。
 

@@ -22,7 +22,7 @@
 
 例えば、`/greeting` URLでアクセスできるページを作成するには、アプリケーションの`resources/views/pages`ディレクトリに`greeting.blade.php`ファイルを作成します。
 
-```php
+```blade
 <div>
     Hello World
 </div>
@@ -266,7 +266,7 @@ name('users.index');
 
 Laravelの名前付きルートと同様、`route`関数を使用して、名前を割り当てたFolioページへのURLを生成できます。
 
-```php
+```blade
 <a href="{{ route('users.index') }}">
     All Users
 </a>

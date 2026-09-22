@@ -1619,7 +1619,7 @@ Validator::make($data, [
 `minRatio`、`maxRatio`、`ratioBetween`メソッドを使用して、比率の制約を流暢に定義することもできます。
 
 ```php
-Rule::dimensions()->ratioBetween(min: 1 / 2, max: 3 / 2)
+Rule::dimensions()->ratioBetween(min: 1 / 2, max: 3 / 2);
 ```
 
 <a name="rule-distinct"></a>
@@ -2498,19 +2498,19 @@ Validator::make($data, [
 モデルキーの値を`ignore`メソッドに渡す代わりに、モデルインスタンス全体を渡すこともできます。Laravelはモデルからキーを自動的に抽出します:
 
 ```php
-Rule::unique('users')->ignore($user)
+Rule::unique('users')->ignore($user);
 ```
 
 もし、テーブルの主キーとして`id`以外のカラム名を使用している場合は、`ignore`メソッドを呼び出す時に、カラムの名前を指定してください。
 
 ```php
-Rule::unique('users')->ignore($user->id, 'user_id')
+Rule::unique('users')->ignore($user->id, 'user_id');
 ```
 
 `unique`ルールはデフォルトで、バリデートしようとしている属性名と一致するカラムの同一性をチェックします。しかしながら、`unique`メソッドの第２引数として、異なったカラム名を渡すことも可能です。
 
 ```php
-Rule::unique('users', 'email_address')->ignore($user->id)
+Rule::unique('users', 'email_address')->ignore($user->id);
 ```
 
 **追加のWHERE節を付け加える**
@@ -2868,7 +2868,7 @@ File::image()->dimensions(
     Rule::dimensions()
         ->maxWidth(1000)
         ->maxHeight(500)
-)
+);
 ```
 
 > [!NOTE]
@@ -2892,28 +2892,28 @@ $validator = Validator::make($request->all(), [
 
 ```php
 // 最低８文字必要
-Password::min(8)
+Password::min(8);
 
 // 最長２５６文字を指定
-Password::min(16)->max(256)
+Password::min(16)->max(256);
 
 // 最低１文字の文字が必要
-Password::min(8)->letters()
+Password::min(8)->letters();
 
 // 最低大文字小文字が１文字ずつ必要
-Password::min(8)->mixedCase()
+Password::min(8)->mixedCase();
 
 // 最低１文字の数字が必要
-Password::min(8)->numbers()
+Password::min(8)->numbers();
 
 // 最低１文字の記号が必要
-Password::min(8)->symbols()
+Password::min(8)->symbols();
 ```
 
 さらに、`uncompromised`メソッドを使って、公開されているパスワードのデータ漏洩によるパスワード漏洩がないことを確認することもできます。
 
 ```php
-Password::min(8)->uncompromised()
+Password::min(8)->uncompromised();
 ```
 
 内部的には、`Password`ルールオブジェクトは、[k-Anonymity](https://en.wikipedia.org/wiki/K-anonymity)モデルを使用して、ユーザーのプライバシーやセキュリティを犠牲にすることなく、パスワードが[haveibeenpwned.com](https://haveibeenpwned.com)サービスを介してリークされているかを判断しています。
@@ -2934,7 +2934,7 @@ Password::min(8)
     ->mixedCase()
     ->numbers()
     ->symbols()
-    ->uncompromised()
+    ->uncompromised();
 ```
 
 `toPasswordRulesString`メソッドを使用すると、`Password`ルールオブジェクトをHTMLの`passwordrules`属性に適した文字列に変換できます。

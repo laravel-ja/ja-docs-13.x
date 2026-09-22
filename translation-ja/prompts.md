@@ -619,7 +619,7 @@ $name = suggest(
     label: 'What is your name?',
     options: fn ($value) => collect(['Taylor', 'Dayle'])
         ->filter(fn ($name) => Str::contains($name, $value, ignoreCase: true))
-)
+);
 ```
 
 プレースホルダテキストとデフォルト値、ヒントの情報も指定できます。

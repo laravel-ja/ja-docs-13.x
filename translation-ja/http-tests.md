@@ -440,7 +440,7 @@ $this->assertThrows(
 ```php
 $this->assertThrows(
     fn () => (new ProcessOrder)->execute(),
-    fn (OrderInvalid $e) => $e->orderId() === 123;
+    fn (OrderInvalid $e) => $e->orderId() === 123
 );
 ```
 

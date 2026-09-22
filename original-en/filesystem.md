@@ -504,6 +504,18 @@ If you wish, you may define the `throw` option within your filesystem disk's con
 ],
 ```
 
+Alternatively, you may define the `report` option within your filesystem disk's configuration array. When this option is defined as `true`, Laravel will log the underlying exception using your application's exception handler when a "write" operation fails, without throwing the exception or interrupting the write operation's return value:
+
+```php
+'public' => [
+    'driver' => 'local',
+    // ...
+    'report' => true,
+],
+```
+
+If neither the `throw` nor `report` options are defined, the disk will silently return `false` on failure and the underlying exception will not be thrown or logged.
+
 <a name="prepending-appending-to-files"></a>
 ### Prepending and Appending To Files
 
@@ -524,6 +536,16 @@ The `copy` method may be used to copy an existing file to a new location on the 
 Storage::copy('old/file.jpg', 'new/file.jpg');
 
 Storage::move('old/file.jpg', 'new/file.jpg');
+```
+
+You may use the `copyToDisk` and `moveToDisk` methods to copy or move a file to another disk. The source file's path will be used on the destination disk unless you provide a third argument:
+
+```php
+Storage::disk('local')->copyToDisk('s3', 'reports/report.csv');
+
+Storage::disk('local')->moveToDisk(
+    's3', 'reports/report.csv', 'archive/report.csv'
+);
 ```
 
 <a name="automatic-streaming"></a>

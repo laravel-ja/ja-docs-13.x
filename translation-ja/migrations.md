@@ -1192,13 +1192,19 @@ $table->uuid('id');
 `vector`メソッドは`VECTOR`カラムを作成します。
 
 ```php
-$table->vector('embedding', dimensions: 100);
+$table->vector('embedding', dimensions: 1536);
 ```
 
-PostgreSQLを使用する場合、`vector`カラムを作成する前に、`pgvector`拡張をロードする必要があります。
+Vectorカラムは、`pgvector`拡張機能を使用するPostgreSQL接続とMariaDB11.7以降でサポートしています。PostgreSQLを利用する場合は、`vector`カラムを作成する前に`pgvector`をロードしておく必要があります。
 
 ```php
 Schema::ensureVectorExtensionExists();
+```
+
+[ベクトル類似度クエリ](/docs/{{version}}/queries#vector-similarity-clauses)を高速化するため、カラムへベクトルインデックスを追加できます。`vector`カラムで`index`メソッドを呼び出すと、コサイン距離を使用するベクトルインデックスを作成します。
+
+```php
+$table->vector('embedding', dimensions: 1536)->index();
 ```
 
 <a name="column-method-year"></a>
@@ -1467,6 +1473,7 @@ LaravelのスキーマビルダBlueprintクラスは、Laravelでサポートし
 | `$table->fullText('body');`                      | 全文検索インデックスを追加（MariaDB／MySQL／PostgreSQL） |
 | `$table->fullText('body')->language('english');` | 特定言語のフルテキストインデックス追加          |
 | `$table->spatialIndex('location');`              | 空間インデックスを追加（SQLiteを除く）          |
+| `$table->vectorIndex('embedding');`              | ベクトルインデックスを追加(MariaDB／PostgreSQL)  |                    |
 
 </div>
 
@@ -1487,7 +1494,7 @@ PostgreSQLを使用する場合、このメソッドはインデックス作成�
 インデックスの名前を変更するには、スキーマビルダBlueprintが提供する`renameIndex`メソッドを使用します。このメソッドは、現在のインデックス名を最初の引数として取り、目的の名前を２番目の引数として取ります。
 
 ```php
-$table->renameIndex('from', 'to')
+$table->renameIndex('from', 'to');
 ```
 
 <a name="dropping-indexes"></a>
@@ -1504,6 +1511,7 @@ $table->renameIndex('from', 'to')
 | `$table->dropIndex('geo_state_index');`                  | "geo"テーブルから基本インデックスを削除                 |
 | `$table->dropFullText('posts_body_fulltext');`           | "posts"テーブルからフルテキストインデックスを削除       |
 | `$table->dropSpatialIndex('geo_location_spatialindex');` | "geo"テーブルから空間インデックスを削除（SQLiteを除く） |
+| `$table->dropVectorIndex('documents_embedding_vectorindex');` | "documents"テーブルからベクトルインデックスを削除 |
 
 </div>
 

@@ -156,7 +156,7 @@ Hello, @{{ name }}.
 
 JavaScript変数を初期化するために、配列をJSONとしてレンダリングする目的でビューに配列を渡す場合があります。一例を確認してください。
 
-```php
+```blade
 <script>
     var app = <?php echo json_encode($array); ?>;
 </script>
@@ -1023,7 +1023,7 @@ return function (array $data) {
     // $data['slot'];
 
     return '<div {{ $attributes }}>Components content</div>';
-}
+};
 ```
 
 > [!WARNING]

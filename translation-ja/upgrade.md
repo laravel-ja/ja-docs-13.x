@@ -475,7 +475,7 @@ Arr::first($array, function ($value) {
 
 Bootstrap3のデフォルトの内部ペジネーションビュー名を明示的にしました。
 
-```nothing
+```text
 // Laravel <= 12.x
 pagination::default
 pagination::simple-default

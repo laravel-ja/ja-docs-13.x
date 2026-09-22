@@ -504,6 +504,18 @@ if (! Storage::put('file.jpg', $contents)) {
 ],
 ```
 
+あるいは、ファイルシステムディスクの設定配列内に、`report`オプションを定義することもできます。このオプションを`true`と定義すると、「書き込み」操作が失敗したときに、Laravelは例外を投げたり書き込み操作の戻り値を妨げたりすることなく、アプリケーションの例外ハンドラを使用して根本的な例外をログに記録します。
+
+```php
+'public' => [
+    'driver' => 'local',
+    // ...
+    'report' => true,
+],
+```
+
+`throw`オプションか`report`オプションのどちらも定義していない場合、ディスクは失敗時に静かに`false`を返し、根本的な例外を投げたりログに記録したりしません。
+
 <a name="prepending-appending-to-files"></a>
 ### ファイルの前後への追加
 
@@ -524,6 +536,16 @@ Storage::append('file.log', 'Appended Text');
 Storage::copy('old/file.jpg', 'new/file.jpg');
 
 Storage::move('old/file.jpg', 'new/file.jpg');
+```
+
+`copyToDisk`メソッドと`moveToDisk`メソッドを使用して、ファイルを別のディスクへコピーまたは移動できます。第３引数を指定しない限り、移動先のディスクでも元のファイルのパスを使用します。
+
+```php
+Storage::disk('local')->copyToDisk('s3', 'reports/report.csv');
+
+Storage::disk('local')->moveToDisk(
+    's3', 'reports/report.csv', 'archive/report.csv'
+);
 ```
 
 <a name="automatic-streaming"></a>

@@ -182,7 +182,24 @@ APP_URL=eyJpdiI6...
 環境ファイルを復号する際、Laravelは使用された形式を自動的に検出するため、`env:decrypt`コマンドに追加のオプションは必要ありません。
 
 > [!NOTE]
-> `--readable`オプションを使用する場合、元の環境ファイルのコメントや空行は暗号化された出力に含まれません。
+> `--readable`オプションを使用する場合、元の環境ファイル内のコメントと空行は暗号化後の出力に含まれません。
+
+<a name="updating-readable-environment-files"></a>
+#### 読み取り可能な環境ファイルの更新
+
+読み取り可能な暗号化済み環境ファイルを更新する際、Laravelは変更のない値を保持し、元の環境ファイルに存在しなくなった変数を削除します。
+
+```shell
+php artisan env:encrypt --readable --key=3UVsEgGVK36XN82KKeyLFMhvosbZN1aF
+```
+
+暗号化ファイルが存在しない場合は新規作成します。既存のファイルを更新するときは、ファイルの作成時に使用したのと同じ暗号化キーと暗号(cipher)を指定してください。ファイルを復号できない場合、コマンドはファイルを上書きせずに失敗します。
+
+すべての値を再度暗号化するには、`--force`オプションを使用します。これにより、暗号化キーの変更や、無効な暗号化ファイルの置き換えが可能です。
+
+```shell
+php artisan env:encrypt --readable --force --key=3UVsEgGVK36XN82KKeyLFMhvosbZN1aF
+```
 
 <a name="decryption"></a>
 #### 復号化

@@ -14,7 +14,7 @@
     - [中間テーブルのカラムを使った関係のフィルタリング](#filtering-queries-via-intermediate-table-columns)
     - [中間テーブルカラムによるクエリの並び替え](#ordering-queries-via-intermediate-table-columns)
     - [カスタム中間テーブルモデルの定義](#defining-custom-intermediate-table-models)
-    - [ピボットリレーションの自動ハイドレート](#automatically-hydrating-pivot-relationships)
+        - [ピボットリレーションの自動ハイドレート](#automatically-hydrating-pivot-relationships)
 - [ポリモーフィックリレーション](#polymorphic-relationships)
     - [１対１](#one-to-one-polymorphic-relations)
     - [１対多](#one-to-many-polymorphic-relations)
@@ -1886,7 +1886,7 @@ $book->loadCount('genres');
 ```php
 $book->loadCount(['reviews' => function (Builder $query) {
     $query->where('rating', 5);
-}])
+}]);
 ```
 
 <a name="relationship-counting-and-custom-select-statements"></a>

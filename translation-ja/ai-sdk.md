@@ -760,7 +760,7 @@ foreach ($stream as $event) {
 
 ```php
 (new SalesCoach)->broadcastOnQueue(
-    'このセールスの文字起こしを分析して...'
+    'このセールスの文字起こしを分析して...',
     new Channel('channel-name'),
 );
 ```
@@ -1415,7 +1415,7 @@ $response = agent(
     instructions: 'あなたはソフトウェア開発のエキスパートです。',
     messages: [],
     tools: [],
-)->prompt('Laravelについて教えてください')
+)->prompt('Laravelについて教えてください');
 ```
 
 匿名エージェントも構造化出力を生成できます。
@@ -1429,7 +1429,7 @@ $response = agent(
     schema: fn (JsonSchema $schema) => [
         'number' => $schema->integer()->required(),
     ],
-)->prompt('100未満の乱数を生成して')
+)->prompt('100未満の乱数を生成して');
 ```
 
 <a name="agent-configuration"></a>
@@ -2310,7 +2310,7 @@ use App\Ai\Agents\SalesCoach;
 use Laravel\Ai\Files;
 
 $response = (new SalesCoach)->prompt(
-    '添付されたセールスの文字起こしを分析して...'
+    '添付されたセールスの文字起こしを分析して...',
     attachments: [
         Files\Document::fromId('file-id') // 保存済みのドキュメントを添付
     ]
@@ -2944,7 +2944,7 @@ Document::fromString('Hello, Laravel!', mimeType: 'text/plain')
 // アサートを実行
 Files::assertStored(fn (StorableFile $file) =>
     (string) $file === 'Hello, Laravel!' &&
-        $file->mimeType() === 'text/plain';
+        $file->mimeType() === 'text/plain'
 );
 
 Files::assertNotStored(fn (StorableFile $file) =>
