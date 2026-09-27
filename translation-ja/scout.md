@@ -557,6 +557,35 @@ Meilisearchでセマンティック検索またはハイブリッド検索を使
 
 モデルの`toSearchableEmbedding`メソッドは、Scoutが[Laravel AI SDK](/docs/{{version}}/ai-sdk)を使用して埋め込むソーステキスト、または事前に計算した埋め込み配列を返します。設定を更新した後は、`scout:sync-index-settings`コマンドを実行してください。
 
+代わりに、埋め込み`driver`を`meilisearch`に設定することで、Meilisearchのネイティブ埋め込みを使用できます。このモードでは、Meilisearchが設定済みのエンベッダーを使用してドキュメントとクエリの埋め込みを生成するため、`dimensions`オプションと`toSearchableEmbedding`メソッドは必要ありません。
+
+```php
+'meilisearch' => [
+    'index-settings' => [
+        Article::class => [
+            'embedders' => [
+                'default' => [
+                    'source' => 'openAi',
+                    'apiKey' => env('OPENAI_API_KEY'),
+                    'model' => 'text-embedding-3-small',
+                    'documentTemplate' => 'An article titled {{ doc.title }}: {{ doc.body }}',
+                ],
+            ],
+        ],
+    ],
+    'model-settings' => [
+        Article::class => [
+            'embedding' => [
+                'embedder' => 'default',
+                'driver' => 'meilisearch',
+            ],
+        ],
+    ],
+],
+```
+
+ネイティブ埋め込みを使用する場合、Scoutはインデックス付きドキュメントにベクトルを生成したり追加したりしません。`vector`検索オプションを使用して、事前計算済みのクエリベクトルを引き続き指定することもできます。
+
 <a name="meilisearch-data-types"></a>
 #### Searchableデータタイプ
 

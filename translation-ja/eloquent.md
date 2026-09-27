@@ -9,6 +9,7 @@
     - [主キータイムスタンプ](#timestamps)
     - [データベース接続](#database-connections)
     - [デフォルト属性値](#default-attribute-values)
+    - [書き込み後の属性の更新](#refreshing-attributes-after-writes)
     - [Eloquent厳格さの設定](#configuring-eloquent-strictness)
 - [モデルの取得](#retrieving-models)
     - [コレクション](#collections)
@@ -417,6 +418,29 @@ class Flight extends Model
     ];
 }
 ```
+
+<a name="refreshing-attributes-after-writes"></a>
+### 書き込み後の属性の更新
+
+データベースに生成列が含まれている場合、モデルを挿入または更新した後に特定属性を更新するようにEloquentを構成できます。これを行うには、モデルで`Refreshes`属性を定義します。
+
+```php
+use Illuminate\Database\Eloquent\Attributes\Refreshes;
+
+#[Refreshes('name')]
+class User extends Model
+{
+    // ...
+}
+```
+
+複数の属性を配列として指定できます。
+
+```php
+#[Refreshes(['name', 'slug'])]
+```
+
+モデルを書き込んだ後、設定手ある属性をデータベースから更新します。
 
 <a name="configuring-eloquent-strictness"></a>
 ### Eloquentの厳格さの設定

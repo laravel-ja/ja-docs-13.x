@@ -381,7 +381,7 @@ features:
 <a name="mariadb"></a>
 #### MariaDB
 
-MariaDBを有効にすると、MySQLを削除してMariaDBをインストールします。MariaDBはMySQLのそのまま置き換え可能な代替機能として通常動作します。そのため、アプリケーションのデータベース設定では、`mysql`データベースドライバをそのまま使ってください。
+MariaDBを有効にすると、MySQLを削除してMariaDBをインストールします。アプリケーションは`mysql`ではなく`mariadb`データベースドライバを使用する必要があります。両方とも接続しますが、ベクトル距離クエリなどMariaDB固有のSQLを発行するのは`mariadb`ドライバのみです。
 
 <a name="mongodb"></a>
 #### MongoDB

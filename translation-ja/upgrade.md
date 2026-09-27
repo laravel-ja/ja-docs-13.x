@@ -213,7 +213,7 @@ MariaDBとMySQLのデータベースドライバは`uniqueBy`の値を無視し�
 
 Laravelは、MySQL文法において`ORDER BY`と`LIMIT`を含む完全な`DELETE ... JOIN`クエリをコンパイルするようにしました。
 
-以前のバージョンでは、結合した削除において`ORDER BY`／`LIMIT`句が黙って無視されることがありました。Laravel13では、これらの句を生成するSQLへ含めます。その結果、この構文をサポートしていないデータベースエンジン（標準的なMySQL／MariaDBバリアントなど）は、制限のない削除を実行する代わりに`QueryException`を投げる可能性があります。
+以前のバージョンでは、結合した削除において`ORDER BY`／`LIMIT`句が黙って無視されることがありました。Laravel13では、これらの句を生成するSQLへ含めます。その結果、この構文をサポートしていないデータベースエンジン（MySQLとMariaDB11.8.1以前）は、制限のない削除を実行する代わりに`QueryException`を投げる可能性があります。
 
 <a name="eloquent"></a>
 ### Eloquent

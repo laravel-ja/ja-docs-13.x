@@ -436,6 +436,32 @@ protected function casts(): array
 }
 ```
 
+デフォルトでは、`AsArrayObject`または`AsCollection`でキャストした属性に`null`を割り当てると、データベースへJSONの`null`値を保存します。代わりに`null`値をネイティブSQLの`NULL`値として保存したい場合は、キャストの定義時に`nullable`メソッドを呼び出せます。
+
+```php
+use Illuminate\Database\Eloquent\Casts\AsCollection;
+
+/**
+ * キャストする属性の取得
+ *
+ * @return array<string, string>
+ */
+protected function casts(): array
+{
+    return [
+        'options' => AsCollection::nullable(),
+    ];
+}
+```
+
+`nullable`メソッドは、カスタムコレクションクラスと組み合わせることもできます。
+
+```php
+'options' => AsCollection::nullable(OptionCollection::class),
+```
+
+`AsArrayObject`キャストも、同じ動作をする`nullable`メソッドを提供しています。
+
 `AsCollection`キャストでLaravel基本コレクションクラスの代わりに、カスタムコレクションクラスをインスタンス化したい場合は、キャストの引数としてコレクションクラス名を指定してください。
 
 ```php

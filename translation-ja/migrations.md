@@ -1488,6 +1488,24 @@ $table->string('email')->unique()->online();
 
 PostgreSQLを使用する場合、このメソッドはインデックス作成文へCONCURRENTLYオプションを追加します。SQL Serverを使用する場合、`WITH (online = on)`オプションを追加します。
 
+MySQLを使用する場合、`inplace`修飾子をインデックスまたは外部キー定義へチェーンして、操作で`INPLACE`アルゴリズムを使用するように指定できます。
+
+```php
+$table->index('email')->inplace();
+
+$table->foreign('user_id')->references('id')->on('users')->inplace();
+```
+
+`inplace`修飾子は、操作中のテーブルロックを制御するために`lock`修飾子と組み合わせるために使用します
+
+```php
+$table->index('email')->inplace()->lock('none');
+```
+
+外部キー操作で`inplace`修飾子を使用する場合は、外部キーチェックを無効にする必要があります。
+
+どの操作が`INPLACE`アルゴリズムとロックモードをサポートしているか判断するには、[MySQLのドキュメント](https://dev.mysql.com/doc/refman/8.0/en/innodb-online-ddl-operations.html)を参照してください。
+
 <a name="renaming-indexes"></a>
 ### インデックスのリネーム
 
