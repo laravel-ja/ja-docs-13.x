@@ -1381,11 +1381,11 @@ $result = $data->groupBy(['skill', function (array $item) {
             10 => ['user' => 1, 'skill' => 1, 'roles' => ['Role_1', 'Role_3']],
             20 => ['user' => 2, 'skill' => 1, 'roles' => ['Role_1', 'Role_2']],
         ],
-        'Role_2' => [
-            20 => ['user' => 2, 'skill' => 1, 'roles' => ['Role_1', 'Role_2']],
-        ],
         'Role_3' => [
             10 => ['user' => 1, 'skill' => 1, 'roles' => ['Role_1', 'Role_3']],
+        ],
+        'Role_2' => [
+            20 => ['user' => 2, 'skill' => 1, 'roles' => ['Role_1', 'Role_2']],
         ],
     ],
     2 => [
@@ -1578,7 +1578,7 @@ $intersect->all();
 <a name="method-intersectassocusing"></a>
 #### `intersectAssocUsing()` {.collection-method}
 
-The `intersectAssocUsing` method compares the original collection against another collection or array, returning the key / value pairs that are present in both, using a custom comparison callback to determine equality for both keys and values:
+The `intersectAssocUsing` method compares the original collection against another collection or array, returning the key / value pairs that are present in both, using a custom comparison callback to compare the keys:
 
 ```php
 $collection = collect([
@@ -2878,7 +2878,7 @@ $chunks->toArray();
 This is especially useful in conjunction with the [eachSpread](#method-eachspread) method:
 
 ```php
-$transactions->sliding(2)->eachSpread(function (Collection $previous, Collection $current) {
+$transactions->sliding(2)->eachSpread(function ($previous, $current) {
     $current->total = $previous->total + $current->amount;
 });
 ```
@@ -2933,7 +2933,7 @@ $collection->sole();
 // ['product' => 'Desk', 'price' => 200]
 ```
 
-If there are no elements in the collection that should be returned by the `sole` method, an `\Illuminate\Collections\ItemNotFoundException` exception will be thrown. If there is more than one element that should be returned, an `\Illuminate\Collections\MultipleItemsFoundException` will be thrown.
+If there are no elements in the collection that should be returned by the `sole` method, an `\Illuminate\Support\ItemNotFoundException` exception will be thrown. If there is more than one element that should be returned, an `\Illuminate\Support\MultipleItemsFoundException` will be thrown.
 
 <a name="method-some"></a>
 #### `some()` {.collection-method}
@@ -3405,11 +3405,7 @@ $collection = collect(['name' => 'Desk', 'price' => 200]);
 
 $collection->toArray();
 
-/*
-    [
-        ['name' => 'Desk', 'price' => 200],
-    ]
-*/
+// ['name' => 'Desk', 'price' => 200]
 ```
 
 > [!WARNING]
@@ -3425,7 +3421,7 @@ $collection = collect(['name' => 'Desk', 'price' => 200]);
 
 $collection->toJson();
 
-// '{"name":"Desk", "price":200}'
+// '{"name":"Desk","price":200}'
 ```
 
 <a name="method-to-pretty-json"></a>
@@ -4149,7 +4145,7 @@ LazyCollection::make(function () {
     }
 
     fclose($handle);
-})->chunk(4)->map(function (array $lines) {
+})->chunk(4)->map(function (LazyCollection $lines) {
     return LogEntry::fromLines($lines);
 })->each(function (LogEntry $logEntry) {
     // Process the log entry...
@@ -4448,7 +4444,7 @@ if ($lock->get()) {
             ->lazy()
             ->withHeartbeat(
                 CarbonInterval::minutes(4),
-                fn () => $lock->extend(CarbonInterval::minutes(5))
+                fn () => $lock->refresh()
             )
             ->each(fn ($report) => $report->process());
     } finally {

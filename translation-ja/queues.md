@@ -194,7 +194,7 @@ Amazon SQSは、キューに投入するメッセージペイロードの最大�
 <div class="content-list" markdown="1">
 
 - Amazon SQS: `aws/aws-sdk-php ~3.0`
-- Beanstalkd: `pda/pheanstalk ~5.0`
+- Beanstalkd: `pda/pheanstalk ^7.0|^8.0`
 - Redis: `predis/predis ~3.0`またはphpredis PHP拡張機能
 - [MongoDB](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/queues/): `mongodb/laravel-mongodb`
 
@@ -1677,6 +1677,24 @@ class ProcessPodcast implements ShouldQueue
 
 この例では、アプリケーションがRedisロックを取得できない場合、ジョブは１０秒間解放され、最大２５回再試行され続けます。ただし、ジョブによって３つの未処理の例外がスローされると、ジョブは失敗します。
 
+デフォルトでは、ワーカプロセスのクラッシュやメモリ不足などによる強制終了で終了した試行は、ジョブの最大例外数にカウントしません。これらの試行を例外としてカウントしたい場合は、ジョブクラスに`CountCrashesAsExceptions`属性を追加します。
+
+```php
+use Illuminate\Queue\Attributes\CountCrashesAsExceptions;
+use Illuminate\Queue\Attributes\MaxExceptions;
+use Illuminate\Queue\Attributes\Tries;
+
+#[Tries(25)]
+#[MaxExceptions(3)]
+#[CountCrashesAsExceptions]
+class ProcessPodcast implements ShouldQueue
+{
+    // ...
+}
+```
+
+この属性が存在する場合、ワーカはジョブの処理中にアプリケーションのキャッシュへマーカを保存します。次にジョブを試行するときにマーカーが残っている場合、前の試行を例外としてカウントします。
+
 <a name="stopping-retries-by-exception"></a>
 #### 例外によるリトライの停止
 
@@ -1840,12 +1858,15 @@ class ProcessOrder implements ShouldQueue
 
 FIFOキューを利用する際は、リスナ、メール、および通知についてもメッセージグループを定義する必要があります。あるいは、これらのオブジェクトのインスタンスをキュー投入して、非FIFOキューへディスパッチすることもできます。
 
-[キュー投入済みイベントリスナ](/docs/{{version}}/events#queued-event-listeners)のメッセージグループを定義するには、リスナ上に`messageGroup`メソッドを定義します。`deduplicationId`メソッドもオプションとして定義できます。
+[キュー投入済みイベントリスナ](/docs/{{version}}/events#queued-event-listeners)のメッセージグループを定義するには、リスナ上に`messageGroup`メソッドを定義します。必要に応じて`deduplicator`メソッドを定義することもできます。このメソッドはイベントを受け取り、重複排除IDを生成するクロージャを返す必要があります。
 
 ```php
 <?php
 
 namespace App\Listeners;
+
+use App\Events\OrderShipped;
+use Closure;
 
 class SendShipmentNotification
 {
@@ -1860,11 +1881,11 @@ class SendShipmentNotification
     }
 
     /**ジョブを試行する回数を決定
-     * ジョブの重複排除IDの取得
+     * Get the job's deduplicator.
      */
-    public function deduplicationId(): string
+    public function deduplicator(OrderShipped $event): Closure
     {
-        return "shipment-notification-{$this->shipment->id}";
+        return fn () => "shipment-notification-{$event->order->id}";
     }
 }
 ```
@@ -2452,7 +2473,7 @@ DynamoDBのテーブルに`ttl`属性を定義した場合、Laravelにバッチ
 
 ```php
 'batching' => [
-    'driver' => env('QUEUE_FAILED_DRIVER', 'dynamodb'),
+    'driver' => env('QUEUE_BATCHING_DRIVER', 'dynamodb'),
     'key' => env('AWS_ACCESS_KEY_ID'),
     'secret' => env('AWS_SECRET_ACCESS_KEY'),
     'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),

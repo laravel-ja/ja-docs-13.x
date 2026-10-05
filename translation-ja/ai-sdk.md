@@ -5,6 +5,7 @@
     - [設定](#configuration)
     - [カスタムベースURL](#custom-base-urls)
     - [OpenAI互換プロバイダ](#openai-compatible-providers)
+    - [オンデマンドプロバイダ](#on-demand-providers)
     - [プロバイダのサポート](#provider-support)
 - [エージェント](#agents)
     - [プロンプト](#prompting)
@@ -37,6 +38,8 @@
     - [埋め込みのキャッシュ](#caching-embeddings)
 - [リランク](#reranking)
 - [等級付け](#classification)
+    - [はい／いいえの決定](#yes-or-no-decisions)
+    - [コレクションからの選択](#choosing-from-collections)
 - [ファイル](#files)
 - [ベクトルストア](#vector-stores)
     - [ストアへのファイル追加](#adding-files-to-stores)
@@ -224,6 +227,51 @@ OpenAI互換プロバイダは、テキスト生成、ストリーミング、�
 
 > [!NOTE]
 > OpenAI互換プロバイダとGroqプロバイダは、話者分離(diarization)をサポートしていません。これらのプロバイダを使用時に`diarize`メソッドを呼び出すと、例外を投げます。
+
+<a name="on-demand-providers"></a>
+### オンデマンドプロバイダ
+
+マルチテナントアプリケーションの各テナントのためにデータベースへ保存しているAPIキーなど、アプリケーションの設定ファイルで定義していないプロバイダ認証情報を使用する必要が生じる場合があります。設定配列からプロバイダを作成するには、`Ai::build`メソッドを使用します。この配列は、アプリケーションの`config/ai.php`設定ファイルのプロバイダエントリと同じ構造にする必要があります。
+
+```php
+use App\Ai\Agents\SalesCoach;
+use Laravel\Ai\Ai;
+
+$response = (new SalesCoach)->prompt('Analyze this sales transcript...', provider: [
+    Ai::build([
+        'driver' => 'anthropic',
+        'key' => $user->anthropic_key,
+    ]),
+]);
+```
+
+オンデマンドプロバイダは、[フェイルオーバ](#failover)リストや、画像、音声、文字起こし、埋め込みの生成時を含め、プロバイダを受け入れられる任意の場所で使用できます。オンデマンドプロバイダのモデルを指定するには、その設定内に`models`配列を含めます。
+
+```php
+$response = (new SalesCoach)->prompt('Analyze this sales transcript...', provider: [
+    Ai::build(['driver' => 'anthropic', 'key' => $user->anthropic_key]),
+    Ai::build([
+        'driver' => 'openai',
+        'key' => $user->openai_key,
+        'models' => ['text' => ['default' => 'gpt-6']],
+    ]),
+]);
+```
+
+エージェントに常にオンデマンドプロバイダを使用させる場合は、エージェントの`provider`メソッドからプロバイダを返します。エージェントを使用する際にプロバイダを再構築するため、この手法は[キュー投入する](#queueing)エージェントにも有効です。
+
+```php
+use Laravel\Ai\Ai;
+use Laravel\Ai\Providers\Provider;
+
+public function provider(): Provider
+{
+    return Ai::build($this->user->aiConfiguration());
+}
+```
+
+> [!NOTE]
+> 上記の例で示しているように、オンデマンドプロバイダは配列内で渡す必要があります。設定配列でオンデマンドプロバイダに`name`を指定する場合、その名前はビルトインプロバイダや`config/ai.php`設定ファイルで定義しているプロバイダと一致してはいけません。
 
 <a name="provider-support"></a>
 ### プロバイダのサポート
@@ -2664,6 +2712,9 @@ $result->usage;
 $result->meta->provider;
 ```
 
+<a name="yes-or-no-decisions"></a>
+### はい／いいえの決定
+
 単一のはい／いいえの決定には、Laravelの`Stringable`クラスで利用できる`decide`メソッドを使用できます。これは完全なレスポンスの代わりに真偽値を返します。「はい」と「いいえ」の意味を説明し、回答が達する必要がある確率（デフォルトは `0.5`）を指定できます。
 
 ```php
@@ -2679,24 +2730,45 @@ $spam = Str::of($message)->decide('Is this spam?', criteria: [
 ], threshold: 0.9);
 ```
 
-等級付けはデフォルトで、[TypeSafe](https://typesafe.ai)により実行します。アプリケーションの`config/ai.php`設定ファイル内の`default_for_classification`オプションを使用してこれを変更できます。分類時にプロバイダとモデルを指定することもできます。
+<a name="choosing-from-collections"></a>
+### コレクションからの選択
+
+オプションのリストから１項目を素早く選択するには、Laravelの`Collection`クラスで利用できる`decide`メソッドを使用してください。このメソッドは質問と分類するテキストを受け取り、コレクションから選択した項目を返します。
+
+文字列や列挙型（enum）のコレクションは直接使用できますが、その他の項目は`by`引数を使用して名前を指定する必要があります。また、`describe`引数を介してフィールド、フィールドの配列、またはクロージャを指定し、各オプションに関するより詳細な情報をモデルに渡すこともできます。
 
 ```php
-use Laravel\Ai\Enums\Lab;
+$department = collect(['billing', 'technical', 'sales'])
+    ->decide('Which team should handle this request?', $ticket->body);
 
-$result = Classification::of($supportRequest)
-    ->questions($questions)
-    ->classify(Lab::OpenRouter, 'model-name');
+$priority = collect(Priority::cases())
+    ->decide('How urgent is this request?', $ticket->body);
+
+$department = Department::all()->decide(
+    'Which department should handle this request?',
+    $ticket->body,
+    by: 'name',
+    describe: 'description',
+);
 ```
 
-`timeout`メソッドを使用してHTTPタイムアウトを秒単位で指定できます。（デフォルトは30秒）[プロバイダオプション](#provider-options)やカスタムヘッダも指定できます。
+`describe`引数を介して定義した説明は、テキストがそのオプションに一致するかどうかをモデルが判断するための基準として機能するため、オプションの名前だけでは曖昧な場合に役立ちます。`describe`引数にクロージャを渡すと、クロージャは各項目を受け取り、それを説明する文字列または配列を返す必要があります。
 
 ```php
-$result = Classification::of($supportRequest)
-    ->questions($questions)
-    ->timeout(60)
-    ->withProviderOptions(['temperature' => 0])
-    ->classify();
+$priority = collect(Priority::cases())->decide(
+    'How urgent is this request?',
+    $ticket->body,
+    describe: fn (Priority $priority) => $priority->description(),
+);
+```
+
+文字列のコレクションが文字列でキー設定されている場合、そのキーをオプションとして使用し、その値をそれらの説明として使用して、選択したキーを返します。`threshold`を指定しており、選択したオプションの確率がそれを下回る場合、`null`を返します。
+
+```php
+$department = collect([
+    'billing' => 'Payments, invoices, and refunds',
+    'technical' => 'Bugs, outages, and integrations',
+])->decide('Which team should handle this request?', $ticket->body, threshold: 0.6) ?? 'triage';
 ```
 
 <a name="files"></a>

@@ -340,7 +340,7 @@ if ($user->features()->active('new-api')) {
 
 ```php
 // 値
-$value = $user->features()->value('purchase-button')
+$value = $user->features()->value('purchase-button');
 $values = $user->features()->values(['new-api', 'purchase-button']);
 
 // 状態

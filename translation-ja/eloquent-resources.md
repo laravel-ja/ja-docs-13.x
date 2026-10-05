@@ -327,7 +327,7 @@ class UserResource extends JsonResource
 use App\Models\User;
 
 Route::get('/user/{id}', function (string $id) {
-    return User::findOrFail($id)->toUserResource();
+    return User::findOrFail($id)->toResource();
 });
 ```
 
@@ -1142,7 +1142,7 @@ JsonApiResource::maxRelationshipDepth(3);
 <a name="jsonapi-resource-type-and-id"></a>
 ### リソースタイプとID
 
-リソースの`type`は、デフォルトでリソースクラス名から派生します。例えば、`PostResource`は`posts`タイプを生成し、`BlogPostResource`は`blog-posts`を生成します。リソースの`id`はモデルのプライマリキーから解決されます。
+リソースの`type`は、デフォルトでリソースクラス名から派生します。例えば、`PostResource`は`posts`タイプを生成し、`BlogPostResource`は`blog_posts`を生成します。リソースの`id`はモデルのプライマリキーから解決されます。
 
 これらの値をカスタマイズする必要がある場合は、リソースの`toType`メソッドと`toId`メソッドをオーバーライドしてください。
 

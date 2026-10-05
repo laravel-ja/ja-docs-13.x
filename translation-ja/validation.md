@@ -286,11 +286,11 @@ $request->validate([
 
 ```json
 {
-    "message": "The team name must be a string. (and 4 more errors)",
+    "message": "The team name field must be a string. (and 4 more errors)",
     "errors": {
         "team_name": [
-            "The team name must be a string.",
-            "The team name must be at least 1 characters."
+            "The team name field must be a string.",
+            "The team name field must be at least 1 characters."
         ],
         "authorization.role": [
             "The selected authorization.role is invalid."
@@ -299,7 +299,7 @@ $request->validate([
             "The users.0.email field is required."
         ],
         "users.2.email": [
-            "The users.2.email must be a valid email address."
+            "The users.2.email field must be a valid email address."
         ]
     }
 }
@@ -1932,7 +1932,7 @@ Validator::make($data, [
 <a name="rule-image"></a>
 #### image
 
-ファイルは画像（jpg、jpeg、png、bmp、gif、svg、webp）であることをバリデートします。
+ファイルは画像（jpg、jpeg、png、bmp、gif、svg、webp、avif、heic、heif）であることをバリデートします。
 
 > [!WARNING]
 > imageルールはXSS脆弱性の可能性があるため、デフォルトではSVGファイルを許可していません。SVGファイルを許可する必要がある場合は、`image`ルールに`allow_svg`ディレクティブを指定してください。(`image:allow_svg`)
@@ -2829,7 +2829,7 @@ File::types(['mp3', 'wav'])
 <a name="validating-files-image-files"></a>
 #### 画像ファイルのバリデーション
 
-アプリケーションがユーザーによる画像のアップデートを受け取る場合に、そのファイルが画像であること（jpg、jpeg、png、bmp、gif、svg、webp）をバリデーションするには、Fileルールのimageコンストラクタメソッドを使用します。
+アプリケーションがユーザーによる画像のアップデートを受け取る場合に、そのファイルが画像であること（jpg、jpeg、png、bmp、gif、svg、webp、avif、heic、heif）をバリデーションするには、Fileルールのimageコンストラクタメソッドを使用します。
 
 さらに、`dimensions`ルールを使って画像の大きさを制限することもできます。
 
@@ -2921,7 +2921,7 @@ Password::min(8)->uncompromised();
 デフォルトでは、データリークに少なくとも1回パスワードが表示されている場合は、侵害されたと見なします。`uncompromised`メソッドの最初の引数を使用してこのしきい値をカスタマイズできます。
 
 ```php
-// 同一のデータリークにおいて、パスワードの出現回数が3回以下であることを確認
+// 同一のデータリークにおいて、パスワードが３回を超えて出現しないことを確認
 Password::min(8)->uncompromised(3);
 ```
 

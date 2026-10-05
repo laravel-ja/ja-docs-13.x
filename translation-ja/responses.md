@@ -107,7 +107,7 @@ return response($content)->withoutHeader(['X-Debug', 'X-Powered-By']);
 <a name="cache-control-middleware"></a>
 #### キャッシュコントロール・ミドルウェア
 
-ルートグループへ`Cache-Control`ヘッダを簡単に指定できるよう、Laravelは`cache.headers`を用意しています。ディレクティブは、対応するcache-controlディレクティブの「スネークケース」を使用し、セミコロンで区切って指定してください。ディレクティブのリストの中で`etag`を指定すると、レスポンスコンテンツのMD5ハッシュをETag識別子へ自動的にセットします。
+ルートグループへ`Cache-Control`ヘッダを簡単に指定できるよう、Laravelは`cache.headers`を用意しています。ディレクティブは、対応するcache-controlディレクティブの「スネークケース」を使用し、セミコロンで区切って指定してください。ディレクティブのリストの中で`etag`を指定すると、レスポンスコンテンツのxxh128ハッシュをETag識別子へ自動的にセットします。
 
 ```php
 Route::middleware('cache.headers:public;max_age=30;s_maxage=300;stale_while_revalidate=600;etag')->group(function () {

@@ -327,7 +327,7 @@ $dominantColor = $image->dominantColor();
 
 Laravelの画像マネージャは、Laravelのベースである`Illuminate\Support\Manager`クラスを拡張しています。つまり、画像マネージャおよび`Image`ファサードで利用できる`extend`メソッドを使用して、カスタム画像ドライバを登録できます。
 
-カスタム画像ドライバは、`Illuminate\Contracts\Image\Driver`インターフェイスを実装する必要があります。`process`メソッドは、元の画像コンテンツと、画像に適用すべき順序付けられた`Illuminate\Image\ImagePipeline`を受け取り、処理済みの画像バイトを返す必要があります。
+カスタム画像ドライバは、`Illuminate\Contracts\Image\Driver`インターフェイスを実装する必要があります。`process`メソッドは、元の画像コンテンツと、画像に適用すべき順序付けられた`Illuminate\Image\ImagePipeline`を受け取り、処理済みの画像バイトを返す必要があります。`dimensions`メソッドは画像の幅と高さを返す必要があり、`dominantColor`メソッドは画像の平均色をヘックス文字列として返す必要があります。
 
 ```php
 <?php
@@ -347,6 +347,26 @@ class VipsDriver implements Driver
         // パイプラインの変換と出力オプションを適用…
 
         return $contents;
+    }
+
+    /**
+     * 指定した画像コンテンツの寸法を取得
+     */
+    public function dimensions(string $contents): array
+    {
+        // 画像の幅と高さを読み込む…
+
+        return [0, 0];
+    }
+
+    /**
+     * 画像のドミナントカラー（平均色）をヘックス文字列として取得
+     */
+    public function dominantColor(string $contents): string
+    {
+        // 画像の平均色を計算する…
+
+        return '#000000';
     }
 
     /**

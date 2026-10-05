@@ -77,7 +77,7 @@ $response->requestTimeout() : bool;      // 408 Request Timeout
 $response->conflict() : bool;            // 409 Conflict
 $response->unprocessableEntity() : bool; // 422 Unprocessable Entity
 $response->tooManyRequests() : bool;     // 429 Too Many Requests
-$response->serverError() : bool;         // 500 Internal Server Error
+$response->serverError() : bool;         // >= 500 Server Error
 ```
 
 <a name="uri-templates"></a>
@@ -375,10 +375,10 @@ $response->throwIfStatus(403);
 // レスポンスが特定のステータスコードでない場合は、例外を投げる
 $response->throwUnlessStatus(200);
 
-// サーバエラーが発生した場合（ステータス500以上）に、例外を投げる
+// サーバエラーが発生した場合（ステータス >= 500）は、例外を投げる
 $response->throwIfServerError();
 
-// クライアントエラーが発生した場合（ステータス400以上500未満）に、例外を投げる
+// クライアントエラーが発生した場合（ステータス >= 400 かつ < 500）は、例外を投げる
 $response->throwIfClientError();
 
 return $response['user']['id'];

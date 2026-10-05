@@ -41,7 +41,7 @@ $names = User::all()->reject(function (User $user) {
 
 すべてのEloquentコレクションはベースの[Laravelコレクション](/docs/{{version}}/collections#available-methods)オブジェクトを拡張します。したがって、これらは基本コレクションクラスによって提供されるすべての強力なメソッドを継承します。
 
-さらに、`Illuminate\Database\Eloquent\Collection`クラスは、モデルコレクションの管理を支援するメソッドのスーパーセットを提供します。ほとんどのメソッドは`Illuminate\Database\Eloquent\Collection`インスタンスを返します。ただし、`modelKeys`などの一部のメソッドは、`Illuminate\Support\Collection`インスタンスを返します。
+さらに、`Illuminate\Database\Eloquent\Collection`クラスは、モデルコレクションの管理を支援するメソッドのスーパーセットを提供します。ほとんどのメソッドは`Illuminate\Database\Eloquent\Collection`インスタンスを返します。ただし、`pluck`などの一部のメソッドは、`Illuminate\Support\Collection`インスタンスを返します。
 
 <style>
     .collection-method-list > p {

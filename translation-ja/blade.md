@@ -799,7 +799,7 @@ public function boot(): void
 <x-package-alert/>
 ```
 
-または、規約により、`componentNamespace`メソッドを使用してコンポーネントクラスを自動ロードすることもできます。たとえば、`Nightshade`パッケージには、`Package\Views\Components`名前空間内にある`Calendar`と`ColorPicker`コンポーネントが含まれているとしましょう。
+または、規約により、`componentNamespace`メソッドを使用してコンポーネントクラスを自動ロードすることもできます。たとえば、`Nightshade`パッケージには、`Nightshade\Views\Components`名前空間内にある`Calendar`と`ColorPicker`コンポーネントが含まれているとしましょう。
 
 ```php
 use Illuminate\Support\Facades\Blade;
@@ -859,9 +859,9 @@ public function shouldRender(): bool
 コンポーネントがコンポーネントグループの一部であり、関連するコンポーネントを1つのディレクトリにまとめたい場合があるでしょう。例えば、以下のようなクラス構造を持つ、「カード（card）」コンポーネントがあるとします。
 
 ```text
-App\Views\Components\Card\Card
-App\Views\Components\Card\Header
-App\Views\Components\Card\Body
+App\View\Components\Card\Card
+App\View\Components\Card\Header
+App\View\Components\Card\Body
 ```
 
 ルートの`Card`コンポーネントは、`Card`ディレクトリの中でネストしているため、`<x-card.card>`を使ってコンポーネントをレンダする必要があると思うかもしれません。しかし、コンポーネントのファイル名がコンポーネントのディレクトリ名と一致する場合、Laravelは自動的にそのコンポーネントを「ルート」コンポーネントとみなすので、ディレクトリ名を繰り返すことなくそのコンポーネントをレンダできます。
@@ -1029,7 +1029,7 @@ return function (array $data) {
 > [!WARNING]
 > `data`配列の要素を`render`メソッドが返すBlade文字列へ直接埋め込んではいけません。そうしてしまうと、悪意のある属性コンテンツを介してリモートでコードが実行される可能性があります。
 
-`componentName`は、HTMLタグで`x-`プレフィックスの後に使用されている名前と同じです。したがって、`<x-alert/>`の`componentName`は`alert`になります。`attributes`要素には、HTMLタグに存在していたすべての属性が含まれます。`slot`要素は、コンポーネントのスロットの内容を含む`Illuminate\Support\HtmlString`インスタンスです。
+`componentName`は、HTMLタグで`x-`プレフィックスの後に使用されている名前と同じです。したがって、`<x-alert/>`の`componentName`は`alert`になります。`attributes`要素には、HTMLタグに存在していたすべての属性が含まれます。`slot`要素は、コンポーネントのスロットの内容を含む`Illuminate\View\ComponentSlot`インスタンスです。
 
 クロージャは文字列を返す必要があります。返された文字列が既存のビューに対応している場合、そのビューがレンダリングされます。それ以外の場合、返される文字列はインラインBladeビューとして評価されます。
 
@@ -1462,7 +1462,7 @@ public function boot(): void
 
 #### パッケージコンポーネントの自動ロード
 
-または、規約により、`componentNamespace`メソッドを使用してコンポーネントクラスを自動ロードすることもできます。たとえば、`Nightshade`パッケージには、`Package\Views\Components`名前空間内にある`Calendar`と`ColorPicker`コンポーネントが含まれているとしましょう。
+または、規約により、`componentNamespace`メソッドを使用してコンポーネントクラスを自動ロードすることもできます。たとえば、`Nightshade`パッケージには、`Nightshade\Views\Components`名前空間内にある`Calendar`と`ColorPicker`コンポーネントが含まれているとしましょう。
 
 ```php
 use Illuminate\Support\Facades\Blade;

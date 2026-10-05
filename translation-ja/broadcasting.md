@@ -37,6 +37,7 @@
     - [プレゼンスチャンネルの認可](#authorizing-presence-channels)
     - [プレゼンスチャンネルへの接続](#joining-presence-channels)
     - [プレゼンスチャンネルへのブロードキャスト](#broadcasting-to-presence-channels)
+- [暗号化プライベートチャンネル](#encrypted-private-channels)
 - [モデルブロードキャスト](#model-broadcasting)
     - [モデルブロードキャスト規約](#model-broadcasting-conventions)
     - [モデルブロードキャストのリッスン](#listening-for-model-broadcasts)
@@ -158,6 +159,24 @@ BROADCAST_CONNECTION=pusher
 
 これで、クライアント側でブロードキャストイベントを受信する[Laravel Echo](#client-side-installation)をインストールして設定する準備が整いました。
 
+<a name="pusher-manual-installation-encrypted-private-channels"></a>
+#### 暗号化プライベートチャンネル
+
+エンドツーエンド暗号化プライベートチャンネル](#encrypted-private-channels)を使用する場合は、`pusher`接続の`options`配列へ、base64エンコードした32バイトキーを含む`encryption_master_key_base64`オプションを追加する必要があります。
+
+```php
+'options' => [
+    // ...
+    'encryption_master_key_base64' => env('PUSHER_ENCRYPTION_MASTER_KEY'),
+],
+```
+
+`openssl`コマンドを使用して適切なキーを生成してください。
+
+```shell
+openssl rand -base64 32
+```
+
 <a name="ably"></a>
 ### Ably
 
@@ -198,7 +217,22 @@ BROADCAST_CONNECTION=ably
 <a name="mercure"></a>
 ### Mercure
 
-[Mercure](https://mercure.rocks)は、Server-Sentイベントを使用するリアルタイムプロトコルです。Mercureハブを介してイベントをブロードキャストするには、アプリケーションの`.env`ファイルで`mercure`接続を設定します。
+イベントブロードキャスタとしてMercureを使用しながら、Laravelのブロードキャスト機能のサポートを迅速に有効化するには、`--mercure`オプションを指定して`install:broadcasting` Artisanコマンドを実行します。このArtisanコマンドはMercureの認証情報の入力を求め、MercureのPHPおよびJavaScript SDKをインストールし、適切な変数でアプリケーションの`.env`ファイルを更新します。
+
+```shell
+php artisan install:broadcasting --mercure
+```
+
+<a name="mercure-manual-installation"></a>
+#### 手作業によるインストール
+
+Mercureサポートを手作業でインストールするには、Symfony MercureコンポーネントとJWTライブラリをインストールする必要があります。
+
+```shell
+composer require symfony/mercure:^0.8 web-token/jwt-library:^4.1
+```
+
+次に、アプリケーションの`.env`ファイルでMercure接続を設定する必要があります。
 
 ```ini
 BROADCAST_CONNECTION=mercure
@@ -210,11 +244,13 @@ MERCURE_JWT_SECRET=<your-mercure-jwt-secret>
 
 `MERCURE_URL`の値はLaravelが更新を公開するために使用するURLであり、`MERCURE_PUBLIC_URL`はブラウザクライアントが購読するために使用するURLです。Mercureハブには、同じJWTシークレットを設定する必要があります。
 
-エンドツーエンドで暗号化したプライベートチャンネルを使用するには、32バイトの`MERCURE_ENCRYPTION_KEY`環境変数を設定します。
+[エンドツーエンド暗号化プライベートチャンネル](#encrypted-private-channels)を使用するには、32バイトの`MERCURE_ENCRYPTION_KEY`環境変数を設定します。
 
 ```ini
 MERCURE_ENCRYPTION_KEY=<your-32-byte-encryption-key>
 ```
+
+これで、クライアント側でブロードキャストイベントを受信する[Laravel Echo](#client-side-installation)をインストールして設定する準備が整いました。
 
 <a name="client-side-installation"></a>
 ## クライアント側インストール
@@ -1638,6 +1674,47 @@ Echo.join(`chat.${roomId}`)
     .listen('NewMessage', (e) => {
         // ...
     });
+```
+
+<a name="encrypted-private-channels"></a>
+## 暗号化プライベートチャンネル
+
+プライベートチャンネルは、認証済みユーザーのみがチャンネルをリッスンできるようにします。ただし、イベントデータ自体はそのままプレーンテキストでブロードキャストサービスを通過します。Pusher ChannelsまたはMercureを使用する場合、エンドツーエンド暗号化プライベートチャンネルを使用できるため、アプリケーションと認証済みのクライアントのみがイベントのデータを読み取ることができます。
+
+まず、[Pusherチャンネル](#pusher-manual-installation)または[Mercure](#mercure-manual-installation)の暗号化キーを設定します。次に、イベントの`broadcastOn`メソッドから`EncryptedPrivateChannel`のインスタンスを返します。
+
+```php
+use Illuminate\Broadcasting\EncryptedPrivateChannel;
+
+/**
+ * イベントをブロードキャストするチャンネルの取得
+ *
+ * @return array<int, \Illuminate\Broadcasting\Channel>
+ */
+public function broadcastOn(): array
+{
+    return [
+        new EncryptedPrivateChannel('orders.'.$this->order->id),
+    ];
+}
+```
+
+暗号化プライベートチャンネルはプライベートチャンネルとまったく同じように認証されるため、アプリケーションの`routes/channels.php`ファイルにある`orders.{orderId}`認証コールバックは、暗号化済み`orders.1`チャンネルも認証します。
+
+avaScriptアプリケーションでは、Echoの`encryptedPrivate`メソッドを使用してチャンネルを購読できます。
+
+```js
+Echo.encryptedPrivate(`orders.${orderId}`)
+    .listen('OrderShipmentStatusUpdated', (e) => {
+        console.log(e.order);
+    });
+```
+
+Pusherチャンネルを使用する場合、デフォルトの`pusher-js`ビルドにはメッセージの解読に必要なコードが含まれていません。代わりに、[Echoを設定する](#pusher-client-manual-installation)際に`with-encryption`ビルドをインポートする必要があります。
+
+```js
+import Pusher from 'pusher-js/with-encryption';
+window.Pusher = Pusher;
 ```
 
 <a name="model-broadcasting"></a>

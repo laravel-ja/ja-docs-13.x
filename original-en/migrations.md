@@ -1483,7 +1483,7 @@ Laravel's schema builder blueprint class provides methods for creating each type
 By default, creating an index on a large table can lock the table and block reads or writes while the index is being built. When using PostgreSQL or SQL Server, you may chain the `online` method onto an index definition to create the index without locking the table, allowing your application to continue reading and writing data during index creation:
 
 ```php
-$table->string('email')->unique()->online();
+$table->unique('email')->online();
 ```
 
 When using PostgreSQL, this adds the `CONCURRENTLY` option to the index creation statement. When using SQL Server, this adds the `WITH (online = on)` option.
@@ -1645,13 +1645,13 @@ Schema::withoutForeignKeyConstraints(function () {
 <a name="events"></a>
 ## Events
 
-For convenience, each migration operation will dispatch an [event](/docs/{{version}}/events). All of the following events extend the base `Illuminate\Database\Events\MigrationEvent` class:
+For convenience, each migration operation will dispatch an [event](/docs/{{version}}/events). With the exception of `SchemaDumped` and `SchemaLoaded`, all of the following events implement the `Illuminate\Contracts\Database\Events\MigrationEvent` interface:
 
 <div class="overflow-auto">
 
 | Class                                            | Description                                      |
 | ------------------------------------------------ | ------------------------------------------------ |
-| `Illuminate\Database\Events\DatabaseRefreshed`   | The `migrate:refresh` command has finished.      |
+| `Illuminate\Database\Events\DatabaseRefreshed`   | The `migrate:fresh` or `migrate:refresh` command has finished. |
 | `Illuminate\Database\Events\MigrationsStarted`   | A batch of migrations is about to be executed.   |
 | `Illuminate\Database\Events\MigrationsEnded`     | A batch of migrations has finished.              |
 | `Illuminate\Database\Events\MigrationStarted`    | A single migration is about to be executed.      |

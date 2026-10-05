@@ -195,7 +195,7 @@ php artisan route:list -v
 php artisan route:list -vv
 ```
 
-また、指定したURIで始まるルートのみを表示するように、Laravelへ指示することもできます。
+また、指定した文字列をURIに含むルートのみを表示するように、Laravelへ指示することもできます。
 
 ```shell
 php artisan route:list --path=api

@@ -248,7 +248,7 @@ $this->travel(5)->days(function () {
     // ５日後の将来で、何かをテストする…
 });
 
-$this->travelTo(now()->mins(days: 10), function () {
+$this->travelTo(now()->minus(days: 10), function () {
     // 指定した時間で、何かをテストする…
 });
 ```

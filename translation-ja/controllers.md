@@ -560,7 +560,7 @@ Laravelの複数形化機能は、[皆さんがニーズに基づいて設定し
 ```text
 /publicacion/crear
 
-/publicacion/{publicaciones}/editar
+/publicacion/{publicacion}/editar
 ```
 
 <a name="restful-supplementing-resource-controllers"></a>
@@ -569,7 +569,7 @@ Laravelの複数形化機能は、[皆さんがニーズに基づいて設定し
 リソースルートのデフォルトセットを超えてリソースコントローラにルートを追加する必要がある場合は、`Route::resource`メソッドを呼び出す前にそれらのルートを定義する必要があります。そうしないと、`resource`メソッドで定義されたルートが、意図せずに補足ルートよりも優先される可能性があります。
 
 ```php
-use App\Http\Controller\PhotoController;
+use App\Http\Controllers\PhotoController;
 
 Route::get('/photos/popular', [PhotoController::class, 'popular']);
 Route::resource('photos', PhotoController::class);

@@ -1188,7 +1188,7 @@ $padded = Str::padRight('James', 10);
 <a name="method-str-password"></a>
 #### `Str::password()` {.collection-method}
 
-`Str::password`メソッドは、指定した長さの安全でランダムなパスワードを生成します。パスワードは文字、数字、シンボル、スペースの組み合わせで構成します。パスワードの長さは、デフォルトで３２文字です。
+`Str::password`メソッドは、指定した長さの安全でランダムなパスワードを生成します。パスワードは文字、数字、シンボルの組み合わせで構成します。パスワードの長さは、デフォルトで３２文字です。
 
 ```php
 use Illuminate\Support\Str;
@@ -1991,7 +1991,7 @@ $string = str('Taylor')->append(' Otwell');
 // 'Taylor Otwell'
 ```
 
-`str`関数に引数を与えなかった場合、`Illuminate\Support\Str`のインスタンスを返します。
+`str`関数に引数を渡さない場合、この関数は`Illuminate\Support\Str`へメソッド呼び出しをプロキシするオブジェクトを返します。
 
 ```php
 $snake = str()->snake('FooBar');
@@ -2335,7 +2335,7 @@ $result = Str::of('The   Laravel   Framework')->deduplicate();
 // The Laravel Framework
 ```
 
-メソッドの第２引数に別の文字を渡せば、重複を排除する文字を指定できます。
+メソッドの第１引数に別の文字を渡せば、重複を排除する文字を指定できます。
 
 ```php
 use Illuminate\Support\Str;
@@ -2936,7 +2936,7 @@ $string = Str::of('taylor@example.com')->mask('*', 3);
 // tay***************
 ```
 
-必要であれば、`mask`メソッドの第３・４引数に負の数を指定し、文字列の最後から指定する文字数分戻った箇所からマスキングを開始するように指示できます。
+必要であれば、`mask`メソッドの第２・３引数に負の数を指定し、文字列の最後から指定する文字数分戻った箇所からマスキングを開始するように指示できます。
 
 ```php
 $string = Str::of('taylor@example.com')->mask('*', -15, 3);
@@ -4072,7 +4072,7 @@ Str::of('Laravel')->wrap('"');
 
 // "Laravel"
 
-Str::is('is')->wrap(before: 'This ', after: ' Laravel!');
+Str::of('is')->wrap(before: 'This ', after: ' Laravel!');
 
 // This is Laravel!
 ```

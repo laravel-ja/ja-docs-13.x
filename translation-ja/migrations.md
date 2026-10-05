@@ -1483,7 +1483,7 @@ LaravelのスキーマビルダBlueprintクラスは、Laravelでサポートし
 デフォルトでは、大きなテーブルでのインデックス作成は、構築中にテーブルをロックし、読み取りや書き込みをブロックする可能性があります。PostgreSQLまたはSQL Serverを使用する場合、インデックス定義へ`online`メソッドをチェーンすることで、テーブルをロックせずにインデックスを作成できます。これにより、インデックス作成中もアプリケーションがデータの読み書きを継続できるようにします。
 
 ```php
-$table->string('email')->unique()->online();
+$table->unique('email')->online();
 ```
 
 PostgreSQLを使用する場合、このメソッドはインデックス作成文へCONCURRENTLYオプションを追加します。SQL Serverを使用する場合、`WITH (online = on)`オプションを追加します。
@@ -1645,13 +1645,13 @@ Schema::withoutForeignKeyConstraints(function () {
 <a name="events"></a>
 ## イベント
 
-利便を良くするため、各マイグレート操作は[イベント](/docs/{{version}}/events)を発行します。以下のイベントはすべて、`Illuminate\Database\Events\MigrationEvent`基本クラスを継承しています。
+利便を良くするため、各マイグレーション操作は[イベント](/docs/{{version}}/events)を発行します。`SchemaDumped`と`SchemaLoaded`を除き、以下のイベントはすべて`Illuminate\Contracts\Database\Events\MigrationEvent`インターフェイスを実装しています。
 
 <div class="overflow-auto">
 
  | クラス                                             | 説明                                  |
  | ---------------------------------------------- | ------------------------------------------------ |
-| `Illuminate\Database\Events\DatabaseRefreshed`   | `migrate:refresh`コマンドが終了した         |
+| `Illuminate\Database\Events\DatabaseRefreshed`   | `migrate:fresh`または`migrate:refresh`コマンドが終了した |
  | `Illuminate\Database\Events\MigrationsStarted`   | マイグレーションのバッチが実行されようとしている  |
 | `Illuminate\Database\Events\MigrationsEnded`     | マイグレーションのバッチが終了した              |
  | `Illuminate\Database\Events\MigrationStarted`    | 単一マイグレーションが実行されようとしている     |

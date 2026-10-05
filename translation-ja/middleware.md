@@ -138,6 +138,7 @@ Laravelのグローバルミドルウェアスタックを手作業で管理し�
 ```php
 ->withMiddleware(function (Middleware $middleware): void {
     $middleware->use([
+        \Illuminate\Http\Middleware\ValidatePathEncoding::class,
         \Illuminate\Foundation\Http\Middleware\InvokeDeferredCallbacks::class,
         // \Illuminate\Http\Middleware\TrustHosts::class,
         \Illuminate\Http\Middleware\TrustProxies::class,
@@ -474,7 +475,7 @@ HTTPレスポンスがブラウザに送信された後、ミドルウェアが�
 ```php
 <?php
 
-namespace Illuminate\Session\Middleware;
+namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;

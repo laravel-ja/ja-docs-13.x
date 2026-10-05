@@ -590,7 +590,7 @@ class StoreUserRequest extends FormRequest
      *
      * @return array
      */
-    protected function rules()
+    public function rules()
     {
         return [
             'password' => [
@@ -618,7 +618,7 @@ Laravel Precognitionは、事前認識型バリデーションリクエスト中
  *
  * @return array
  */
-protected function rules()
+public function rules()
 {
     return [
         'avatar' => [

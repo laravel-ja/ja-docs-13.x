@@ -230,7 +230,7 @@ $burgers = DB::scalar(
 
 ```php
 [$options, $notifications] = DB::selectResultSets(
-    "CALL get_user_options_and_notifications(?)", $request->user()->id
+    "CALL get_user_options_and_notifications(?)", [$request->user()->id]
 );
 ```
 

@@ -402,7 +402,7 @@ return $results['first']->output();
 プロセスプールの`running`メソッドは、プール内で呼び出したすべてのプロセスのコレクションを提供するため、プール内のプロセスIDで簡単にアクセスできます。
 
 ```php
-$processIds = $pool->running()->each->id();
+$processIds = $pool->running()->map->id();
 ```
 
 また、便利なように、プロセスプール上で`signal`メソッドを呼び出すと、そのプール内のすべてのプロセスへシグナルを送ることができます。

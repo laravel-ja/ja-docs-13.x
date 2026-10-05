@@ -2354,7 +2354,7 @@ public function boot(): void
 
 遅延ロードを停止したあと、アプリケーションが任意のEloquentリレーションで遅延ロードしようとすると、Eloquentは`Illuminate\Database\LazyLoadingViolationException`例外を投げます。
 
-遅延ロード違反の動作は，`handleLazyLoadingViolationsUsing`メソッドを使ってカスタマイズできます。例えば、このメソッドを使って、アプリケーションの実行を例外で中断する代わりに、遅延ロード違反をログに記録するだけにするよう指示できます。
+遅延ロード違反の動作は，`handleLazyLoadingViolationUsing`メソッドを使ってカスタマイズできます。例えば、このメソッドを使って、アプリケーションの実行を例外で中断する代わりに、遅延ロード違反をログに記録するだけにするよう指示できます。
 
 ```php
 Model::handleLazyLoadingViolationUsing(function (Model $model, string $relation) {

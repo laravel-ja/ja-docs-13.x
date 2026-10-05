@@ -48,7 +48,6 @@ Laravelはメッセージをログに記録するときに、デフォルトで`
 | `monthly`    | 月毎にファイルを切り替える`RotatingFileHandler`ベースの Monologドライバ  |
 | `errorlog`   | `ErrorLogHandler`ベースのMonologドライバ                               |
 | `monolog`    | Monologがサポートしているハンドラを使用するMonologファクトリドライバ   |
-| `papertrail` | `SyslogUdpHandler`ベースのMonologドライバ                              |
 | `single`     | 単一のファイルまたはパスベースのロガーチャンネル(`StreamHandler`)      |
 | `slack`      | `SlackWebhookHandler`ベースのMonologドライバ                           |
 | `stack`      | 「マルチチャンネル」チャンネルの作成を容易にするラッパー               |
