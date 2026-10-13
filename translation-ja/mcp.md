@@ -1710,6 +1710,8 @@ class CurrentWeatherTool extends Tool
 
 ルートと同様に、ミドルウェアを使用してWeb MCPサーバを認証できます。MCPサーバに認証を追加すると、ユーザーはサーバの機能を利用する前に認証を行う必要があります。
 
+このセクションでは、外部のAIクライアントが、**あなたのアプリケーションのMCPサーバ**へアクセスする場合について説明します。アプリケーションをユーザーの資格情報を使用して別のサービスのMCPサーバに接続する場合は、代わりに[クライアント認証](#client-authentication)を参照してください。
+
 MCPサーバへのアクセス認証には２つの方法があります：[Laravel Sanctum](/docs/{{version}}/sanctum)によるシンプルなトークンベース認証、または`Authorization` HTTPヘッダ経由で渡す任意のトークンによる認証です。あるいは、[Laravel Passport](/docs/{{version}}/passport)を使用したOAuthによる認証も可能です。
 
 <a name="oauth"></a>
@@ -1819,6 +1821,8 @@ public function handle(Request $request): Response
 
 サーバの構築に加えて、Laravel MCPは、ファーストパーティ製かサードパーティ製かを問わず、他のMCPサーバに接続するためのクライアントを用意しています。クライアントを使用し、アプリケーションはMCPサーバが公開しているツールを検出して呼び出せます。これは特に、外部のMCPサーバが提供する機能へのアクセス権を [AIエージェント](/docs/{{version}}/ai-sdk#mcp-tools)へ与える場合に便利です。
 
+たとえば、チャットアプリケーションが各ユーザーのGitHubトークンを使用してGitHubのMCPサーバに接続し、そのユーザーのリポジトリに関する質問にエージェントが答えられるようにすることができます。このシナリオでは、あなたのアプリケーションがMCPクライアントであり、MCPサーバを作成したり、`Mcp::web`ルートを登録したりする必要はありません。
+
 <a name="client-connecting"></a>
 ### サーバへの接続
 
@@ -1860,7 +1864,7 @@ $client = Client::web('https://api.githubcopilot.com/mcp/')->withTimeout(30);
 <a name="named-clients"></a>
 ### 名前付きクライアント
 
-クライアントが必要になるたびに構築するのではなく、再利用可能な名前付きクライアントを登録できます。これは通常、`Mcp`ファサードを使用して、サービスプロバイダの `boot`メソッド内で行います。
+毎回クライアントを構築する代わりに、必要に応じて再利用可能な名前付きクライアントを登録できます。`registerClient`メソッドは発信接続に名前を付けるものであり、MCPサーバを公開したりユーザーを認可したりするものではありません。登録は通常、`Mcp`ファサードを使用してサービスプロバイダの`boot`メソッドで行います。
 
 ```php
 use Laravel\Mcp\Client;
@@ -1882,7 +1886,10 @@ $client = Mcp::client('github');
 <a name="client-authentication"></a>
 ### クライアント認証
 
-ベアラートークンで保護されているWeb MCPサーバに接続するには、`withToken` メソッドを使用します。トークン文字列、またはトークンを遅延解決するクロージャを渡すことができます。
+<a name="client-bearer-tokens"></a>
+#### ベアラートークン
+
+ベアラートークンで保護されているWeb MCPサーバに接続するには、`withToken`メソッドを使用します。トークン文字列、またはトークンを遅延解決するクロージャを渡すことができます。
 
 ```php
 use Illuminate\Support\Facades\Auth;
@@ -1897,16 +1904,26 @@ $client = Client::web('https://api.githubcopilot.com/mcp/')->withToken(
 );
 ```
 
-[OAuth 2.1](#oauth)で保護しているサーバの場合は、`withOAuth`メソッドを使用してクライアントを構成します。これは、自身のサーバをOAuthで保護する処理のクライアント側に相当する機能です。
+[Socialite](/docs/{{version}}/socialite)やその他のアカウント連携フローを通じてすでに適切なトークンを取得している場合は、そのトークンを`withToken`に渡します。MCPのOAuthルートを登録する必要はありません。
+
+<a name="client-oauth"></a>
+#### OAuthによるユーザーアカウントの連携
+
+ユーザーがプロジェクト管理サービスを接続し、エージェントに「期限切れのタスクはどれですか？」などの質問をするチャットアプリケーションを想像してください。外部のプロジェクト管理サービスは、OAuthで保護されたMCPサーバを公開しています。アプリケーションは、各ユーザーをサービスの同意画面にリダイレクトし、その承認をトークンと交換し、将来のツール呼び出しのためにそのトークンを保存する必要があります。
+
+Laravel MCPは、`withOAuth`と`Mcp::oAuthRoutesFor`を使用してこのアカウント連携フローを処理します。まず、サービスプロバイダで名前付きクライアントを登録します。OAuthクライアント資格情報はサービスに対してアプリケーションを識別し、`withToken`はツールを呼び出す際に接続済みユーザーの保存済みアクセストークンを提供します：
 
 ```php
+use Illuminate\Support\Facades\Auth;
 use Laravel\Mcp\Client;
 use Laravel\Mcp\Facades\Mcp;
 
-Mcp::registerClient('github', fn () => Client::web('https://api.githubcopilot.com/mcp/')->withOAuth(
-    clientId: config('services.github_mcp.client_id'),
-    clientSecret: config('services.github_mcp.client_secret'),
-));
+Mcp::registerClient('projects', fn () => Client::web('https://projects.example.com/mcp')
+    ->withOAuth(
+        clientId: config('services.projects.client_id'),
+        clientSecret: config('services.projects.client_secret'),
+    )
+    ->withToken(fn () => Auth::user()->projects_token));
 ```
 
 > [!NOTE]
@@ -1914,23 +1931,50 @@ Mcp::registerClient('github', fn () => Client::web('https://api.githubcopilot.co
 
 認可サーバは、認可サーバメタデータ内で`S256`PKCEコードチャレンジメソッドのサポートを通知しなければなりません。PKCEサポートを通知していない場合、Laravelは認可の試行を拒否します。
 
-次に、`oAuthRoutesFor`メソッドを使用して、`routes/ai.php`ファイルに名前付きクライアント用のOAuthルートを登録します。指定するクロージャは、認可コードをアクセストークンと交換した後に、クライアント名と結果の`TokenSet`を受け取ります。
+次に、`routes/ai.php`ファイルでアカウント連携ルートを登録します。コールバックはクライアント名と結果の`TokenSet`を受け取るため、サインイン済みユーザーのトークンを保存します。
 
 ```php
 use Illuminate\Support\Facades\Auth;
 use Laravel\Mcp\Client\OAuth\TokenSet;
 use Laravel\Mcp\Facades\Mcp;
 
-Mcp::oAuthRoutesFor('github', function (string $client, TokenSet $token) {
+Mcp::oAuthRoutesFor('projects', function (string $client, TokenSet $token) {
     Auth::user()->update([
-        'github_mcp_token' => $token->accessToken,
+        'projects_token' => $token->accessToken,
     ]);
 
-    return redirect('/dashboard');
-});
+    return redirect('/chat');
+}, middleware: ['web', 'auth']);
 ```
 
-これにより、３つの名前付きルートを登録します。ユーザーを認可サーバへリダイレクトする接続ルート（`mcp.oauth.{client}.connect`）、認可コードを交換してハンドラを呼び出すコールバックルート（`mcp.oauth.{client}.callback`）、公開クライアントIDメタデータドキュメントルート（`mcp.oauth.{client}.client-metadata`）です。接続ルートとコールバックルートはデフォルトで`web`ミドルウェアグループを使用しますが、これは`middleware`引数を使用してオーバーライドできます。認可サーバがメタデータドキュメントを取得できる必要があるため、メタデータルートはこのミドルウェアを使用しません。
+`oAuthRoutesFor`メソッドは、3つの名前付きルートを登録します。ユーザーを認証サーバへリダイレクトする接続ルート（`mcp.oauth.{client}.connect`）、認可コードを交換してハンドラを呼び出すコールバックルート（`mcp.oauth.{client}.callback`）、およびパブリックなクライアントIDメタデータドキュメントルート（`mcp.oauth.{client}.client-metadata`）です。
+
+接続ルートとコールバックルートはデフォルトで、`web`ミドルウェアグループを使用します。上記のアカウント連携の例では、サインインしているユーザーを必須にするために`auth`を追加しています。認証サーバが取得できなければならないため、メタデータルートはこのミドルウェアを使用しません。
+
+"Connect Project Service"ボタンは、ユーザーを接続ルートへ送信する必要があります：
+
+```php
+return redirect()->route('mcp.oauth.projects.connect');
+```
+
+Laravelは、ユーザーをサービスへリダイレクトしてアクセスを承認し、戻ってきた際に認可コードを交換し、コールバックを呼び出します。後続のチャットリクエストでは、名前付きクライアントは保存済みのトークンを使用します。たとえば、AI SDKエージェントは、サービスのツールを公開します。
+
+```php
+public function tools(): iterable
+{
+    return [
+        ...Mcp::client('projects')->tools(),
+    ];
+}
+```
+
+トークンは[暗号化キャスト](/docs/{{version}}/eloquent-mutators#encrypted-casting)を使って保存し、モデルのシリアライズから隠してください。サービス側が有効期限付きのトークンを発行する場合は、`TokenSet`から取得したリフレッシュトークンと有効期限の情報も保存し、ツールを呼び出す前にトークンの更新を処理してください。キュー投入するエージェントでは、`Auth::user()`を使わず、明示的に渡したユーザーから認証情報を取得してください。
+
+> [!NOTE]
+> `Mcp::oAuthRoutesFor`は、ユーザーを外部サービスへ接続するためのものです。一方、`Mcp::oauthRoutes`は、Passportを使って外部のAIクライアントがあなたのMCPサーバへ認証できるようにするものです。上記のアカウント連携フローには、Passportも`Mcp::oauthRoutes`も必要ありません。
+
+<a name="client-metadata"></a>
+#### クライアントメタデータ
 
 メタデータドキュメントはアプリケーションをパブリックOAuthクライアントとして記述し、アプリケーションの`APP_URL`を使用してクライアントIDとコールバックURLを生成します。したがって、本番環境では`APP_URL`環境変数を正しく設定してください。`clientMetadataUri`引数と`clientMetadata`引数を使用して、メタデータルートをカスタマイズし、追加のメタデータを提供できます。
 
@@ -1939,24 +1983,18 @@ use Laravel\Mcp\Client\OAuth\TokenSet;
 use Laravel\Mcp\Facades\Mcp;
 
 Mcp::oAuthRoutesFor(
-    'github',
+    'projects',
     function (string $client, TokenSet $token) {
         // トークンの保存処理…
 
         return redirect('/dashboard');
     },
-    clientMetadataUri: 'oauth/github/client.json',
+    clientMetadataUri: 'oauth/projects/client.json',
     clientMetadata: [
         'client_name' => 'Acme Dashboard',
         'logo_uri' => 'https://acme.com/logo.png',
     ],
 );
-```
-
-認可フローを開始するには、ユーザーを接続ルートへリダイレクトします。
-
-```php
-return redirect()->route('mcp.oauth.github.connect');
 ```
 
 <a name="client-tools"></a>

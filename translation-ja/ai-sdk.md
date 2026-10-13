@@ -19,6 +19,7 @@
     - [遅延ツールロード](#deferred-tool-loading)
     - [ファイル保存域ツール](#file-storage-tools)
     - [MCPツール](#mcp-tools)
+    - [スキル](#skills)
     - [プロバイダツール](#provider-tools)
     - [サブエージェント](#sub-agents)
     - [ミドルウェア](#middleware)
@@ -37,10 +38,13 @@
     - [埋め込みのクエリ](#querying-embeddings)
     - [埋め込みのキャッシュ](#caching-embeddings)
 - [リランク](#reranking)
+    - [コレクションのリランク](#reranking-collections)
 - [等級付け](#classification)
+    - [画像の等級付け](#classifying-images)
     - [はい／いいえの決定](#yes-or-no-decisions)
     - [コレクションからの選択](#choosing-from-collections)
 - [ファイル](#files)
+    - [会話での保存済みファイルの使用](#using-stored-files-in-conversations)
 - [ベクトルストア](#vector-stores)
     - [ストアへのファイル追加](#adding-files-to-stores)
 - [消費量](#usage)
@@ -282,13 +286,13 @@ AI SDKは、その機能全体でさまざまなプロバイダをサポート�
 
 | 機能 | プロバイダ |
 |---|---|
-| テキスト | OpenAI, OpenAI Compatible, Anthropic, Gemini, Azure, Bedrock, Groq, xAI, DeepSeek, Mistral, Ollama, OpenRouter |
+| テキスト | OpenAI, OpenAI Compatible, Anthropic, Gemini, Azure, Bedrock, Groq, xAI, DeepSeek, Mistral, Ollama, OpenRouter, Cohere |
 | 画像 | OpenAI, Gemini, xAI, Azure, Bedrock, OpenRouter |
 | TTS | OpenAI, ElevenLabs, Gemini, Mistral, OpenRouter |
 | STT | OpenAI, OpenAI Compatible, ElevenLabs, Groq, Mistral, Gemini, OpenRouter |
 | 埋め込み | OpenAI, OpenAI Compatible, Gemini, Azure, Bedrock, Cohere, Mistral, Jina, VoyageAI, Ollama, OpenRouter |
 | リランク | Cohere, Jina, VoyageAI, Bedrock, OpenRouter |
-| 等級付け | TypeSafe, OpenRouter |
+| 等級付け | OpenAI, TypeSafe, OpenRouter |
 | ファイル | OpenAI, Anthropic, Gemini, Azure, OpenRouter |
 
 </div>
@@ -1252,7 +1256,7 @@ SimilaritySearch::usingModel(Document::class, 'embedding')
 <a name="deferred-tool-loading"></a>
 ### 遅延ツールロード
 
-エージェントが公開するすべてのツールをデフォルトでは、リクエストごとにプロバイダへ送信します。エージェントが多数のツールを提供する場合、これはトークンを消費し、モデルのツール選択の精度を低下させる可能性があります。OpenAIまたはAnthropicで`ToolSearch`プロバイダツールを使用すると、ツールの定義を遅延させ、プロバイダが必要なときにのみ読み込むようにできます。
+エージェントが公開するすべてのツールをデフォルトでは、リクエストごとにプロバイダへ送信します。エージェントが多数のツールを提供する場合、これはトークンを消費し、モデルのツール選択の精度を低下させる可能性があります。OpenAI、Azure、Anthropicで`ToolSearch`プロバイダツールを使用すると、ツールの定義を遅延させ、プロバイダが必要なときにのみ読み込むようにできます。
 
 ```php
 use App\Ai\Tools\RefundOrder;
@@ -1293,7 +1297,7 @@ Anthropicを使用する場合、`withProviderOptions`メソッドを使用し�
 <a name="file-storage-tools"></a>
 ### ファイル保存域ツール
 
-`FileStorage`ツールファクトリを使用すると、エージェントにLaravelの[ファイルシステムディスク](/docs/{{version}}/filesystem)へのアクセス権を与えられます。`all`メソッドは、エージェントが指定のディスク上のファイルを一覧表示、読み取り、検査、URL生成、書き込み、削除、コピーできるようにするツールを返します。
+`FileStorage`ツールファクトリを使用すると、エージェントにLaravelの[ファイルシステムディスク](/docs/{{version}}/filesystem)へのアクセス権を与えられます。`all`メソッドは、エージェントが指定のディスク上のファイルを一覧表示、読み取り、検査、URL生成、書き込み、削除、コピー、移動できるようにするツールを返します。
 
 ```php
 use Laravel\Ai\Tools\FileStorage;
@@ -1378,6 +1382,63 @@ public function tools(): iterable
 
 ベアラートークンやOAuthを含む、MCPクライアントの作成と認証に関する詳細については、[MCPクライアントのドキュメント](/docs/{{version}}/mcp#client)を参照してください。
 
+<a name="skills"></a>
+### スキル
+
+[エージェントスキル](https://agentskills.io)は、特定のタスクの実行方法をエージェントへ教える、指示とサポートのためのファイルのフォルダです。スキルはオープン標準に従っているため、アプリケーションのエージェントと、アプリケーションの構築に使用するコーディングエージェントの間で、同じスキルを共有できます。
+
+各スキルは、アプリケーションの`resources/skills`ディレクトリ内のディレクトリであり、`SKILL.md`ファイルを含みます。リファレンスドキュメントなどのディレクトリ内の他のファイルも、スキルにバンドルされます。
+
+```text
+resources/skills/
+└── refund-policy/
+    ├── SKILL.md
+    └── references/EDGE-CASES.md
+```
+
+`SKILL.md`ファイルは、スキルの`name`と、そのスキルを使用すべきタイミングの`description`を含むYAMLフロントマターで始まり、その後にスキルの指示が続きます。
+
+```markdown
+---
+name: refund-policy
+description: Use when a customer asks for a refund or disputes a charge.
+---
+
+# Refund Policy
+
+Customers may request a full refund within 30 days of purchase...
+```
+
+`name`を省略した場合は、スキルのディレクトリ名を使います。`description`のないスキルは無視します。
+
+エージェントにスキルへのアクセス権を付与するには、`HasSkills`インターフェイスを実装し、`skills`メソッドからスキルソースを返します。
+
+```php
+use Laravel\Ai\Contracts\HasSkills;
+use Laravel\Ai\Skills\Skill;
+
+class SupportAgent implements Agent, HasSkills
+{
+    use Promptable;
+
+    public function skills(): iterable
+    {
+        return [
+            resource_path('skills'),
+            base_path('.agents/skills'),
+            new Skill('house-style', 'Use when you write copy for a customer.', view('skills.house-style')),
+            fn () => $this->user->team->skills->map(
+                fn ($skill) => new Skill($skill->name, $skill->description, $skill->instructions)
+            ),
+        ];
+    }
+}
+```
+
+ソースは、ディレクトリ、`Skill`インスタンス、クロージャを指定できます。クロージャは、エージェントがスキルを必要とするようになって初めて呼び出されます。２つのスキルが同じ名前を共有している場合、最初にリストされているソースを優先します。
+
+エージェントは、各スキルの名前と説明をリストする`LoadSkill`ツールを受け取り、プロンプトで要求されたときにのみ、スキルの詳細な指示とバンドルされているテキストファイルを読み込みます。バイナリファイルと256KBを超えるファイルは返しません。
+
 <a name="provider-tools"></a>
 ### プロバイダツール
 
@@ -1390,7 +1451,7 @@ public function tools(): iterable
 
 `WebSearch`プロバイダツールを使用すると、エージェントはWebを検索してリアルタイムの情報を取得できます。これは、時事問題、最近のデータ、またはモデルのトレーニングカットオフ以降に変更された可能性のあるトピックに関する質問に答えるのに役立ちます。
 
-**サポートしているプロバイダ：** Anthropic、OpenAI、Azure、Gemini、xAI、OpenRouter
+**サポートしているプロバイダ：** Anthropic、OpenAI、Azure、Gemini、xAI、Groq、OpenRouter
 
 ```php
 use Laravel\Ai\Providers\Tools\WebSearch;
@@ -1418,6 +1479,9 @@ Web検索ツールを設定して、検索数を制限したり、結果を特�
     country: 'US'
 );
 ```
+
+> [!NOTE]
+> Groqは、GPT-OSSモデルでのみウェブ検索をサポートしており、`max`、`allow`、`location`メソッドを無視します。
 
 <a name="web-fetch"></a>
 #### Webフェッチ
@@ -1448,7 +1512,7 @@ Webフェッチツールを設定して、フェッチ数を制限したり、�
 
 `FileSearch`プロバイダツールを使用すると、エージェントは[ベクトルストア](#vector-stores)に保存されている[ファイル](#files)内を検索できます。これにより、エージェントがアップロード済みのドキュメントから関連情報を検索できるようになり、検索拡張生成（RAG）が可能になります。
 
-**サポートしているプロバイダ：** OpenAI、Gemini、xAI
+**サポートしているプロバイダ：** OpenAI、Azure、Gemini、xAI
 
 ```php
 use Laravel\Ai\Providers\Tools\FileSearch;
@@ -1493,7 +1557,7 @@ new FileSearch(stores: ['store_id'], where: fn (FileSearchQuery $query) =>
 
 `CodeExecution`プロバイダツールを使用すると、エージェントはAIプロバイダがホストするサンドボックス内でコードを実行できます。これは、計算の実行やデータの分析に便利です。
 
-**サポートしているプロバイダ：** Anthropic、OpenAI、Azure、Gemini、xAI
+**サポートしているプロバイダ：** Anthropic、OpenAI、Azure、Gemini、xAI、Groq
 
 ```php
 use Laravel\Ai\Providers\Tools\CodeExecution;
@@ -1511,6 +1575,9 @@ OpenAIまたはAzureを使用する場合、プロバイダオプションを介
     'container' => ['type' => 'auto', 'file_ids' => ['file_123']],
 ]);
 ```
+
+> [!NOTE]
+> Groqは、GPT-OSSモデルでのみコード実行をサポートしています。
 
 <a name="sub-agents"></a>
 ### サブエージェント
@@ -2527,7 +2594,7 @@ $documents = Document::query()
 エージェントにツールとして類似性検索を実行する能力を与えたい場合は、[類似性検索](#similarity-search)ツールのドキュメントを確認してください。
 
 > [!NOTE]
-> ベクトルクエリは現在、`pgvector`拡張機能を使用しているPostgreSQL接続とMariaDB11.7以降をサポートしています。
+> ベクトルクエリは現在、`pgvector`拡張機能を使用するPostgreSQL接続、またはネイティブのベクトルサポートを使用するMariaDB11.7以上をサポートしています。
 
 <a name="caching-embeddings"></a>
 ### 埋め込みのキャッシュ
@@ -2710,6 +2777,23 @@ $result->collect();
 
 $result->usage;
 $result->meta->provider;
+```
+
+<a name="classifying-images"></a>
+### 画像の等級付け
+
+OpenAIを使用する場合、`of`メソッドの第２引数として画像を渡すことで、指定したコンテンツと一緒に画像を分類できます。画像は、[添付ファイルに使用するファイルクラス](#attachments)と同じものを使用して作成できます。
+
+```php
+use Laravel\Ai\Classification;
+use Laravel\Ai\Classification\Boolean;
+use Laravel\Ai\Files\Image;
+
+$result = Classification::of('Inspect the product in this photo.', [
+    Image::fromPath($photo),
+])
+    ->question('damaged', new Boolean('Does the product have visible damage?'))
+    ->classify(provider: 'openai');
 ```
 
 <a name="yes-or-no-decisions"></a>

@@ -133,7 +133,7 @@ composer require algolia/algoliasearch-client-php
 <a name="meilisearch"></a>
 ### Meilisearch
 
-[Meilisearch](https://www.meilisearch.com)は、高速なオープンソースの検索エンジンです。ローカルマシンにMeilisearchをインストールする方法がわからない場合は、Laravelの公式サポートのDocker開発環境である[Laravel Sail](/docs/{{version}}/sail#meilisearch)を利用できます。
+[Meilisearch](https://www.meilisearch.com)は、全文検索、セマンティック検索、ハイブリッド検索に対応した高速なオープンソースの検索エンジンです。ローカルマシンへのMeilisearchのインストール方法がわからない場合は、Laravelの公式Docker開発環境である、[Laravel Sail](/docs/{{version}}/sail#meilisearch)を利用できます。本番環境では、Meilisearchを[セルフホスト](https://www.meilisearch.com/docs/learn/self_hosted/getting_started_with_self_hosted_meilisearch)するか、[Meilisearch Cloud](https://www.meilisearch.com/cloud)を利用できます。
 
 Meilisearchドライバを使用する場合は、Composerパッケージマネージャを使用して、Meilisearch PHP SDKをインストールする必要があります。
 
@@ -149,12 +149,7 @@ MEILISEARCH_HOST=http://127.0.0.1:7700
 MEILISEARCH_KEY=masterKey
 ```
 
-Meilisearchの詳細については、[Meilisearchのドキュメント](https://docs.meilisearch.com/learn/getting_started/quick_start.html)を参照してください。
-
-さらに、[Meilisearchのバイナリ互換のドキュメント](https://github.com/meilisearch/meilisearch-php#-compatibility-with-meilisearch)を見て、自分が使っているMeilisearchのバイナリバージョンと互換性のあるバージョンの`meilisearch/meilisearch-php`をインストールしてください。
-
-> [!WARNING]
-> Meilisearchを利用しているアプリケーションのScoutをアップグレードする際には、常にMeilisearchサービス自体に[追加の破壊的な変更](https://github.com/meilisearch/Meilisearch/releases)がないか確認する必要があります。
+Meilisearch の詳細は、[Meilisearchドキュメント](https://www.meilisearch.com/docs/getting_started/overview)を参照してください。
 
 <a name="typesense"></a>
 ### Typesense
@@ -584,7 +579,9 @@ Meilisearchでセマンティック検索またはハイブリッド検索を使
 ],
 ```
 
-ネイティブ埋め込みを使用する場合、Scoutはインデックス付きドキュメントにベクトルを生成したり追加したりしません。`vector`検索オプションを使用して、事前計算済みのクエリベクトルを引き続き指定することもできます。
+ネイティブ埋め込みを使用する場合、Scoutはインデックス対象のドキュメントにベクトルを生成したり追加したりしません。ただし、`vector`検索オプションを使えば、事前に計算したクエリベクトルを引き続き指定できます。他のインデックス設定と同様に、埋め込みモデルの設定を更新した後に、`scout:sync-index-settings`コマンドを実行してください。
+
+利用可能な埋め込みソースとそのオプションの詳細は、[Meilisearchハイブリッド検索のドキュメント](https://www.meilisearch.com/docs/capabilities/hybrid_search/getting_started)を参照してください。
 
 <a name="meilisearch-data-types"></a>
 #### Searchableデータタイプ

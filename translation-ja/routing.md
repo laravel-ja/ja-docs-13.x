@@ -97,9 +97,12 @@ Route::put($uri, $callback);
 Route::patch($uri, $callback);
 Route::delete($uri, $callback);
 Route::options($uri, $callback);
+Route::query($uri, $callback);
 ```
 
-複数のHTTP動詞に応答するルートを登録する必要が起きる場合もあります。これは`match`メソッドを使用して行います。または、`any`メソッドを使用して、すべてのHTTP動詞に応答するルートを登録することもできます。
+`query`メソッドは、`QUERY` HTTP動詞に応答するルートを登録します。これにより、クライアントはクエリ用のリクエストボディを送信できます。`web`ミドルウェアグループ内の`QUERY`ルートは、[CSRF保護](/docs/{{version}}/csrf)の対象になります。
+
+複数のHTTP動詞に応答するルートを登録しなければならない場合もあるでしょう。その場合は`match`メソッドを使用してください。また、`any`メソッドを使えば、`QUERY`を含むすべてのHTTP動詞に応答するルートを登録することもできます。
 
 ```php
 Route::match(['get', 'post'], '/', function () {
@@ -112,7 +115,7 @@ Route::any('/', function () {
 ```
 
 > [!NOTE]
-> 同じURIの複数のルートを定義する場合、`get`、`post`、`put`、`patch`、`delete`、`options`の各メソッドを使ったルートは、`any`、`match`、`redirect`の各メソッドを使ったルートよりも先に定義する必要があります。これにより、受信リクエストが正しいルートにマッチします。
+> 同じURIの複数のルートを定義する場合、`get`、`post`、`put`、`patch`、`delete`、`options`、`query`の各メソッドを使ったルートは、`any`、`match`、`redirect`の各メソッドを使ったルートよりも先に定義する必要があります。これにより、受信リクエストが正しいルートにマッチします。
 
 <a name="dependency-injection"></a>
 #### 依存注入

@@ -364,6 +364,19 @@ Schedule::command('report:generate')
     ->onOneServer();
 ```
 
+すべてのスケジュールタスクへ、`onOneServer`を適用するには、アプリケーションの`AppServiceProvider`の`boot`メソッドで、`alwaysOnOneServer`メソッドを呼び出します。
+
+```php
+use Illuminate\Support\Facades\Schedule;
+
+public function boot(): void
+{
+    Schedule::alwaysOnOneServer();
+}
+```
+
+[名前](#naming-unique-jobs)を持たないスケジュールクロージャは対象外となり、引き続きすべてのサーバで実行します。
+
 `useCache`メソッドを使い、シングルサーバのタスクにおいて、必要なアトミックロックを取得するためにスケジューラが使うキャッシュストアをカスタマイズできます。
 
 ```php

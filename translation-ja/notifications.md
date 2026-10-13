@@ -1851,6 +1851,14 @@ Notification::assertSentTo(
 );
 ```
 
+代わりに、`assertSentTo`または`assertNotSentTo`の第３引数として、期待するプロパティ値の配列を渡すこともできます。
+
+```php
+Notification::assertSentTo($user, OrderShipped::class, ['order' => $order]);
+```
+
+指定するプロパティはすべて一致する必要があります。値は厳密な等価演算子（`===`）で比較し、Eloquentモデルは`is`メソッドで比較します。また、`assertSentOnDemand`の第２引数にも、期待するプロパティ値の配列を渡せます。
+
 <a name="testing-on-demand-notifications"></a>
 #### オンデマンド通知
 

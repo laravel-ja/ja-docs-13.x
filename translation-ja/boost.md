@@ -48,7 +48,7 @@ composer require laravel/boost --dev
 php artisan boost:install
 ```
 
-`boost:install`コマンドは、インストールプロセス中に選択したコーディングエージェントに合わせて、関連するエージェントガイドラインとスキルファイルを生成します。
+`boost:install`コマンドは、インストールプロセス中に選択したコーディングエージェントに合わせて、関連するエージェントガイドラインとスキルファイルを生成します。`CLAUDE.md`や`AGENTS.md`などのガイドラインファイルがすでに存在する場合、Boostは、`<laravel-boost-guidelines>`ブロックの内側のコンテンツのみを置き換えるため、そのブロックの外側に記述した内容は保持されます。
 
 Laravel Boostをインストールすれば、CursorやClaude Code、またはお好みのAIエージェントでコーディングを開始する準備は完了です。
 
@@ -74,12 +74,6 @@ claude mcp add -s local -t stdio laravel-boost php artisan boost:mcp
 Codexのサポートは通常、自動的に有効になります。もし有効になっていない場合は、プロジェクトのディレクトリでシェルを開き、以下のコマンドを実行してください。
 
 codex mcp add laravel-boost -- php "artisan" "boost:mcp"
-```
-
-```text tab=Gemini CLI
-Gemini CLIのサポートは通常、自動的に有効になります。もし有効になっていない場合は、プロジェクトのディレクトリでシェルを開き、以下のコマンドを実行してください。
-
-gemini mcp add -s project -t stdio laravel-boost php artisan boost:mcp
 ```
 
 ```text tab=GitHub Copilot (VS Code)
@@ -117,10 +111,10 @@ php artisan boost:update
 }
 ```
 
-`boost:update`コマンドはデフォルトで、アプリケーション内ですでに公開している既存のBoostリソースのみを更新します。新たにインストールしたパッケージをBoostにスキャンさせ、対応するガイドラインやスキルの公開を提案させたい場合は、`--discover`オプションを使用してください。
+`boost:update`コマンドはデフォルトで、アプリケーションをスキャンして新しくインストールされたパッケージを探し、それらに対応するガイドラインとスキルの公開を提案します。Composerスクリプトなどから非対話モードでコマンドを実行する場合、このプロンプトはスキップします。アプリケーション内にすでに公開済みの既存Boostリソースのみを更新させたい場合は、`--no-discover`オプションを使用してください。
 
 ```shell
-php artisan boost:update --discover
+php artisan boost:update --no-discover
 ```
 
 <a name="mcp-server"></a>

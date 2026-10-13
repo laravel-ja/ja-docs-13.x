@@ -12,6 +12,7 @@
 - [他のレスポンスタイプ](#other-response-types)
     - [Viewレスポンス](#view-responses)
     - [JSONレスポンス](#json-responses)
+    - [Markdownレスポンス](#markdown-responses)
     - [Fileダウンロード](#file-downloads)
     - [Fileレスポンス](#file-responses)
 - [ストリームレスポンス](#streamed-responses)
@@ -353,6 +354,21 @@ JSONPレスポンスを生成したい場合は、`json`メソッドと`withCall
 return response()
     ->json(['name' => 'Abigail', 'state' => 'CA'])
     ->withCallback($request->input('callback'));
+```
+
+<a name="markdown-responses"></a>
+### Markdownレスポンス
+
+`markdown`メソッドを使うと、`Content-Type`ヘッダに`text/markdown`を設定した、Markdownコンテンツを返せます。
+
+```php
+return response()->markdown("# Hello\n\nWorld");
+```
+
+第２・３引数には、HTTPステータスコードと追加のヘッダの配列を指定できます。
+
+```php
+return response()->markdown('# Not Found', 404, ['X-Custom-Header' => 'Value']);
 ```
 
 <a name="file-downloads"></a>

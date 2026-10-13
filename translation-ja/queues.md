@@ -2627,6 +2627,14 @@ php artisan queue:work --force
 <a name="resource-considerations"></a>
 #### リソースに関する検討事項
 
+`--memory`オプションは、ワーカが終了するメモリ上限をメガバイト単位で指定します。デフォルトの上限は128メガバイトです。PHPの設定値、`memory_limit`に対する割合を指定することもできます。
+
+```shell
+php artisan queue:work --memory=60%
+```
+
+パーセンテージにより上限を指定するには、PHPの`memory_limit`に有限の値が設定されている必要があります。PHPのメモリ上限が無制限（`-1`）の場合は、メガバイト単位の上限を指定してください。[Supervisor](#supervisor-configuration)などのプロセスモニタを使えば、ワーカが終了した後に自動で再起動できます。
+
 デーモンキューワーカは、各ジョブを処理する前にフレームワークを「再起動」しません。したがって、各ジョブが完了した後、重いリソースを解放する必要があります。たとえば、[GDライブラリ](https://www.php.net/manual/ja/book.image.php)を使用して[画像操作](/docs/{{version}}/images)を行っている場合は、画像の処理が完了したら、`imagedestroy`を使用してメモリを解放する必要があります。
 
 <a name="queue-priorities"></a>
@@ -3326,6 +3334,16 @@ Queue::assertClosurePushed(function (CallQueuedClosure $job) {
     return $job->name === 'validate-order';
 });
 ```
+
+代わりに、`assertPushed`または`assertNotPushed`の第２引数、あるいは `assertPushedOn`の第３引数として、期待するプロパティ値の配列を渡すこともできます。
+
+```php
+Queue::assertPushed(ShipOrder::class, ['order' => $order]);
+
+Queue::assertPushedOn('shipping', ShipOrder::class, ['order' => $order]);
+```
+
+指定したプロパティはすべて一致する必要があります。値は厳密な等価演算子（`===`）で比較し、Eloquentモデルは`is`メソッドで比較します。また、`Bus`ファサードの`assertDispatched`、`assertNotDispatched`、`assertDispatchedSync`、`assertDispatchedAfterResponse`メソッドも、第２引数に期待するプロパティ値の配列を受けます。
 
 <a name="faking-a-subset-of-jobs"></a>
 ### ジョブのサブセットのFake

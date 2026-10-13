@@ -1217,6 +1217,14 @@ Event::assertDispatched(function (OrderShipped $event) use ($order) {
 });
 ```
 
+あるいは、期待するプロパティ値の配列を`assertDispatched`や`assertNotDispatched`の第２引数として渡すこともできます。
+
+```php
+Event::assertDispatched(OrderShipped::class, ['order' => $order]);
+```
+
+指定したプロパティはすべて一致する必要があります。値は厳密な等価性を使用して比較し、Eloquentモデルは`is`メソッドを使用して比較します。
+
 イベントリスナが指定イベントをリッスンしていることを単純にアサートしたい場合は、`assertListening`メソッドを使用してください。
 
 ```php
